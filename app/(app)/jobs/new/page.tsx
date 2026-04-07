@@ -74,7 +74,7 @@ export default function NewJobPage() {
     <div className="max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">Post a Job</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        Just a link is enough — add details whenever you have them.
+        Just a link is enough - add details whenever you have them.
       </p>
 
       <Card>

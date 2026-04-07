@@ -52,7 +52,7 @@ Deno.serve(async (_req) => {
           availability = "open"
         }
       } catch {
-        // Network error / timeout — leave as unknown
+        // Network error / timeout - leave as unknown
       }
 
       await supabase

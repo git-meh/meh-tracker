@@ -58,7 +58,7 @@ Thanks for your interest! Here's how to get up and running.
 ```
 app/
   (auth)/        Login, signup, invite pages
-  (app)/         Main app — sidebar layout
+  (app)/         Main app - sidebar layout
   api/           All backend route handlers
 components/      UI and feature components
 lib/
@@ -71,7 +71,7 @@ supabase/
 
 ## Making Changes
 
-- Keep PRs focused — one feature or fix per PR
+- Keep PRs focused - one feature or fix per PR
 - Run `npx tsc --noEmit` and `npm run lint` before opening a PR
 - For new pages, follow the existing RSC (React Server Component) pattern
 - API routes live in `app/api/` and use Zod for input validation

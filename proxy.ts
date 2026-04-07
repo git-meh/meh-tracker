@@ -33,7 +33,7 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // Refresh session — do not remove this
+  // Refresh session - do not remove this
   const {
     data: { user },
   } = await supabase.auth.getUser()

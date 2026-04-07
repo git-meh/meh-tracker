@@ -21,7 +21,7 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
-  // Normalise to storage path — handle both old (full URL) and new (path only) formats
+  // Normalise to storage path - handle both old (full URL) and new (path only) formats
   let storagePath = resume.fileUrl
   const marker = "/object/public/resumes/"
   if (storagePath.includes(marker)) {
@@ -31,7 +31,7 @@ export async function GET(
   const ext = resume.fileName.split(".").pop()?.toLowerCase() ?? ""
   const isPdf = PDF_TYPES.includes(`.${ext}`)
 
-  // Use admin client to generate signed URL — bypasses RLS for private bucket access
+  // Use admin client to generate signed URL - bypasses RLS for private bucket access
   const admin = createAdminClient()
   const { data, error } = await admin.storage
     .from("resumes")

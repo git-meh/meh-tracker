@@ -1,16 +1,16 @@
 # 😑 meh-tracker
 
-A collaborative job application tracker for friend groups. Browse job listings anonymously, sign in to track your applications, share progress with your crew, and upload your CV — all in one place.
+A collaborative job application tracker for friend groups. Browse job listings anonymously, sign in to track your applications, share progress with your crew, and upload your CV - all in one place.
 
 ## Features
 
-- **Job Board** — post and browse job listings, public to everyone (no account needed)
-- **Application Tracker** — personal pipeline with kanban view and full status history
-- **CV Manager** — upload multiple CVs, set a default, link one to each application
-- **Group Feed** — see what your friends are applying to (opt-in visibility)
-- **Realtime** — live updates when jobs are posted or statuses change
-- **Invite System** — invite-link based onboarding
-- **Job Availability Checker** — background cron pings job URLs to detect closed listings
+- **Job Board** - post and browse job listings, public to everyone (no account needed)
+- **Application Tracker** - personal pipeline with kanban view and full status history
+- **CV Manager** - upload multiple CVs, set a default, link one to each application
+- **Group Feed** - see what your friends are applying to (opt-in visibility)
+- **Realtime** - live updates when jobs are posted or statuses change
+- **Invite System** - invite-link based onboarding
+- **Job Availability Checker** - background cron pings job URLs to detect closed listings
 
 ## Stack
 

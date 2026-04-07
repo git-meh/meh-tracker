@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 })
   }
 
-  // Store the storage path (not a public URL — bucket is private, use signed URLs to view)
+  // Store the storage path (not a public URL - bucket is private, use signed URLs to view)
   const [resume] = await db
     .insert(resumes)
     .values({

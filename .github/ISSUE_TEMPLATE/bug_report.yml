@@ -37,4 +37,4 @@ body:
     id: context
     attributes:
       label: Additional context
-      description: Screenshots, error messages, browser/OS info — anything helpful.
+      description: Screenshots, error messages, browser/OS info - anything helpful.
