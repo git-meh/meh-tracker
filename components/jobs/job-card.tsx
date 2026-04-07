@@ -1,0 +1,91 @@
+import Link from "next/link"
+import { MapPin, DollarSign, ExternalLink, Clock } from "lucide-react"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { AvailabilityBadge } from "./availability-badge"
+import { QuickApplyButton } from "./quick-apply-button"
+import { formatDistanceToNow } from "date-fns"
+import type { Job, ApplicationStatus } from "@/lib/db/schema"
+
+interface JobCardProps {
+  job: Job & { applicantCount?: number; posterName?: string | null }
+  userApplication?: { id: string; status: ApplicationStatus } | null
+  isAuthenticated?: boolean
+}
+
+export function JobCard({ job, userApplication, isAuthenticated }: JobCardProps) {
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <Link
+              href={`/jobs/${job.id}`}
+              className="text-base font-semibold hover:underline line-clamp-1"
+            >
+              {job.title}
+            </Link>
+            <p className="text-sm text-muted-foreground font-medium">{job.company}</p>
+          </div>
+          <AvailabilityBadge availability={job.availability} />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mb-3">
+          {job.location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {job.location}
+            </span>
+          )}
+          {job.salaryRange && (
+            <span className="flex items-center gap-1">
+              <DollarSign className="h-3 w-3" />
+              {job.salaryRange}
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
+          </span>
+        </div>
+
+        {job.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {job.tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground min-w-0">
+            {typeof job.applicantCount === "number" && job.applicantCount > 0 && (
+              <span>{job.applicantCount} applied from group</span>
+            )}
+            {job.posterName && <span className="truncate">by {job.posterName}</span>}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {isAuthenticated && (
+              <QuickApplyButton
+                jobId={job.id}
+                existingApplicationId={userApplication?.id}
+                existingStatus={userApplication?.status}
+              />
+            )}
+            <a
+              href={job.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs text-primary hover:underline"
+            >
+              Open <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
