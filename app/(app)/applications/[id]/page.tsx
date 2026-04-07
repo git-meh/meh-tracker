@@ -4,7 +4,6 @@ import { db } from "@/lib/db"
 import { applications, jobs, applicationStatusHistory, resumes, profiles } from "@/lib/db/schema"
 import { eq, desc } from "drizzle-orm"
 import { createClient } from "@/lib/supabase/server"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AvailabilityBadge } from "@/components/jobs/availability-badge"
@@ -78,10 +77,10 @@ export default async function ApplicationDetailPage({
     .where(eq(applicationStatusHistory.applicationId, id))
     .orderBy(desc(applicationStatusHistory.changedAt))
 
-  const userResumes = await db
-    .select()
-    .from(resumes)
-    .where(eq(resumes.userId, user.id))
+  // const userResumes = await db
+  //   .select()
+  //   .from(resumes)
+  //   .where(eq(resumes.userId, user.id))
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

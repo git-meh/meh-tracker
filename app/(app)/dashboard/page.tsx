@@ -1,9 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { db } from "@/lib/db"
-import { applications, jobs, profiles } from "@/lib/db/schema"
+import { applications, jobs } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
@@ -68,7 +67,7 @@ export default async function DashboardPage() {
       {/* Kanban columns */}
       <div className="flex gap-4 overflow-x-auto pb-4">
         {STATUS_COLUMNS.map(({ status, label, color }) => (
-          <div key={status} className="w-64 flex-shrink-0">
+          <div key={status} className="w-64 shrink-0">
             <div className={`rounded-lg border ${color} p-3`}>
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-sm font-semibold">{label}</h3>
