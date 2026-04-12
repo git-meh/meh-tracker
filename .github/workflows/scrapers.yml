@@ -33,9 +33,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install scraper dependencies
-        working-directory: scrapers
-        run: npm ci
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd scrapers
+          npm ci
 
       - name: Determine adapter group
         id: group
