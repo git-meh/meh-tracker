@@ -2,6 +2,7 @@ import Link from "next/link"
 import { MapPin, DollarSign, ExternalLink, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { AvailabilityBadge } from "./availability-badge"
 import { QuickApplyButton } from "./quick-apply-button"
 import { formatDistanceToNow } from "date-fns"
@@ -131,14 +132,15 @@ export function JobCard({ job, userApplication, isAuthenticated, matchScore }: J
                 existingStatus={userApplication?.status}
               />
             )}
-            <a
-              href={job.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-primary hover:underline"
-            >
-              Open <ExternalLink className="h-3 w-3" />
-            </a>
+            <Button variant="default" size="sm" className="gap-1.5 text-xs" asChild>
+              <a
+                href={job.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </Button>
           </div>
         </div>
       </CardContent>

@@ -72,9 +72,9 @@ export function QuickApplyButton({
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2">
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         className="gap-1.5 text-xs"
         disabled={loading}
@@ -88,7 +88,7 @@ export function QuickApplyButton({
         Mark Applied
       </Button>
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         className="gap-1.5 text-xs"
         disabled={loading}
