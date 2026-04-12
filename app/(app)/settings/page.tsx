@@ -51,7 +51,10 @@ export default async function SettingsPage() {
 
       <Separator />
 
-      <div>
+      <div className="flex flex-wrap gap-2">
+        <Button asChild>
+          <Link href="/workspace">Open Workspace</Link>
+        </Button>
         <Button asChild variant="outline">
           <Link href="/settings/resumes">Manage CVs →</Link>
         </Button>
