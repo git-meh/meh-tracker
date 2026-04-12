@@ -85,7 +85,7 @@ export function QuickApplyButton({
         ) : (
           <CheckCircle2 className="h-3.5 w-3.5" />
         )}
-        Applied
+        Mark Applied
       </Button>
       <Button
         variant="ghost"
