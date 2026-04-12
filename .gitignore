@@ -43,3 +43,17 @@ next-env.d.ts
 .agents
 .claude
 skills-lock.json
+
+# scrapers package
+scrapers/node_modules
+scrapers/dist
+
+
+
+docs/ARCHITECTURE.md
+docs/SCRAPER-PLAN.md
+docs/SETUP-AND-NAVIGATION.md
+docs/NEXT-SPRINT.md
+docs/USER-JOURNEY.md
+docs/BUILD-ROADMAP.md
+

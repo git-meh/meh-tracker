@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { db } from "@/lib/db"
-import { applications, jobs } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { applicationDrafts, applications, jobMatches, jobs } from "@/lib/db/schema"
+import { desc, eq } from "drizzle-orm"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
@@ -50,6 +50,25 @@ export default async function DashboardPage() {
     FINAL_STATUSES.includes(a.status)
   )
 
+  const topMatches = await db
+    .select({
+      id: jobMatches.id,
+      score: jobMatches.score,
+      jobId: jobs.id,
+      title: jobs.title,
+      company: jobs.company,
+    })
+    .from(jobMatches)
+    .innerJoin(jobs, eq(jobMatches.jobId, jobs.id))
+    .where(eq(jobMatches.userId, user.id))
+    .orderBy(desc(jobMatches.score), desc(jobMatches.refreshedAt))
+    .limit(3)
+
+  const drafts = await db
+    .select({ id: applicationDrafts.id })
+    .from(applicationDrafts)
+    .where(eq(applicationDrafts.userId, user.id))
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -63,6 +82,51 @@ export default async function DashboardPage() {
           <Link href="/jobs">Browse Jobs</Link>
         </Button>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-lg border bg-background p-4">
+          <p className="text-sm text-muted-foreground">Tracked applications</p>
+          <p className="mt-1 text-2xl font-bold">{userApplications.length}</p>
+        </div>
+        <div className="rounded-lg border bg-background p-4">
+          <p className="text-sm text-muted-foreground">AI drafts</p>
+          <p className="mt-1 text-2xl font-bold">{drafts.length}</p>
+        </div>
+        <div className="rounded-lg border bg-background p-4">
+          <p className="text-sm text-muted-foreground">Top matches</p>
+          <p className="mt-1 text-2xl font-bold">{topMatches.length}</p>
+        </div>
+      </div>
+
+      {topMatches.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Recommended Next</h2>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/matches">Open Review Queue</Link>
+            </Button>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {topMatches.map((match) => (
+              <Link
+                key={match.id}
+                href={`/jobs/${match.jobId}`}
+                className="rounded-lg border bg-background p-4 hover:shadow-sm transition-shadow"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{match.title}</p>
+                    <p className="text-sm text-muted-foreground">{match.company}</p>
+                  </div>
+                  <Badge variant={match.score >= 75 ? "success" : "warning"}>
+                    {match.score}
+                  </Badge>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Kanban columns */}
       <div className="flex gap-4 overflow-x-auto pb-4">

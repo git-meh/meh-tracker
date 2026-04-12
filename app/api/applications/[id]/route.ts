@@ -4,12 +4,15 @@ import { createClient } from "@/lib/supabase/server"
 import { db } from "@/lib/db"
 import { applications } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { logger } from "@/lib/logger"
 
 const updateSchema = z.object({
   notes: z.string().max(2000).optional(),
   resumeId: z.string().uuid().nullable().optional(),
+  resumeVersionId: z.string().uuid().nullable().optional(),
   isPrivate: z.boolean().optional(),
   appliedAt: z.string().datetime().optional(),
+  externalConfirmationUrl: z.string().url().nullable().optional(),
 })
 
 async function getOwnedApplication(id: string, userId: string) {
@@ -75,5 +78,6 @@ export async function DELETE(
   if (!app) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
   await db.delete(applications).where(eq(applications.id, id))
+  logger.info("application_deleted", { userId: user.id, applicationId: id })
   return new NextResponse(null, { status: 204 })
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { LogOut, User, FileText } from "lucide-react"
+import { LogOut, User, FileText, Sparkles } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
@@ -39,6 +39,13 @@ export function Header({ profile }: HeaderProps) {
           >
             <FileText className="h-4 w-4" />
             My CVs
+          </Link>
+          <Link
+            href="/matches"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI Matches
           </Link>
           <Link href="/settings">
             <Avatar className="h-8 w-8 cursor-pointer">

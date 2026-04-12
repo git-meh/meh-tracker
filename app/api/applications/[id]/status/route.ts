@@ -2,8 +2,9 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
 import { db } from "@/lib/db"
-import { applications, applicationStatusHistory } from "@/lib/db/schema"
+import { applications, applicationStatusHistory, jobs } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { createNotificationEvent } from "@/lib/visa-platform/notifications"
 
 const statusSchema = z.object({
   status: z.enum(["saved", "applied", "oa", "phone_screen", "interview", "offer", "rejected", "withdrawn"]),
@@ -49,6 +50,18 @@ export async function PATCH(
     changedBy: user.id,
     changedAt: now,
   })
+
+  const [job] = await db.select().from(jobs).where(eq(jobs.id, app.jobId)).limit(1)
+  if (job) {
+    await createNotificationEvent({
+      userId: user.id,
+      type: "status_changed",
+      subject: `${job.title} moved to ${parsed.data.status}`,
+      body: `Your application for ${job.company} is now marked as ${parsed.data.status}.`,
+      jobId: job.id,
+      applicationId: app.id,
+    })
+  }
 
   return NextResponse.json(updated)
 }

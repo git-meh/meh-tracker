@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { db } from "@/lib/db"
-import { jobs, applications, profiles } from "@/lib/db/schema"
+import { jobs, applications, profiles, jobMatches, applicationDrafts, jobSources } from "@/lib/db/schema"
 import { eq, sql, and } from "drizzle-orm"
 import { createClient } from "@/lib/supabase/server"
 import { AvailabilityBadge } from "@/components/jobs/availability-badge"
@@ -11,6 +11,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { MapPin, DollarSign, ExternalLink, Calendar, Users } from "lucide-react"
 import { formatDistanceToNow, format } from "date-fns"
 import { ApplyButton } from "@/components/applications/apply-button"
+import { GenerateDraftButton } from "@/components/matches/generate-draft-button"
+import {
+  JOB_SOURCE_TYPE_LABELS,
+  VISA_SPONSORSHIP_LABELS,
+  WORK_MODE_LABELS,
+} from "@/lib/visa-platform/constants"
 
 export default async function JobDetailPage({
   params,
@@ -31,12 +37,22 @@ export default async function JobDetailPage({
       tags: jobs.tags,
       postedBy: jobs.postedBy,
       availability: jobs.availability,
+      salaryMin: jobs.salaryMin,
+      salaryMax: jobs.salaryMax,
+      currency: jobs.currency,
+      countryCode: jobs.countryCode,
+      visaSponsorshipStatus: jobs.visaSponsorshipStatus,
+      workMode: jobs.workMode,
+      sourceType: jobs.sourceType,
+      sourceName: jobSources.name,
+      closingAt: jobs.closingAt,
       lastChecked: jobs.lastChecked,
       createdAt: jobs.createdAt,
       posterName: profiles.name,
     })
     .from(jobs)
     .leftJoin(profiles, eq(profiles.id, jobs.postedBy))
+    .leftJoin(jobSources, eq(jobSources.id, jobs.sourceId))
     .where(eq(jobs.id, id))
     .limit(1)
 
@@ -46,13 +62,15 @@ export default async function JobDetailPage({
   const [{ count }] = await db
     .select({ count: sql<number>`cast(count(*) as int)` })
     .from(applications)
-    .where(eq(applications.jobId, id))
+    .where(and(eq(applications.jobId, id), eq(applications.isPrivate, false)))
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   // Check if user already applied
   let userApplication = null
+  let userMatch = null
+  let userDraft = null
   if (user) {
     const [existing] = await db
       .select()
@@ -60,6 +78,20 @@ export default async function JobDetailPage({
       .where(and(eq(applications.jobId, id), eq(applications.userId, user.id)))
       .limit(1)
     userApplication = existing ?? null
+
+    const [match] = await db
+      .select()
+      .from(jobMatches)
+      .where(and(eq(jobMatches.jobId, id), eq(jobMatches.userId, user.id)))
+      .limit(1)
+    userMatch = match ?? null
+
+    const [draft] = await db
+      .select()
+      .from(applicationDrafts)
+      .where(and(eq(applicationDrafts.jobId, id), eq(applicationDrafts.userId, user.id)))
+      .limit(1)
+    userDraft = draft ?? null
   }
 
   return (
@@ -112,13 +144,35 @@ export default async function JobDetailPage({
               ))}
             </div>
           )}
+
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Badge variant="outline">
+              {VISA_SPONSORSHIP_LABELS[job.visaSponsorshipStatus]}
+            </Badge>
+            <Badge variant="outline">
+              {WORK_MODE_LABELS[job.workMode]}
+            </Badge>
+            <Badge variant="outline">
+              {JOB_SOURCE_TYPE_LABELS[job.sourceType]}
+            </Badge>
+            {job.sourceName ? (
+              <Badge variant="secondary">{job.sourceName}</Badge>
+            ) : null}
+            {userMatch ? (
+              <Badge variant={userMatch.score >= 75 ? "success" : userMatch.score >= 50 ? "warning" : "secondary"}>
+                Match {userMatch.score}
+              </Badge>
+            ) : null}
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {job.description && (
             <div>
               <h2 className="font-semibold mb-2">Description</h2>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{job.description}</p>
+              <div className="whitespace-pre-wrap text-sm leading-6 text-foreground">
+                {job.description}
+              </div>
             </div>
           )}
 
@@ -130,15 +184,18 @@ export default async function JobDetailPage({
             </a>
 
             {user ? (
-              userApplication ? (
-                <Button asChild variant="secondary">
-                  <Link href={`/applications/${userApplication.id}`}>
-                    View My Application →
-                  </Link>
-                </Button>
-              ) : (
-                <ApplyButton jobId={job.id} />
-              )
+              <div className="flex flex-wrap items-center gap-2">
+                {userApplication ? (
+                  <Button asChild variant="secondary">
+                    <Link href={`/applications/${userApplication.id}`}>
+                      View My Application
+                    </Link>
+                  </Button>
+                ) : (
+                  <ApplyButton jobId={job.id} />
+                )}
+                <GenerateDraftButton jobId={job.id} draftId={userDraft?.id ?? null} />
+              </div>
             ) : (
               <Button asChild>
                 <Link href={`/login?redirectTo=/jobs/${job.id}`}>
@@ -153,9 +210,20 @@ export default async function JobDetailPage({
               Availability last checked: {format(new Date(job.lastChecked), "PPp")}
             </p>
           )}
+          {job.closingAt && (
+            <p className="text-xs text-muted-foreground">
+              Closing date: {format(new Date(job.closingAt), "PPp")}
+            </p>
+          )}
           {job.posterName && (
             <p className="text-xs text-muted-foreground">Posted by {job.posterName}</p>
           )}
+          {userMatch ? (
+            <div className="rounded-lg border bg-muted/20 p-3 text-sm">
+              <p className="font-medium">Why this role matches</p>
+              <p className="mt-1 text-muted-foreground">{userMatch.rationale}</p>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </div>
