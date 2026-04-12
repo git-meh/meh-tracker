@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/scrape?adapter=fast",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 1 * * *"
     },
     {
       "path": "/api/cron/scrape?adapter=html",
