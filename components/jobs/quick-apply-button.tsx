@@ -74,7 +74,7 @@ export function QuickApplyButton({
   return (
     <div className="flex items-center gap-2">
       <Button
-        variant="secondary"
+        variant="default"
         size="sm"
         className="gap-1.5 text-xs"
         disabled={loading}
@@ -85,7 +85,7 @@ export function QuickApplyButton({
         ) : (
           <CheckCircle2 className="h-3.5 w-3.5" />
         )}
-        Mark Applied
+        Mark as Applied
       </Button>
       <Button
         variant="outline"
