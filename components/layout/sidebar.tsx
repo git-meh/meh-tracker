@@ -6,8 +6,10 @@ import {
   LayoutDashboard,
   Briefcase,
   FileText,
+  Sparkles,
   Users,
   Settings,
+  Target,
   PlusCircle,
   LogIn,
 } from "lucide-react"
@@ -20,8 +22,10 @@ const publicNavItems = [
 
 const authNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/jobs", label: "Job Board", icon: Briefcase },
+  { href: "/jobs", label: "Discover Jobs", icon: Briefcase },
+  { href: "/matches", label: "AI Matches", icon: Sparkles },
   { href: "/applications", label: "My Applications", icon: FileText },
+  { href: "/workspace", label: "Workspace", icon: Target },
   { href: "/group", label: "Group Feed", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
 ]
