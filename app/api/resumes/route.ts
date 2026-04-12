@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { db } from "@/lib/db"
-import { resumes } from "@/lib/db/schema"
+import { resumes, resumeVersions } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { extractResumeText } from "@/lib/visa-platform/resumes"
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-const ALLOWED_TYPES = ["application/pdf", "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+const DOCX_TYPE =
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+const PDF_TYPE = "application/pdf"
+const LEGACY_DOC_TYPE = "application/msword"
+const ALLOWED_TYPES = [PDF_TYPE, DOCX_TYPE]
 
 export async function GET() {
   const supabase = await createClient()
@@ -34,8 +38,25 @@ export async function POST(request: Request) {
 
   if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 })
   if (file.size > MAX_FILE_SIZE) return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 })
+  if (file.type === LEGACY_DOC_TYPE) {
+    return NextResponse.json(
+      { error: "Legacy .doc files are not supported yet. Upload a PDF or DOCX file." },
+      { status: 400 }
+    )
+  }
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json({ error: "Only PDF and Word documents allowed" }, { status: 400 })
+    return NextResponse.json({ error: "Only PDF and DOCX resumes are supported" }, { status: 400 })
+  }
+
+  const extraction = await extractResumeText(file)
+  if (extraction.status !== "ready") {
+    return NextResponse.json(
+      {
+        error:
+          "We could not extract text from that file. Upload a text-based PDF or DOCX resume.",
+      },
+      { status: 422 }
+    )
   }
 
   const ext = file.name.split(".").pop()
@@ -60,5 +81,18 @@ export async function POST(request: Request) {
     })
     .returning()
 
-  return NextResponse.json(resume, { status: 201 })
+  const [resumeVersion] = await db
+    .insert(resumeVersions)
+    .values({
+      resumeId: resume.id,
+      userId: user.id,
+      versionNumber: 1,
+      label: "Original upload",
+      extractedText: extraction.extractedText,
+      normalizedText: extraction.normalizedText,
+      extractionStatus: extraction.status,
+    })
+    .returning()
+
+  return NextResponse.json({ ...resume, latestVersion: resumeVersion }, { status: 201 })
 }
