@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/scrape?adapter=fast",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/scrape?adapter=html",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/digests",
+      "schedule": "0 7 * * *"
+    }
+  ]
+}
