@@ -1,0 +1,22 @@
+{
+  "name": "@meh-tracker/scrapers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "run:all": "tsx --env-file=../.env src/scheduler.ts",
+    "run:greenhouse": "tsx --env-file=../.env src/adapters/greenhouse.ts",
+    "run:reed": "tsx --env-file=../.env src/adapters/reed.ts",
+    "run:lever": "tsx --env-file=../.env src/adapters/lever.ts",
+    "run:dwp": "tsx --env-file=../.env src/adapters/dwp.ts"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "node-html-parser": "^6.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}
