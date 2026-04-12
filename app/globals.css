@@ -1,4 +1,29 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Map CSS variables → Tailwind v4 color utilities (bg-popover, text-muted-foreground, etc.) */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius: 0.5rem;
+}
 
 @layer base {
   :root {
@@ -55,4 +80,63 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+}
+
+/* Job description HTML renderer — explicit styles so prose plugin quirks don't matter */
+.job-description {
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.job-description p {
+  margin-bottom: 0.875rem;
+}
+.job-description h1,
+.job-description h2,
+.job-description h3,
+.job-description h4,
+.job-description h5,
+.job-description h6 {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+.job-description h2 { font-size: 1.1rem; }
+.job-description h3 { font-size: 1rem; }
+.job-description ul,
+.job-description ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.875rem;
+}
+.job-description ul { list-style-type: disc; }
+.job-description ol { list-style-type: decimal; }
+.job-description li {
+  margin-bottom: 0.3rem;
+}
+.job-description strong,
+.job-description b {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+.job-description a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+.job-description blockquote {
+  border-left: 3px solid hsl(var(--border));
+  padding-left: 1rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0.875rem 0;
+}
+.job-description pre,
+.job-description code {
+  background: hsl(var(--muted));
+  border-radius: 0.25rem;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.8rem;
+}
+.job-description .dark & {
+  color: hsl(var(--foreground));
 }
