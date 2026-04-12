@@ -1,0 +1,68 @@
+name: Scraper Crons
+
+on:
+  schedule:
+    # Fast adapters (Greenhouse + Lever JSON APIs) — every 4 hours
+    - cron: "0 */4 * * *"
+    # Aggregator boards — daily at 3am UTC
+    - cron: "0 3 * * *"
+    # Sector boards — daily at 4am UTC
+    - cron: "0 4 * * *"
+    # Daily digest emails — daily at 7am UTC
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      group:
+        description: "Adapter group to run (fast, aggregators, sector, all, digests)"
+        required: true
+        default: "fast"
+
+env:
+  APP_URL: ${{ secrets.APP_URL }}
+  CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Determine adapter group
+        id: group
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "group=${{ github.event.inputs.group }}" >> "$GITHUB_OUTPUT"
+          else
+            CRON="${{ github.event.schedule }}"
+            case "$CRON" in
+              "0 */4 * * *") echo "group=fast" >> "$GITHUB_OUTPUT" ;;
+              "0 3 * * *")   echo "group=aggregators" >> "$GITHUB_OUTPUT" ;;
+              "0 4 * * *")   echo "group=sector" >> "$GITHUB_OUTPUT" ;;
+              "0 7 * * *")   echo "group=digests" >> "$GITHUB_OUTPUT" ;;
+              *)             echo "group=fast" >> "$GITHUB_OUTPUT" ;;
+            esac
+          fi
+
+      - name: Run ${{ steps.group.outputs.group }} adapters
+        run: |
+          GROUP="${{ steps.group.outputs.group }}"
+
+          if [ "$GROUP" = "digests" ]; then
+            ENDPOINT="${APP_URL}/api/cron/digests"
+          else
+            ENDPOINT="${APP_URL}/api/cron/scrape?adapter=${GROUP}"
+          fi
+
+          echo "→ Calling $ENDPOINT"
+
+          HTTP_CODE=$(curl -s -o response.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "$ENDPOINT")
+
+          cat response.json
+          echo ""
+          echo "→ HTTP $HTTP_CODE"
+
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "::error::Cron endpoint returned HTTP $HTTP_CODE"
+            exit 1
+          fi
