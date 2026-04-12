@@ -20,12 +20,23 @@ on:
 env:
   APP_URL: ${{ secrets.APP_URL }}
   CRON_SECRET: ${{ secrets.CRON_SECRET }}
+  JOB_INGESTION_API_KEY: ${{ secrets.JOB_INGESTION_API_KEY }}
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install scraper dependencies
+        working-directory: scrapers
+        run: npm ci
+
       - name: Determine adapter group
         id: group
         run: |
@@ -42,27 +53,62 @@ jobs:
             esac
           fi
 
-      - name: Run ${{ steps.group.outputs.group }} adapters
+      - name: Run digests
+        if: steps.group.outputs.group == 'digests'
         run: |
-          GROUP="${{ steps.group.outputs.group }}"
-
-          if [ "$GROUP" = "digests" ]; then
-            ENDPOINT="${APP_URL}/api/cron/digests"
-          else
-            ENDPOINT="${APP_URL}/api/cron/scrape?adapter=${GROUP}"
-          fi
-
-          echo "→ Calling $ENDPOINT"
-
           HTTP_CODE=$(curl -s -o response.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
-            "$ENDPOINT")
-
+            "${APP_URL}/api/cron/digests")
           cat response.json
-          echo ""
           echo "→ HTTP $HTTP_CODE"
+          [ "$HTTP_CODE" -lt 400 ]
 
-          if [ "$HTTP_CODE" -ge 400 ]; then
-            echo "::error::Cron endpoint returned HTTP $HTTP_CODE"
-            exit 1
+      - name: Run scrapers
+        if: steps.group.outputs.group != 'digests'
+        working-directory: scrapers
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          GROUP="${{ steps.group.outputs.group }}"
+          echo "→ Running adapter group: $GROUP"
+
+          if [ "$GROUP" = "fast" ] || [ "$GROUP" = "all" ]; then
+            echo "── Greenhouse ──"
+            npx tsx src/adapters/greenhouse.ts || true
+            echo "── Lever ──"
+            npx tsx src/adapters/lever.ts || true
           fi
+
+          if [ "$GROUP" = "aggregators" ] || [ "$GROUP" = "all" ]; then
+            echo "── Indeed ──"
+            npx tsx src/adapters/indeed.ts || true
+            echo "── Adzuna ──"
+            npx tsx src/adapters/adzuna.ts || true
+            echo "── Totaljobs ──"
+            npx tsx src/adapters/totaljobs.ts || true
+            echo "── CV-Library ──"
+            npx tsx src/adapters/cv-library.ts || true
+            echo "── Monster ──"
+            npx tsx src/adapters/monster.ts || true
+            echo "── Reed ──"
+            npx tsx src/adapters/reed.ts || true
+          fi
+
+          if [ "$GROUP" = "sector" ] || [ "$GROUP" = "all" ]; then
+            echo "── CWJobs ──"
+            npx tsx src/adapters/cwjobs.ts || true
+            echo "── Guardian ──"
+            npx tsx src/adapters/guardian.ts || true
+            echo "── NHS ──"
+            npx tsx src/adapters/nhs.ts || true
+            echo "── Council ──"
+            npx tsx src/adapters/council.ts || true
+            echo "── DWP ──"
+            npx tsx src/adapters/dwp.ts || true
+            echo "── jobs.ac.uk ──"
+            npx tsx src/adapters/jobs-ac-uk.ts || true
+            echo "── CharityJob ──"
+            npx tsx src/adapters/charityjob.ts || true
+          fi
+
+          echo "✅ Done"
