@@ -5,15 +5,47 @@ import { Badge } from "@/components/ui/badge"
 import { AvailabilityBadge } from "./availability-badge"
 import { QuickApplyButton } from "./quick-apply-button"
 import { formatDistanceToNow } from "date-fns"
-import type { Job, ApplicationStatus } from "@/lib/db/schema"
+import type {
+  ApplicationStatus,
+  Availability,
+  JobSourceType,
+  VisaSponsorshipStatus,
+  WorkMode,
+} from "@/lib/db/schema"
+import {
+  JOB_SOURCE_TYPE_LABELS,
+  VISA_SPONSORSHIP_LABELS,
+  WORK_MODE_LABELS,
+} from "@/lib/visa-platform/constants"
 
 interface JobCardProps {
-  job: Job & { applicantCount?: number; posterName?: string | null }
+  job: {
+    id: string
+    title: string
+    company: string
+    url: string
+    description: string | null
+    salaryRange: string | null
+    salaryMin: number | null
+    salaryMax: number | null
+    currency: string
+    location: string | null
+    tags: string[]
+    availability: Availability
+    createdAt: Date
+    sourceType: JobSourceType
+    visaSponsorshipStatus: VisaSponsorshipStatus
+    workMode: WorkMode
+    applicantCount?: number
+    posterName?: string | null
+    sourceName?: string | null
+  }
   userApplication?: { id: string; status: ApplicationStatus } | null
   isAuthenticated?: boolean
+  matchScore?: number | null
 }
 
-export function JobCard({ job, userApplication, isAuthenticated }: JobCardProps) {
+export function JobCard({ job, userApplication, isAuthenticated, matchScore }: JobCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
@@ -60,12 +92,36 @@ export function JobCard({ job, userApplication, isAuthenticated }: JobCardProps)
           </div>
         )}
 
+        <div className="mb-3 flex flex-wrap gap-1">
+          <Badge variant="outline" className="text-xs">
+            {VISA_SPONSORSHIP_LABELS[job.visaSponsorshipStatus]}
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            {WORK_MODE_LABELS[job.workMode]}
+          </Badge>
+          <Badge variant="outline" className="text-xs">
+            {JOB_SOURCE_TYPE_LABELS[job.sourceType]}
+          </Badge>
+          {typeof matchScore === "number" ? (
+            <Badge
+              variant={matchScore >= 75 ? "success" : matchScore >= 50 ? "warning" : "secondary"}
+              className="text-xs"
+            >
+              Match {matchScore}
+            </Badge>
+          ) : null}
+        </div>
+
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 text-xs text-muted-foreground min-w-0">
             {typeof job.applicantCount === "number" && job.applicantCount > 0 && (
               <span>{job.applicantCount} applied from group</span>
             )}
-            {job.posterName && <span className="truncate">by {job.posterName}</span>}
+            {job.sourceName ? (
+              <span className="truncate">source {job.sourceName}</span>
+            ) : job.posterName ? (
+              <span className="truncate">by {job.posterName}</span>
+            ) : null}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {isAuthenticated && (
