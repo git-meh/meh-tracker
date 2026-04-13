@@ -106,15 +106,15 @@ export function JobCard({ job, userApplication, isAuthenticated, matchScore }: J
           {typeof matchScore === "number" ? (
             <Badge
               variant={matchScore >= 75 ? "success" : matchScore >= 50 ? "warning" : "secondary"}
-              className="text-xs"
+              className="text-xs whitespace-nowrap shrink-0"
             >
               Match {matchScore}
             </Badge>
           ) : null}
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground min-w-0">
+        {(typeof job.applicantCount === "number" && job.applicantCount > 0) || job.sourceName || job.posterName ? (
+          <div className="flex items-center gap-3 text-xs text-muted-foreground min-w-0 mb-2">
             {typeof job.applicantCount === "number" && job.applicantCount > 0 && (
               <span>{job.applicantCount} applied from group</span>
             )}
@@ -124,24 +124,25 @@ export function JobCard({ job, userApplication, isAuthenticated, matchScore }: J
               <span className="truncate">by {job.posterName}</span>
             ) : null}
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {isAuthenticated && (
-              <QuickApplyButton
-                jobId={job.id}
-                existingApplicationId={userApplication?.id}
-                existingStatus={userApplication?.status}
-              />
-            )}
-            <Button variant="default" size="sm" className="gap-1.5 text-xs" asChild>
-              <a
-                href={job.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Open <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </Button>
-          </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {isAuthenticated && (
+            <QuickApplyButton
+              jobId={job.id}
+              existingApplicationId={userApplication?.id}
+              existingStatus={userApplication?.status}
+            />
+          )}
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs ml-auto" asChild>
+            <a
+              href={job.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </Button>
         </div>
       </CardContent>
     </Card>
