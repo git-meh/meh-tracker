@@ -39,7 +39,7 @@ export function Sidebar({ user }: SidebarProps) {
   const navItems = user ? authNavItems : publicNavItems
 
   return (
-    <aside className="flex h-full w-60 flex-col border-r bg-background">
+    <aside className="hidden md:flex h-full w-60 flex-col border-r bg-background">
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/jobs" className="flex items-center gap-2 font-bold text-lg">
           <span className="text-2xl">😑</span>
@@ -69,9 +69,9 @@ export function Sidebar({ user }: SidebarProps) {
         {user ? (
           <Link
             href="/jobs/new"
-            className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap"
           >
-            <PlusCircle className="h-4 w-4" />
+            <PlusCircle className="h-4 w-4 shrink-0" />
             Post a Job
           </Link>
         ) : (
