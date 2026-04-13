@@ -3,11 +3,11 @@ import { Geist, Geist_Mono, Cabin, Mukta, Fira_Code } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils";
 
-const firaCodeFiraCode = Fira_Code({subsets:['menu','cyrillic','cyrillic-ext','greek','greek-ext','latin','latin-ext','symbols2'],weight:['300','400','500','600','700'],variable:'--font-fira-code'});
+const firaCodeFiraCode = Fira_Code({subsets:['cyrillic','cyrillic-ext','greek','greek-ext','latin','latin-ext'],weight:['300','400','500','600','700'],variable:'--font-fira-code'});
 
-const muktaMukta = Mukta({subsets:['menu','devanagari','latin','latin-ext'],weight:['200','300','400','500','600','700','800'],variable:'--font-mukta'});
+const muktaMukta = Mukta({subsets:['devanagari','latin','latin-ext'],weight:['200','300','400','500','600','700','800'],variable:'--font-mukta'});
 
-const cabinCabin = Cabin({subsets:['menu','latin','latin-ext','vietnamese'],weight:['400','500','600','700'],variable:'--font-cabin'});
+const cabinCabin = Cabin({subsets:['latin','latin-ext','vietnamese'],weight:['400','500','600','700'],variable:'--font-cabin'});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
