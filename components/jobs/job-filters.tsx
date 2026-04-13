@@ -73,7 +73,7 @@ export function JobFilters({ categories }: Props) {
           ref={searchRef}
           defaultValue={q}
           placeholder="Search title, company, location, tags..."
-          className="min-w-[200px] flex-1"
+          className="min-w-50 flex-1"
           onChange={(e) => {
             if (debounceRef.current) clearTimeout(debounceRef.current)
             const val = e.target.value
@@ -84,7 +84,7 @@ export function JobFilters({ categories }: Props) {
         />
 
         <select
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[180px]"
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-45"
           value={category}
           onChange={(e) => {
             const cat = e.target.value
@@ -104,7 +104,7 @@ export function JobFilters({ categories }: Props) {
       {/* Row 2: Attribute filters */}
       <div className="flex flex-wrap gap-3">
         <select
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-10 flex-1 min-w-35 rounded-md border border-input bg-background px-3 text-sm"
           value={sponsorship}
           onChange={(e) => push({ sponsorship: e.target.value })}
         >
@@ -116,7 +116,7 @@ export function JobFilters({ categories }: Props) {
         </select>
 
         <select
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-10 flex-1 min-w-30 rounded-md border border-input bg-background px-3 text-sm"
           value={workMode}
           onChange={(e) => push({ workMode: e.target.value })}
         >
@@ -127,7 +127,7 @@ export function JobFilters({ categories }: Props) {
         </select>
 
         <select
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-10 flex-1 min-w-30 rounded-md border border-input bg-background px-3 text-sm"
           value={employmentType}
           onChange={(e) => push({ employmentType: e.target.value })}
         >
@@ -141,7 +141,7 @@ export function JobFilters({ categories }: Props) {
         </select>
 
         <select
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-10 flex-1 min-w-32 rounded-md border border-input bg-background px-3 text-sm"
           value={country}
           onChange={(e) => push({ country: e.target.value })}
         >
@@ -154,7 +154,7 @@ export function JobFilters({ categories }: Props) {
         </select>
 
         <select
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-10 flex-1 min-w-32 rounded-md border border-input bg-background px-3 text-sm"
           value={sourceType}
           onChange={(e) => push({ sourceType: e.target.value })}
         >
@@ -170,7 +170,7 @@ export function JobFilters({ categories }: Props) {
           type="number"
           defaultValue={minSalary}
           placeholder="Min salary"
-          className="w-36"
+          className="w-32 min-w-32"
           onChange={(e) => {
             if (debounceRef.current) clearTimeout(debounceRef.current)
             const val = e.target.value

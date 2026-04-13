@@ -87,7 +87,7 @@ export default async function DraftReviewPage({
   })
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <Button asChild variant="ghost" size="sm">
@@ -123,7 +123,7 @@ export default async function DraftReviewPage({
             ) : null}
             <Badge variant="secondary">Draft: {draft.status}</Badge>
             {match ? (
-              <Badge variant={match.score >= 75 ? "success" : match.score >= 50 ? "warning" : "secondary"}>
+              <Badge variant={match.score >= 75 ? "success" : match.score >= 50 ? "warning" : "secondary"} className="whitespace-nowrap shrink-0">
                 Match {match.score}
               </Badge>
             ) : null}

@@ -165,7 +165,7 @@ export default async function MatchesPage() {
                         {match.location ? ` · ${match.location}` : ""}
                       </p>
                     </div>
-                    <Badge variant={match.score >= 75 ? "success" : match.score >= 50 ? "warning" : "secondary"}>
+                    <Badge variant={match.score >= 75 ? "success" : match.score >= 50 ? "warning" : "secondary"} className="whitespace-nowrap shrink-0">
                       Match {match.score}
                     </Badge>
                   </div>

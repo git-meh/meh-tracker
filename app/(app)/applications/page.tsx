@@ -74,57 +74,90 @@ export default async function ApplicationsPage() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-lg border bg-background overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/50">
-              <tr>
-                <th className="px-4 py-3 text-left font-medium">Job</th>
-                <th className="px-4 py-3 text-left font-medium">Status</th>
-                <th className="px-4 py-3 text-left font-medium">Availability</th>
-                <th className="px-4 py-3 text-left font-medium">Updated</th>
-                <th className="px-4 py-3 text-left font-medium">Privacy</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {userApplications.map((app) => (
-                <tr key={app.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3">
-                    <div>
-                      <p className="font-medium">{app.jobTitle}</p>
-                      <p className="text-muted-foreground text-xs">{app.jobCompany}</p>
+        <>
+          {/* Mobile card list */}
+          <div className="sm:hidden space-y-3">
+            {userApplications.map((app) => (
+              <Link key={app.id} href={`/applications/${app.id}`}>
+                <div className="rounded-lg border bg-background p-4 hover:shadow-sm transition-shadow">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm truncate">{app.jobTitle}</p>
+                      <p className="text-xs text-muted-foreground">{app.jobCompany}</p>
                     </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={STATUS_COLORS[app.status] as "default" | "secondary" | "destructive" | "outline"}>
+                    <Badge variant={STATUS_COLORS[app.status] as "default" | "secondary" | "destructive" | "outline"} className="shrink-0">
                       {STATUS_LABELS[app.status]}
                     </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    {app.jobAvailability && (
-                      <AvailabilityBadge availability={app.jobAvailability} />
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {formatDistanceToNow(new Date(app.updatedAt), { addSuffix: true })}
-                  </td>
-                  <td className="px-4 py-3">
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {app.jobAvailability && <AvailabilityBadge availability={app.jobAvailability} />}
                     {app.isPrivate && (
                       <span className="flex items-center gap-1 text-muted-foreground text-xs">
                         <Lock className="h-3 w-3" /> Private
                       </span>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={`/applications/${app.id}`}>View →</Link>
-                    </Button>
-                  </td>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(app.updatedAt), { addSuffix: true })}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block rounded-lg border bg-background overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b bg-muted/50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium">Job</th>
+                  <th className="px-4 py-3 text-left font-medium">Status</th>
+                  <th className="px-4 py-3 text-left font-medium">Availability</th>
+                  <th className="px-4 py-3 text-left font-medium">Updated</th>
+                  <th className="px-4 py-3 text-left font-medium">Privacy</th>
+                  <th className="px-4 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y">
+                {userApplications.map((app) => (
+                  <tr key={app.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="font-medium">{app.jobTitle}</p>
+                        <p className="text-muted-foreground text-xs">{app.jobCompany}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={STATUS_COLORS[app.status] as "default" | "secondary" | "destructive" | "outline"}>
+                        {STATUS_LABELS[app.status]}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      {app.jobAvailability && (
+                        <AvailabilityBadge availability={app.jobAvailability} />
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {formatDistanceToNow(new Date(app.updatedAt), { addSuffix: true })}
+                    </td>
+                    <td className="px-4 py-3">
+                      {app.isPrivate && (
+                        <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                          <Lock className="h-3 w-3" /> Private
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/applications/${app.id}`}>View →</Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   )

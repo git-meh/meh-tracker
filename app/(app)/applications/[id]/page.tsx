@@ -117,12 +117,12 @@ export default async function ApplicationDetailPage({
         <DeleteApplicationButton applicationId={id} />
       </div>
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold">{app.jobTitle}</h1>
           <p className="text-muted-foreground">{app.jobCompany}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {app.jobAvailability && <AvailabilityBadge availability={app.jobAvailability} />}
           {app.jobUrl && (
             <a href={app.jobUrl} target="_blank" rel="noopener noreferrer">

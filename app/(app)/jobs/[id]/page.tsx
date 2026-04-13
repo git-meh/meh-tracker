@@ -160,7 +160,7 @@ export default async function JobDetailPage({
               <Badge variant="secondary">{job.sourceName}</Badge>
             ) : null}
             {userMatch ? (
-              <Badge variant={userMatch.score >= 75 ? "success" : userMatch.score >= 50 ? "warning" : "secondary"}>
+              <Badge variant={userMatch.score >= 75 ? "success" : userMatch.score >= 50 ? "warning" : "secondary"} className="whitespace-nowrap shrink-0">
                 Match {userMatch.score}
               </Badge>
             ) : null}
