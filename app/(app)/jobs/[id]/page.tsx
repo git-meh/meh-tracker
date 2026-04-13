@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import sanitizeHtml from "sanitize-html"
 import { db } from "@/lib/db"
 import { jobs, applications, profiles, jobMatches, applicationDrafts, jobSources } from "@/lib/db/schema"
 import { eq, sql, and } from "drizzle-orm"
@@ -170,9 +171,28 @@ export default async function JobDetailPage({
           {job.description && (
             <div>
               <h2 className="font-semibold mb-2">Description</h2>
-              <div className="whitespace-pre-wrap text-sm leading-6 text-foreground">
-                {job.description}
-              </div>
+              <div
+                className="job-description"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(job.description, {
+                    allowedTags: [
+                      "p", "br", "b", "i", "em", "strong",
+                      "ul", "ol", "li",
+                      "h1", "h2", "h3", "h4", "h5", "h6",
+                      "a", "blockquote", "pre", "code",
+                    ],
+                    allowedAttributes: {
+                      a: ["href", "target", "rel"],
+                    },
+                    transformTags: {
+                      a: sanitizeHtml.simpleTransform("a", {
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                      }),
+                    },
+                  }),
+                }}
+              />
             </div>
           )}
 
