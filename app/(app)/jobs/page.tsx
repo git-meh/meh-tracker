@@ -218,7 +218,7 @@ export default async function JobsPage({
 
       {pageJobs.length > 0 ? (
         <>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {pageJobs.map((job) => (
               <JobCard
                 key={job.id}

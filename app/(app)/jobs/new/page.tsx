@@ -107,7 +107,7 @@ export default function NewJobPage() {
 
             {showDetails && (
               <div className="space-y-4 pt-1">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="title">Job Title</Label>
                     <Input id="title" name="title" placeholder="Software Engineer" />
@@ -118,7 +118,7 @@ export default function NewJobPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
                     <Input id="location" name="location" placeholder="Remote / London" />
