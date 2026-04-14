@@ -12,9 +12,10 @@ import {
   resumes,
   resumeVersions,
 } from "@/lib/db/schema"
-import { buildApplicationAnswersContent, buildCoverLetterContent, buildTailoredResumeContent } from "@/lib/visa-platform/drafts"
-import { buildMatchResult } from "@/lib/visa-platform/matching"
+import { generateAllArtifacts } from "@/lib/visa-platform/drafts"
+import { buildAiMatchResult } from "@/lib/visa-platform/matching"
 import { createNotificationEvent } from "@/lib/visa-platform/notifications"
+import { logger } from "@/lib/logger"
 
 const createDraftSchema = z.object({
   jobId: z.string().uuid(),
@@ -46,24 +47,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 })
   }
 
+  // ── Load candidate profile ──────────────────────────────────────────────────
   const [profile] = await db
     .select()
     .from(candidateProfiles)
     .where(eq(candidateProfiles.userId, user.id))
     .limit(1)
 
+  logger.info("draft_generate_profile_loaded", {
+    userId: user.id,
+    jobId: job.id,
+    jobTitle: job.title,
+    company: job.company,
+    hasProfile: Boolean(profile),
+    skills: profile?.skills ?? [],
+    targetRoles: profile?.targetRoles ?? [],
+    targetCountries: profile?.targetCountries ?? [],
+    needsVisaSponsorship: profile?.needsVisaSponsorship ?? null,
+    prefersRemote: profile?.prefersRemote ?? null,
+    salaryFloor: profile?.salaryFloor ?? null,
+  })
+
+  if (!profile) {
+    logger.warn("draft_generate_no_profile", { userId: user.id, jobId: job.id })
+  }
+
+  // ── Load best resume + latest version ──────────────────────────────────────
   const userResumes = await db
     .select()
     .from(resumes)
     .where(eq(resumes.userId, user.id))
 
   const preferredResume =
-    userResumes.sort((left, right) => {
-      if (left.isDefault === right.isDefault) {
-        return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-      }
-
-      return left.isDefault ? -1 : 1
+    userResumes.sort((a, b) => {
+      if (a.isDefault === b.isDefault)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      return a.isDefault ? -1 : 1
     })[0] ?? null
 
   const [preferredResumeVersion] = preferredResume
@@ -75,14 +94,27 @@ export async function POST(request: Request) {
         .limit(1)
     : []
 
-  const computedMatch = buildMatchResult(profile ?? null, job)
+  const resumeText =
+    preferredResumeVersion?.normalizedText ??
+    preferredResumeVersion?.extractedText ??
+    null
+
+  logger.info("draft_generate_resume_loaded", {
+    userId: user.id,
+    resumeCount: userResumes.length,
+    hasDefaultResume: Boolean(preferredResume?.isDefault),
+    resumeFileName: preferredResume?.fileName ?? null,
+    hasExtractedText: Boolean(resumeText),
+    extractedTextChars: resumeText?.length ?? 0,
+  })
+
+  // ── AI match scoring ────────────────────────────────────────────────────────
+  const computedMatch = await buildAiMatchResult(profile ?? null, job, resumeText)
 
   const [existingMatch] = await db
     .select()
     .from(jobMatches)
-    .where(
-      and(eq(jobMatches.userId, user.id), eq(jobMatches.jobId, parsed.data.jobId))
-    )
+    .where(and(eq(jobMatches.userId, user.id), eq(jobMatches.jobId, parsed.data.jobId)))
     .limit(1)
 
   const match = existingMatch
@@ -113,6 +145,7 @@ export async function POST(request: Request) {
           .returning()
       )[0]
 
+  // ── Create / reset draft record ─────────────────────────────────────────────
   const now = new Date()
   const [existingDraft] = await db
     .select()
@@ -153,53 +186,45 @@ export async function POST(request: Request) {
           .returning()
       )[0]
 
-  const tailoredResume = buildTailoredResumeContent(
+  // ── Generate all 6 artifacts (AI primary, templates as fallback) ─────────────
+  const artifactOutputs = await generateAllArtifacts(
     job,
     profile ?? null,
     preferredResumeVersion ?? null,
     computedMatch
   )
-  const coverLetter = buildCoverLetterContent(job, profile ?? null, computedMatch)
-  const answers = buildApplicationAnswersContent(job, profile ?? null, computedMatch)
+
+  const aiGeneratedCount = artifactOutputs.filter((a) => a.aiGenerated).length
+
+  logger.info("draft_artifacts_generated", {
+    userId: user.id,
+    jobId: job.id,
+    totalArtifacts: artifactOutputs.length,
+    aiGenerated: aiGeneratedCount,
+    templateFallback: artifactOutputs.length - aiGeneratedCount,
+  })
 
   const artifacts = await db
     .insert(generatedArtifacts)
-    .values([
-      {
+    .values(
+      artifactOutputs.map(({ type, title, content, aiGenerated }) => ({
         userId: user.id,
         jobId: job.id,
         draftId: draft.id,
         sourceResumeVersionId: preferredResumeVersion?.id ?? null,
-        type: "tailored_resume",
-        title: `${job.title} tailored resume`,
-        content: tailoredResume,
-      },
-      {
-        userId: user.id,
-        jobId: job.id,
-        draftId: draft.id,
-        sourceResumeVersionId: preferredResumeVersion?.id ?? null,
-        type: "cover_letter",
-        title: `${job.title} cover letter`,
-        content: coverLetter,
-      },
-      {
-        userId: user.id,
-        jobId: job.id,
-        draftId: draft.id,
-        sourceResumeVersionId: preferredResumeVersion?.id ?? null,
-        type: "application_answers",
-        title: `${job.title} application answers`,
-        content: answers,
-      },
-    ])
+        type,
+        title,
+        content,
+        aiGenerated,
+      }))
+    )
     .returning()
 
   await createNotificationEvent({
     userId: user.id,
     type: "draft_ready",
-    subject: `Draft ready for ${job.title} at ${job.company}`,
-    body: `A new tailored application package is ready for review with a match score of ${computedMatch.score}.`,
+    subject: `Draft ready: ${job.title} at ${job.company}`,
+    body: `${aiGeneratedCount === artifactOutputs.length ? "AI-generated" : "Tailored"} application package ready — match score ${computedMatch.score}/100.`,
     jobId: job.id,
     draftId: draft.id,
   })
@@ -210,6 +235,7 @@ export async function POST(request: Request) {
       match,
       artifacts,
       resumeVersion: preferredResumeVersion ?? null,
+      aiGeneratedCount,
       reviewUrl: `/matches/${draft.id}`,
     },
     { status: 201 }
