@@ -89,6 +89,9 @@ export const artifactTypeEnum = pgEnum("artifact_type", [
   "tailored_resume",
   "cover_letter",
   "application_answers",
+  "personal_statement",
+  "why_company",
+  "interview_qa",
   "email_digest",
 ])
 
@@ -490,6 +493,7 @@ export const generatedArtifacts = pgTable("generated_artifacts", {
   status: artifactStatusEnum("status").notNull().default("ready"),
   title: text("title").notNull(),
   content: text("content"),
+  aiGenerated: boolean("ai_generated").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
