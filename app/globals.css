@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 @plugin "@tailwindcss/typography";
@@ -25,12 +25,17 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --radius: 0.5rem;
-  --font-heading: var(--font-cabin);
+  /* --font-heading: var(--font-cabin);
   --font-body: var(--font-mukta);
-  --font-mono: var(--font-fira-code);
+  
   --font-cabin: var(--font-cabin);
   --font-mukta: var(--font-mukta);
-  --font-fira-code: var(--font-fira-code);
+  --font-fira-code: var(--font-fira-code); */
+
+  --font-sans: var(--font-cal-sans-ui), ui-sans-serif, sans-serif;
+  --font-heading: var(--font-cal-sans-text), ui-sans-serif, sans-serif;
+  --font-display: var(--font-cal-sans-geo), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-fira-code);
 }
 
 @layer base {
@@ -189,3 +194,13 @@
     font-size: 0.8rem;
   }
 }
+/* 
+h1 {
+  font-family: var(--font-cal-sans-text), sans-serif;
+  font-variation-settings: "GEOM" 50;
+}
+
+p {
+  font-family: var(--font-cal-sans-ui), sans-serif;
+  font-variation-settings: "GEOM" 0;
+} */
