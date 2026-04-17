@@ -26,6 +26,7 @@ export type FetchOptions = {
   retries?: number
   minDelayMs?: number
   maxDelayMs?: number
+  timeoutMs?: number
 }
 
 export async function fetchPage(url: string, opts: FetchOptions = {}): Promise<string> {
@@ -36,9 +37,8 @@ export async function fetchPage(url: string, opts: FetchOptions = {}): Promise<s
     retries = 3,
     minDelayMs = 1000,
     maxDelayMs = 3000,
+    timeoutMs = 15_000,
   } = opts
-
-  await jitter(minDelayMs, maxDelayMs)
 
   const defaultHeaders: Record<string, string> = {
     "User-Agent": randomUA(),
@@ -50,11 +50,15 @@ export async function fetchPage(url: string, opts: FetchOptions = {}): Promise<s
   }
 
   for (let attempt = 0; attempt <= retries; attempt++) {
+    if (attempt > 0) {
+      await jitter(minDelayMs, maxDelayMs)
+    }
     try {
       const res = await fetch(url, {
         method,
         headers: { ...defaultHeaders, ...headers },
         body,
+        signal: AbortSignal.timeout(timeoutMs),
       })
 
       if (res.status === 404) {
