@@ -1,14 +1,15 @@
-import { createClient } from "@/lib/supabase/server"
-import { db } from "@/lib/db"
-import { applications, jobs } from "@/lib/db/schema"
-import { eq, desc } from "drizzle-orm"
-import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { AvailabilityBadge } from "@/components/jobs/availability-badge"
-import { formatDistanceToNow } from "date-fns"
-import { Lock } from "lucide-react"
-import type { ApplicationStatus } from "@/lib/db/schema"
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { applications, jobs } from "@/lib/db/schema";
+import { eq, desc, and, or, ilike, count } from "drizzle-orm";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { AvailabilityBadge } from "@/components/jobs/availability-badge";
+import { formatDistanceToNow } from "date-fns";
+import { Lock } from "lucide-react";
+import type { ApplicationStatus } from "@/lib/db/schema";
+import { SearchInput } from "@/components/applications/search-input";
 
 const STATUS_COLORS: Record<ApplicationStatus, string> = {
   saved: "secondary",
@@ -19,7 +20,7 @@ const STATUS_COLORS: Record<ApplicationStatus, string> = {
   offer: "success",
   rejected: "destructive",
   withdrawn: "secondary",
-} as const
+} as const;
 
 const STATUS_LABELS: Record<ApplicationStatus, string> = {
   saved: "Saved",
@@ -30,12 +31,19 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   offer: "Offer",
   rejected: "Rejected",
   withdrawn: "Withdrawn",
-}
+};
 
-export default async function ApplicationsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+export default async function ApplicationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
   const userApplications = await db
     .select({
@@ -52,23 +60,44 @@ export default async function ApplicationsPage() {
     })
     .from(applications)
     .leftJoin(jobs, eq(applications.jobId, jobs.id))
+    .where(
+      and(
+        eq(applications.userId, user.id),
+        q
+          ? or(ilike(jobs.title, `%${q}%`), ilike(jobs.company, `%${q}%`))
+          : undefined,
+      ),
+    )
+    .orderBy(desc(applications.updatedAt));
+
+  const totalApplications = await db
+    .select({ count: count() })
+    .from(applications)
     .where(eq(applications.userId, user.id))
-    .orderBy(desc(applications.updatedAt))
+    .then((res) => res[0].count);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">My Applications</h1>
-        <p className="text-sm text-muted-foreground">
-          {userApplications.length} application{userApplications.length !== 1 ? "s" : ""}
-        </p>
+      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+        <div className="">
+          <h1 className="text-2xl font-bold">My Applications</h1>
+          <p className="text-sm text-muted-foreground">
+            {q
+              ? `${userApplications.length} of ${totalApplications} application${totalApplications !== 1 ? "s" : ""}`
+              : `${userApplications.length} application${userApplications.length !== 1 ? "s" : ""}`}
+          </p>
+        </div>
+
+        <SearchInput totalResults={userApplications.length} />
       </div>
 
       {userApplications.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <span className="text-5xl">😑</span>
           <h2 className="mt-4 text-lg font-semibold">No applications yet</h2>
-          <p className="text-muted-foreground">Start tracking by visiting a job listing.</p>
+          <p className="text-muted-foreground">
+            Start tracking by visiting a job listing.
+          </p>
           <Button asChild className="mt-4">
             <Link href="/jobs">Browse Jobs</Link>
           </Button>
@@ -82,22 +111,39 @@ export default async function ApplicationsPage() {
                 <div className="rounded-lg border bg-background p-4 hover:shadow-sm transition-shadow">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{app.jobTitle}</p>
-                      <p className="text-xs text-muted-foreground">{app.jobCompany}</p>
+                      <p className="font-medium text-sm truncate">
+                        {app.jobTitle}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {app.jobCompany}
+                      </p>
                     </div>
-                    <Badge variant={STATUS_COLORS[app.status] as "default" | "secondary" | "destructive" | "outline"} className="shrink-0">
+                    <Badge
+                      variant={
+                        STATUS_COLORS[app.status] as
+                          | "default"
+                          | "secondary"
+                          | "destructive"
+                          | "outline"
+                      }
+                      className="shrink-0"
+                    >
                       {STATUS_LABELS[app.status]}
                     </Badge>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    {app.jobAvailability && <AvailabilityBadge availability={app.jobAvailability} />}
+                    {app.jobAvailability && (
+                      <AvailabilityBadge availability={app.jobAvailability} />
+                    )}
                     {app.isPrivate && (
                       <span className="flex items-center gap-1 text-muted-foreground text-xs">
                         <Lock className="h-3 w-3" /> Private
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(app.updatedAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(app.updatedAt), {
+                        addSuffix: true,
+                      })}
                     </span>
                   </div>
                 </div>
@@ -112,7 +158,9 @@ export default async function ApplicationsPage() {
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">Job</th>
                   <th className="px-4 py-3 text-left font-medium">Status</th>
-                  <th className="px-4 py-3 text-left font-medium">Availability</th>
+                  <th className="px-4 py-3 text-left font-medium">
+                    Availability
+                  </th>
                   <th className="px-4 py-3 text-left font-medium">Updated</th>
                   <th className="px-4 py-3 text-left font-medium">Privacy</th>
                   <th className="px-4 py-3" />
@@ -120,15 +168,28 @@ export default async function ApplicationsPage() {
               </thead>
               <tbody className="divide-y">
                 {userApplications.map((app) => (
-                  <tr key={app.id} className="hover:bg-muted/30 transition-colors">
+                  <tr
+                    key={app.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-medium">{app.jobTitle}</p>
-                        <p className="text-muted-foreground text-xs">{app.jobCompany}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {app.jobCompany}
+                        </p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={STATUS_COLORS[app.status] as "default" | "secondary" | "destructive" | "outline"}>
+                      <Badge
+                        variant={
+                          STATUS_COLORS[app.status] as
+                            | "default"
+                            | "secondary"
+                            | "destructive"
+                            | "outline"
+                        }
+                      >
                         {STATUS_LABELS[app.status]}
                       </Badge>
                     </td>
@@ -138,7 +199,9 @@ export default async function ApplicationsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {formatDistanceToNow(new Date(app.updatedAt), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(app.updatedAt), {
+                        addSuffix: true,
+                      })}
                     </td>
                     <td className="px-4 py-3">
                       {app.isPrivate && (
@@ -160,5 +223,5 @@ export default async function ApplicationsPage() {
         </>
       )}
     </div>
-  )
+  );
 }
