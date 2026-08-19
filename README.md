@@ -15,7 +15,7 @@ A UK-first visa job search and application platform. Browse jobs, ingest opportu
 ## Stack
 
 | Layer | Tech |
-|---|---|
+| --- | --- |
 | Framework | Next.js 16 (App Router) |
 | Styling | Tailwind CSS |
 | Database | Supabase (PostgreSQL) |
@@ -33,11 +33,11 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for full setup instructions.
 ```bash
 git clone https://github.com/your-org/meh-tracker.git
 cd meh-tracker
-npm install
+bun install
 cp .env.example .env.local
 # fill in your Supabase credentials
-npm run db:migrate
-npm run dev
+bun run db:migrate
+bun run dev
 ```
 
 ## Guides

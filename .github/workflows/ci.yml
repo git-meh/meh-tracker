@@ -17,13 +17,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
+          cache: bun
 
       - name: Install dependencies
-        run: npm ci
+        run: bun ci
 
       - name: Type check
-        run: npx tsc --noEmit
+        run: bun run tsc --noEmit
 
-      # - name: Lint
-      #   run: npm run lint
+      - name: Lint
+        run: bun run lint

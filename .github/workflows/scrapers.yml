@@ -35,9 +35,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          bun ci
           cd scrapers
-          npm ci
+          bun ci
 
       - name: Determine adapter group
         id: group
