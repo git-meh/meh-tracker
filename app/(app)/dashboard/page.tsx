@@ -1,28 +1,39 @@
-import { createClient } from "@/lib/supabase/server"
-import { db } from "@/lib/db"
-import { applicationDrafts, applications, jobMatches, jobs } from "@/lib/db/schema"
-import { desc, eq } from "drizzle-orm"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
-import type { ApplicationStatus } from "@/lib/db/schema"
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import {
+  applicationDrafts,
+  applications,
+  jobMatches,
+  jobs,
+} from "@/lib/db/schema";
+import { desc, eq } from "drizzle-orm";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
+import type { ApplicationStatus } from "@/lib/db/schema";
 
-const STATUS_COLUMNS: { status: ApplicationStatus; label: string; color: string }[] = [
+const STATUS_COLUMNS: {
+  status: ApplicationStatus;
+  label: string;
+  color: string;
+}[] = [
   { status: "saved", label: "Saved", color: "bg-slate-100" },
   { status: "applied", label: "Applied", color: "bg-blue-50" },
   { status: "oa", label: "OA / Assessment", color: "bg-purple-50" },
   { status: "phone_screen", label: "Phone Screen", color: "bg-yellow-50" },
   { status: "interview", label: "Interview", color: "bg-orange-50" },
   { status: "offer", label: "Offer", color: "bg-green-50" },
-]
+];
 
-const FINAL_STATUSES: ApplicationStatus[] = ["rejected", "withdrawn"]
+const FINAL_STATUSES: ApplicationStatus[] = ["rejected", "withdrawn"];
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
   const userApplications = await db
     .select({
@@ -36,19 +47,19 @@ export default async function DashboardPage() {
     })
     .from(applications)
     .leftJoin(jobs, eq(applications.jobId, jobs.id))
-    .where(eq(applications.userId, user.id))
+    .where(eq(applications.userId, user.id));
 
   const grouped = STATUS_COLUMNS.reduce(
     (acc, col) => {
-      acc[col.status] = userApplications.filter((a) => a.status === col.status)
-      return acc
+      acc[col.status] = userApplications.filter((a) => a.status === col.status);
+      return acc;
     },
-    {} as Record<ApplicationStatus, typeof userApplications>
-  )
+    {} as Record<ApplicationStatus, typeof userApplications>,
+  );
 
   const finalApps = userApplications.filter((a) =>
-    FINAL_STATUSES.includes(a.status)
-  )
+    FINAL_STATUSES.includes(a.status),
+  );
 
   const topMatches = await db
     .select({
@@ -62,12 +73,12 @@ export default async function DashboardPage() {
     .innerJoin(jobs, eq(jobMatches.jobId, jobs.id))
     .where(eq(jobMatches.userId, user.id))
     .orderBy(desc(jobMatches.score), desc(jobMatches.refreshedAt))
-    .limit(3)
+    .limit(3);
 
   const drafts = await db
     .select({ id: applicationDrafts.id })
     .from(applicationDrafts)
-    .where(eq(applicationDrafts.userId, user.id))
+    .where(eq(applicationDrafts.userId, user.id));
 
   return (
     <div className="space-y-6">
@@ -75,7 +86,8 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold">My Pipeline</h1>
           <p className="text-sm text-muted-foreground">
-            {userApplications.length} application{userApplications.length !== 1 ? "s" : ""} total
+            {userApplications.length} application
+            {userApplications.length !== 1 ? "s" : ""} total
           </p>
         </div>
         <Button asChild>
@@ -111,12 +123,14 @@ export default async function DashboardPage() {
               <Link
                 key={match.id}
                 href={`/jobs/${match.jobId}`}
-                className="rounded-lg border bg-background p-4 hover:shadow-sm transition-shadow"
+                className="rounded-lg border bg-background p-4 transition-shadow hover:shadow-sm"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-medium">{match.title}</p>
-                    <p className="text-sm text-muted-foreground">{match.company}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {match.company}
+                    </p>
                   </div>
                   <Badge variant={match.score >= 75 ? "success" : "warning"}>
                     {match.score}
@@ -142,20 +156,30 @@ export default async function DashboardPage() {
               <div className="space-y-2">
                 {(grouped[status] ?? []).map((app) => (
                   <Link key={app.id} href={`/applications/${app.id}`}>
-                    <div className="rounded-md border bg-background p-3 hover:shadow-sm transition-shadow cursor-pointer">
-                      <p className="text-sm font-medium line-clamp-1">{app.jobTitle}</p>
-                      <p className="text-xs text-muted-foreground">{app.jobCompany}</p>
+                    <div className="cursor-pointer rounded-md border bg-background p-3 transition-shadow hover:shadow-sm">
+                      <p className="line-clamp-1 text-sm font-medium">
+                        {app.jobTitle}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {app.jobCompany}
+                      </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(app.createdAt), {
+                          addSuffix: true,
+                        })}
                       </p>
                       {app.isPrivate && (
-                        <span className="mt-1 inline-block text-xs text-muted-foreground">🔒 Private</span>
+                        <span className="mt-1 inline-block text-xs text-muted-foreground">
+                          🔒 Private
+                        </span>
                       )}
                     </div>
                   </Link>
                 ))}
                 {(grouped[status] ?? []).length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-4">Empty</p>
+                  <p className="py-4 text-center text-xs text-muted-foreground">
+                    Empty
+                  </p>
                 )}
               </div>
             </div>
@@ -170,9 +194,11 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
             {finalApps.map((app) => (
               <Link key={app.id} href={`/applications/${app.id}`}>
-                <div className="rounded-md border bg-background p-3 hover:shadow-sm transition-shadow">
+                <div className="rounded-md border bg-background p-3 transition-shadow hover:shadow-sm">
                   <p className="text-sm font-medium">{app.jobTitle}</p>
-                  <p className="text-xs text-muted-foreground">{app.jobCompany}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {app.jobCompany}
+                  </p>
                   <Badge
                     variant={app.status === "offer" ? "success" : "destructive"}
                     className="mt-1 text-xs capitalize"
@@ -190,12 +216,14 @@ export default async function DashboardPage() {
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <span className="text-6xl">😑</span>
           <h2 className="mt-4 text-xl font-semibold">Nothing tracked yet</h2>
-          <p className="mt-2 text-muted-foreground">Browse the job board and start applying.</p>
+          <p className="mt-2 text-muted-foreground">
+            Browse the job board and start applying.
+          </p>
           <Button asChild className="mt-4">
             <Link href="/jobs">Browse Jobs</Link>
           </Button>
         </div>
       )}
     </div>
-  )
+  );
 }

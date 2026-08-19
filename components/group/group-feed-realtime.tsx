@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 interface GroupFeedRealtimeProps {
-  userId: string
+  userId: string;
 }
 
 /**
@@ -13,8 +13,8 @@ interface GroupFeedRealtimeProps {
  * triggers a router refresh when group members update their applications.
  */
 export function GroupFeedRealtime({ userId }: GroupFeedRealtimeProps) {
-  const router = useRouter()
-  const supabase = createClient()
+  const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
     const channel = supabase
@@ -29,16 +29,16 @@ export function GroupFeedRealtime({ userId }: GroupFeedRealtimeProps) {
         (payload) => {
           // Only refresh if someone else changed their status
           if (payload.new?.changed_by !== userId) {
-            router.refresh()
+            router.refresh();
           }
-        }
+        },
       )
-      .subscribe()
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [userId, router, supabase])
+      supabase.removeChannel(channel);
+    };
+  }, [userId, router, supabase]);
 
-  return null
+  return null;
 }

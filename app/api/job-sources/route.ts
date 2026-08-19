@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server"
-import { z } from "zod"
-import { desc, eq } from "drizzle-orm"
-import { createClient } from "@/lib/supabase/server"
-import { db } from "@/lib/db"
-import { jobSources } from "@/lib/db/schema"
-import { normalizeCountryCodes } from "@/lib/visa-platform/countries"
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { desc, eq } from "drizzle-orm";
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { jobSources } from "@/lib/db/schema";
+import { normalizeCountryCodes } from "@/lib/visa-platform/countries";
 
 const sourceSchema = z.object({
   name: z.string().min(1).max(120),
@@ -23,50 +23,53 @@ const sourceSchema = z.object({
     "manual_external",
   ]),
   isActive: z.boolean().default(true),
-})
+});
 
 async function getUser() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
-  return user
+  return user;
 }
 
 export async function GET() {
   const sources = await db
     .select()
     .from(jobSources)
-    .orderBy(desc(jobSources.createdAt))
+    .orderBy(desc(jobSources.createdAt));
 
-  return NextResponse.json(sources)
+  return NextResponse.json(sources);
 }
 
 export async function POST(request: Request) {
-  const user = await getUser()
+  const user = await getUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json()
-  const parsed = sourceSchema.safeParse(body)
+  const body = await request.json();
+  const parsed = sourceSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
-  const slug = parsed.data.slug.trim().toLowerCase()
+  const slug = parsed.data.slug.trim().toLowerCase();
 
   const [existing] = await db
     .select()
     .from(jobSources)
     .where(eq(jobSources.slug, slug))
-    .limit(1)
+    .limit(1);
 
   if (existing) {
     return NextResponse.json(
       { error: "A source with this slug already exists." },
-      { status: 409 }
-    )
+      { status: 409 },
+    );
   }
 
   const [source] = await db
@@ -78,7 +81,7 @@ export async function POST(request: Request) {
       baseUrl: parsed.data.baseUrl ?? null,
       createdBy: user.id,
     })
-    .returning()
+    .returning();
 
-  return NextResponse.json(source, { status: 201 })
+  return NextResponse.json(source, { status: 201 });
 }

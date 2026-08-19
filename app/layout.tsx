@@ -6,7 +6,18 @@ import { CalSansUI } from "@calcom/cal-sans-ui/ui";
 import { CalSansText } from "@calcom/cal-sans-ui/text";
 import { CalSansGeo } from "@calcom/cal-sans-ui/geo";
 
-const FiraCode = Fira_Code({subsets:['cyrillic','cyrillic-ext','greek','greek-ext','latin','latin-ext'],weight:['300','400','500','600','700'],variable:'--font-fira-code'});
+const FiraCode = Fira_Code({
+  subsets: [
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "latin",
+    "latin-ext",
+  ],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-fira-code",
+});
 
 // const muktaMukta = Mukta({subsets:['devanagari','latin','latin-ext'],weight:['200','300','400','500','600','700','800'],variable:'--font-mukta'});
 

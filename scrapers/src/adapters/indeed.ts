@@ -5,10 +5,10 @@
  * DuckDuckGo discovers these via `site:indeed.co.uk {keyword}`.
  */
 
-import { fileURLToPath } from "url"
-import { scrapeBoard, type BoardConfig } from "../lib/generic-board.js"
-import { pushJobs } from "../lib/pusher.js"
-import { log } from "../lib/log.js"
+import { fileURLToPath } from "url";
+import { scrapeBoard, type BoardConfig } from "../lib/generic-board.js";
+import { pushJobs } from "../lib/pusher.js";
+import { log } from "../lib/log.js";
 
 const config: BoardConfig = {
   key: "indeed",
@@ -25,23 +25,23 @@ const config: BoardConfig = {
     const matches = [
       ...html.matchAll(/href="(\/viewjob\?[^"]+)"/gi),
       ...html.matchAll(/href="(\/rc\/clk\?[^"]+)"/gi),
-    ]
-    return [...new Set(matches.map((m) => "https://uk.indeed.com" + m[1]))]
+    ];
+    return [...new Set(matches.map((m) => "https://uk.indeed.com" + m[1]))];
   },
   defaultTags: ["Indeed"],
   sourceType: "approved_feed",
-}
+};
 
-export async function scrapeIndeed(
-  keywords?: string[],
-  maxJobs = 30
-) {
-  log.info("indeed_start", { keywords: keywords?.length ?? 0, mode: keywords ? "keyword" : "location" })
-  return scrapeBoard(config, keywords, maxJobs)
+export async function scrapeIndeed(keywords?: string[], maxJobs = 30) {
+  log.info("indeed_start", {
+    keywords: keywords?.length ?? 0,
+    mode: keywords ? "keyword" : "location",
+  });
+  return scrapeBoard(config, keywords, maxJobs);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   scrapeIndeed()
     .then((jobs) => pushJobs(jobs, { label: "indeed" }))
-    .catch(console.error)
+    .catch(console.error);
 }

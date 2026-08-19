@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { CheckCircle2, Bookmark, Loader2, X } from "lucide-react"
-import type { ApplicationStatus } from "@/lib/db/schema"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, Bookmark, Loader2, X } from "lucide-react";
+import type { ApplicationStatus } from "@/lib/db/schema";
 
 interface QuickApplyButtonProps {
-  jobId: string
-  existingApplicationId?: string
-  existingStatus?: ApplicationStatus
+  jobId: string;
+  existingApplicationId?: string;
+  existingStatus?: ApplicationStatus;
 }
 
 export function QuickApplyButton({
@@ -17,28 +17,28 @@ export function QuickApplyButton({
   existingApplicationId,
   existingStatus,
 }: QuickApplyButtonProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   async function track(status: ApplicationStatus) {
-    setLoading(true)
+    setLoading(true);
     const res = await fetch("/api/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ jobId, status }),
-    })
-    if (res.ok) router.refresh()
-    setLoading(false)
+    });
+    if (res.ok) router.refresh();
+    setLoading(false);
   }
 
   async function remove() {
-    if (!existingApplicationId) return
-    setLoading(true)
+    if (!existingApplicationId) return;
+    setLoading(true);
     const res = await fetch(`/api/applications/${existingApplicationId}`, {
       method: "DELETE",
-    })
-    if (res.ok) router.refresh()
-    setLoading(false)
+    });
+    if (res.ok) router.refresh();
+    setLoading(false);
   }
 
   if (existingApplicationId) {
@@ -68,7 +68,7 @@ export function QuickApplyButton({
           )}
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -98,5 +98,5 @@ export function QuickApplyButton({
         Save
       </Button>
     </div>
-  )
+  );
 }

@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 type DraftArtifactState = {
-  tailored_resume: string
-  cover_letter: string
-  application_answers: string
-}
+  tailored_resume: string;
+  cover_letter: string;
+  application_answers: string;
+};
 
 interface DraftReviewFormProps {
-  draftId: string
-  initialReviewNotes: string | null
-  initialArtifacts: DraftArtifactState
+  draftId: string;
+  initialReviewNotes: string | null;
+  initialArtifacts: DraftArtifactState;
 }
 
 export function DraftReviewForm({
@@ -22,11 +22,12 @@ export function DraftReviewForm({
   initialReviewNotes,
   initialArtifacts,
 }: DraftReviewFormProps) {
-  const router = useRouter()
-  const [reviewNotes, setReviewNotes] = useState(initialReviewNotes ?? "")
-  const [artifacts, setArtifacts] = useState<DraftArtifactState>(initialArtifacts)
-  const [message, setMessage] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const router = useRouter();
+  const [reviewNotes, setReviewNotes] = useState(initialReviewNotes ?? "");
+  const [artifacts, setArtifacts] =
+    useState<DraftArtifactState>(initialArtifacts);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   async function saveEdits() {
     const response = await fetch(`/api/application-drafts/${draftId}`, {
@@ -52,20 +53,22 @@ export function DraftReviewForm({
           },
         ],
       }),
-    })
+    });
 
     if (!response.ok) {
-      const data = await response.json().catch(() => ({ error: "Draft save failed" }))
-      throw new Error(data.error ?? "Draft save failed")
+      const data = await response
+        .json()
+        .catch(() => ({ error: "Draft save failed" }));
+      throw new Error(data.error ?? "Draft save failed");
     }
   }
 
   function updateDraft(status: "approved" | "rejected") {
     startTransition(async () => {
-      setMessage(null)
+      setMessage(null);
 
       try {
-        await saveEdits()
+        await saveEdits();
         const response = await fetch(`/api/application-drafts/${draftId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -73,37 +76,45 @@ export function DraftReviewForm({
             status,
             reviewNotes: reviewNotes || null,
           }),
-        })
+        });
 
-        const data = await response.json().catch(() => ({ error: "Draft update failed" }))
+        const data = await response
+          .json()
+          .catch(() => ({ error: "Draft update failed" }));
         if (!response.ok) {
-          throw new Error(data.error ?? "Draft update failed")
+          throw new Error(data.error ?? "Draft update failed");
         }
 
         if (status === "approved" && data.applicationId) {
-          router.push(`/applications/${data.applicationId}`)
-          return
+          router.push(`/applications/${data.applicationId}`);
+          return;
         }
 
-        setMessage(status === "approved" ? "Draft approved." : "Draft rejected.")
-        router.refresh()
+        setMessage(
+          status === "approved" ? "Draft approved." : "Draft rejected.",
+        );
+        router.refresh();
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Draft update failed")
+        setMessage(
+          error instanceof Error ? error.message : "Draft update failed",
+        );
       }
-    })
+    });
   }
 
   function saveOnly() {
     startTransition(async () => {
-      setMessage(null)
+      setMessage(null);
       try {
-        await saveEdits()
-        setMessage("Draft changes saved.")
-        router.refresh()
+        await saveEdits();
+        setMessage("Draft changes saved.");
+        router.refresh();
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Draft save failed")
+        setMessage(
+          error instanceof Error ? error.message : "Draft save failed",
+        );
       }
-    })
+    });
   }
 
   return (
@@ -173,10 +184,19 @@ export function DraftReviewForm({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="button" variant="outline" disabled={isPending} onClick={saveOnly}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isPending}
+          onClick={saveOnly}
+        >
           {isPending ? "Working..." : "Save Changes"}
         </Button>
-        <Button type="button" disabled={isPending} onClick={() => updateDraft("approved")}>
+        <Button
+          type="button"
+          disabled={isPending}
+          onClick={() => updateDraft("approved")}
+        >
           {isPending ? "Working..." : "Approve & Continue"}
         </Button>
         <Button
@@ -187,8 +207,10 @@ export function DraftReviewForm({
         >
           Reject Draft
         </Button>
-        {message ? <span className="text-sm text-muted-foreground">{message}</span> : null}
+        {message ? (
+          <span className="text-sm text-muted-foreground">{message}</span>
+        ) : null}
       </div>
     </div>
-  )
+  );
 }

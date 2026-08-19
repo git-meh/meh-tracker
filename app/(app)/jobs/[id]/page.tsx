@@ -1,30 +1,43 @@
-import { notFound } from "next/navigation"
-import Link from "next/link"
-import sanitizeHtml from "sanitize-html"
-import { db } from "@/lib/db"
-import { jobs, applications, profiles, jobMatches, applicationDrafts, jobSources } from "@/lib/db/schema"
-import { eq, sql, and } from "drizzle-orm"
-import { createClient } from "@/lib/supabase/server"
-import { AvailabilityBadge } from "@/components/jobs/availability-badge"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { MapPin, DollarSign, ExternalLink, Calendar, Users } from "lucide-react"
-import { formatDistanceToNow, format } from "date-fns"
-import { ApplyButton } from "@/components/applications/apply-button"
-import { GenerateDraftButton } from "@/components/matches/generate-draft-button"
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import sanitizeHtml from "sanitize-html";
+import { db } from "@/lib/db";
+import {
+  jobs,
+  applications,
+  profiles,
+  jobMatches,
+  applicationDrafts,
+  jobSources,
+} from "@/lib/db/schema";
+import { eq, sql, and } from "drizzle-orm";
+import { createClient } from "@/lib/supabase/server";
+import { AvailabilityBadge } from "@/components/jobs/availability-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  MapPin,
+  DollarSign,
+  ExternalLink,
+  Calendar,
+  Users,
+} from "lucide-react";
+import { formatDistanceToNow, format } from "date-fns";
+import { ApplyButton } from "@/components/applications/apply-button";
+import { GenerateDraftButton } from "@/components/matches/generate-draft-button";
 import {
   JOB_SOURCE_TYPE_LABELS,
   VISA_SPONSORSHIP_LABELS,
   WORK_MODE_LABELS,
-} from "@/lib/visa-platform/constants"
+} from "@/lib/visa-platform/constants";
 
 export default async function JobDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = await params
+  const { id } = await params;
 
   const [job] = await db
     .select({
@@ -55,48 +68,55 @@ export default async function JobDetailPage({
     .leftJoin(profiles, eq(profiles.id, jobs.postedBy))
     .leftJoin(jobSources, eq(jobSources.id, jobs.sourceId))
     .where(eq(jobs.id, id))
-    .limit(1)
+    .limit(1);
 
-  if (!job) notFound()
+  if (!job) notFound();
 
   // Public applicant count (non-private applications)
   const [{ count }] = await db
     .select({ count: sql<number>`cast(count(*) as int)` })
     .from(applications)
-    .where(and(eq(applications.jobId, id), eq(applications.isPrivate, false)))
+    .where(and(eq(applications.jobId, id), eq(applications.isPrivate, false)));
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Check if user already applied
-  let userApplication = null
-  let userMatch = null
-  let userDraft = null
+  let userApplication = null;
+  let userMatch = null;
+  let userDraft = null;
   if (user) {
     const [existing] = await db
       .select()
       .from(applications)
       .where(and(eq(applications.jobId, id), eq(applications.userId, user.id)))
-      .limit(1)
-    userApplication = existing ?? null
+      .limit(1);
+    userApplication = existing ?? null;
 
     const [match] = await db
       .select()
       .from(jobMatches)
       .where(and(eq(jobMatches.jobId, id), eq(jobMatches.userId, user.id)))
-      .limit(1)
-    userMatch = match ?? null
+      .limit(1);
+    userMatch = match ?? null;
 
     const [draft] = await db
       .select()
       .from(applicationDrafts)
-      .where(and(eq(applicationDrafts.jobId, id), eq(applicationDrafts.userId, user.id)))
-      .limit(1)
-    userDraft = draft ?? null
+      .where(
+        and(
+          eq(applicationDrafts.jobId, id),
+          eq(applicationDrafts.userId, user.id),
+        ),
+      )
+      .limit(1);
+    userDraft = draft ?? null;
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-start gap-4">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/jobs">← Back to jobs</Link>
@@ -108,12 +128,14 @@ export default async function JobDetailPage({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold">{job.title}</h1>
-              <p className="text-lg text-muted-foreground font-medium">{job.company}</p>
+              <p className="text-lg font-medium text-muted-foreground">
+                {job.company}
+              </p>
             </div>
             <AvailabilityBadge availability={job.availability} />
           </div>
 
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground pt-2">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2 text-sm text-muted-foreground">
             {job.location && (
               <span className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
@@ -128,7 +150,10 @@ export default async function JobDetailPage({
             )}
             <span className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              Posted {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
+              Posted{" "}
+              {formatDistanceToNow(new Date(job.createdAt), {
+                addSuffix: true,
+              })}
             </span>
             <span className="flex items-center gap-1">
               <Users className="h-4 w-4" />
@@ -150,9 +175,7 @@ export default async function JobDetailPage({
             <Badge variant="outline">
               {VISA_SPONSORSHIP_LABELS[job.visaSponsorshipStatus]}
             </Badge>
-            <Badge variant="outline">
-              {WORK_MODE_LABELS[job.workMode]}
-            </Badge>
+            <Badge variant="outline">{WORK_MODE_LABELS[job.workMode]}</Badge>
             <Badge variant="outline">
               {JOB_SOURCE_TYPE_LABELS[job.sourceType]}
             </Badge>
@@ -160,7 +183,16 @@ export default async function JobDetailPage({
               <Badge variant="secondary">{job.sourceName}</Badge>
             ) : null}
             {userMatch ? (
-              <Badge variant={userMatch.score >= 75 ? "success" : userMatch.score >= 50 ? "warning" : "secondary"} className="whitespace-nowrap shrink-0">
+              <Badge
+                variant={
+                  userMatch.score >= 75
+                    ? "success"
+                    : userMatch.score >= 50
+                      ? "warning"
+                      : "secondary"
+                }
+                className="shrink-0 whitespace-nowrap"
+              >
                 Match {userMatch.score}
               </Badge>
             ) : null}
@@ -170,16 +202,31 @@ export default async function JobDetailPage({
         <CardContent className="space-y-4">
           {job.description && (
             <div>
-              <h2 className="font-semibold mb-2">Description</h2>
+              <h2 className="mb-2 font-semibold">Description</h2>
               <div
                 className="job-description"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtml(job.description, {
                     allowedTags: [
-                      "p", "br", "b", "i", "em", "strong",
-                      "ul", "ol", "li",
-                      "h1", "h2", "h3", "h4", "h5", "h6",
-                      "a", "blockquote", "pre", "code",
+                      "p",
+                      "br",
+                      "b",
+                      "i",
+                      "em",
+                      "strong",
+                      "ul",
+                      "ol",
+                      "li",
+                      "h1",
+                      "h2",
+                      "h3",
+                      "h4",
+                      "h5",
+                      "h6",
+                      "a",
+                      "blockquote",
+                      "pre",
+                      "code",
                     ],
                     allowedAttributes: {
                       a: ["href", "target", "rel"],
@@ -214,7 +261,10 @@ export default async function JobDetailPage({
                 ) : (
                   <ApplyButton jobId={job.id} />
                 )}
-                <GenerateDraftButton jobId={job.id} draftId={userDraft?.id ?? null} />
+                <GenerateDraftButton
+                  jobId={job.id}
+                  draftId={userDraft?.id ?? null}
+                />
               </div>
             ) : (
               <Button asChild>
@@ -227,7 +277,8 @@ export default async function JobDetailPage({
 
           {job.lastChecked && (
             <p className="text-xs text-muted-foreground">
-              Availability last checked: {format(new Date(job.lastChecked), "PPp")}
+              Availability last checked:{" "}
+              {format(new Date(job.lastChecked), "PPp")}
             </p>
           )}
           {job.closingAt && (
@@ -236,16 +287,20 @@ export default async function JobDetailPage({
             </p>
           )}
           {job.posterName && (
-            <p className="text-xs text-muted-foreground">Posted by {job.posterName}</p>
+            <p className="text-xs text-muted-foreground">
+              Posted by {job.posterName}
+            </p>
           )}
           {userMatch ? (
             <div className="rounded-lg border bg-muted/20 p-3 text-sm">
               <p className="font-medium">Why this role matches</p>
-              <p className="mt-1 text-muted-foreground">{userMatch.rationale}</p>
+              <p className="mt-1 text-muted-foreground">
+                {userMatch.rationale}
+              </p>
             </div>
           ) : null}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

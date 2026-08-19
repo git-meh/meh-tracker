@@ -1,37 +1,45 @@
-import Link from "next/link"
-import { and, asc, desc, eq, gte, ilike, inArray, or, sql } from "drizzle-orm"
-import { db } from "@/lib/db"
-import { applications, jobMatches, jobs, jobSources, profiles } from "@/lib/db/schema"
-import { createClient } from "@/lib/supabase/server"
-import { JobCard } from "@/components/jobs/job-card"
-import { JobFilters } from "@/components/jobs/job-filters"
-import { SaveSearchButton } from "@/components/jobs/save-search-button"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import { and, asc, desc, eq, gte, ilike, inArray, or, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import {
+  applications,
+  jobMatches,
+  jobs,
+  jobSources,
+  profiles,
+} from "@/lib/db/schema";
+import { createClient } from "@/lib/supabase/server";
+import { JobCard } from "@/components/jobs/job-card";
+import { JobFilters } from "@/components/jobs/job-filters";
+import { SaveSearchButton } from "@/components/jobs/save-search-button";
+import { Button } from "@/components/ui/button";
 import {
   parseJobDiscoveryFilters,
   toSavedSearchFilters,
-} from "@/lib/visa-platform/discovery"
-import type { SQL } from "drizzle-orm"
+} from "@/lib/visa-platform/discovery";
+import type { SQL } from "drizzle-orm";
 
-const PAGE_SIZE = 24
+const PAGE_SIZE = 24;
 
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const rawParams = await searchParams
+  const rawParams = await searchParams;
   const getString = (key: string) => {
-    const v = rawParams[key]
-    return (Array.isArray(v) ? v[0] : v) ?? ""
-  }
+    const v = rawParams[key];
+    return (Array.isArray(v) ? v[0] : v) ?? "";
+  };
 
-  const filters = parseJobDiscoveryFilters(rawParams)
-  const page = Math.max(1, parseInt(getString("page") || "1", 10))
-  const offset = (page - 1) * PAGE_SIZE
+  const filters = parseJobDiscoveryFilters(rawParams);
+  const page = Math.max(1, parseInt(getString("page") || "1", 10));
+  const offset = (page - 1) * PAGE_SIZE;
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const userMatchScore = user
     ? sql<number | null>`(
@@ -41,7 +49,7 @@ export default async function JobsPage({
           and ${jobMatches.userId} = ${user.id}
         limit 1
       )`
-    : sql<number | null>`null`
+    : sql<number | null>`null`;
 
   const sponsorshipRank = sql<number>`
     case
@@ -50,16 +58,16 @@ export default async function JobsPage({
       when ${jobs.visaSponsorshipStatus} = 'unknown' then 2
       else 3
     end
-  `
+  `;
   const countryRank = sql<number>`
     case
       when ${jobs.countryCode} = 'GB' then 0
       when ${jobs.countryCode} is null then 2
       else 1
     end
-  `
+  `;
 
-  const conditions: SQL[] = []
+  const conditions: SQL[] = [];
   const ordering = user
     ? [
         asc(sponsorshipRank),
@@ -67,30 +75,35 @@ export default async function JobsPage({
         asc(countryRank),
         desc(jobs.createdAt),
       ]
-    : [asc(sponsorshipRank), asc(countryRank), desc(jobs.createdAt)]
+    : [asc(sponsorshipRank), asc(countryRank), desc(jobs.createdAt)];
 
   if (filters.q) {
-    const words = filters.q.trim().split(/\s+/).filter(Boolean)
+    const words = filters.q.trim().split(/\s+/).filter(Boolean);
     for (const word of words) {
-      const pattern = `%${word}%`
+      const pattern = `%${word}%`;
       conditions.push(
         or(
           ilike(jobs.title, pattern),
           ilike(jobs.company, pattern),
           ilike(jobs.location, pattern),
-          sql`exists (select 1 from unnest(${jobs.tags}) as t where t ilike ${pattern})`
-        )!
-      )
+          sql`exists (select 1 from unnest(${jobs.tags}) as t where t ilike ${pattern})`,
+        )!,
+      );
     }
   }
 
-  if (filters.availability) conditions.push(eq(jobs.availability, filters.availability))
-  if (filters.sponsorship) conditions.push(eq(jobs.visaSponsorshipStatus, filters.sponsorship))
-  if (filters.country) conditions.push(eq(jobs.countryCode, filters.country))
-  if (filters.workMode) conditions.push(eq(jobs.workMode, filters.workMode))
-  if (filters.employmentType) conditions.push(eq(jobs.employmentType, filters.employmentType))
-  if (filters.sourceType) conditions.push(eq(jobs.sourceType, filters.sourceType))
-  if (typeof filters.minSalary === "number") conditions.push(gte(jobs.salaryMin, filters.minSalary))
+  if (filters.availability)
+    conditions.push(eq(jobs.availability, filters.availability));
+  if (filters.sponsorship)
+    conditions.push(eq(jobs.visaSponsorshipStatus, filters.sponsorship));
+  if (filters.country) conditions.push(eq(jobs.countryCode, filters.country));
+  if (filters.workMode) conditions.push(eq(jobs.workMode, filters.workMode));
+  if (filters.employmentType)
+    conditions.push(eq(jobs.employmentType, filters.employmentType));
+  if (filters.sourceType)
+    conditions.push(eq(jobs.sourceType, filters.sourceType));
+  if (typeof filters.minSalary === "number")
+    conditions.push(gte(jobs.salaryMin, filters.minSalary));
   if (filters.onlyMatched) {
     conditions.push(
       user
@@ -101,11 +114,11 @@ export default async function JobsPage({
               and ${jobMatches.userId} = ${user.id}
               and ${jobMatches.score} > 0
           )`
-        : sql`false`
-    )
+        : sql`false`,
+    );
   }
 
-  const where = conditions.length > 0 ? and(...conditions) : undefined
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
 
   const [categoryRows, [{ total }], pageJobs] = await Promise.all([
     db
@@ -159,36 +172,51 @@ export default async function JobsPage({
       .orderBy(...ordering)
       .limit(PAGE_SIZE)
       .offset(offset),
-  ])
+  ]);
 
-  const categories = categoryRows.map((r) => r.tag).filter(Boolean)
+  const categories = categoryRows.map((r) => r.tag).filter(Boolean);
 
-  const userApplicationMap = new Map<string, { id: string; status: (typeof applications.$inferSelect)["status"] }>()
+  const userApplicationMap = new Map<
+    string,
+    { id: string; status: (typeof applications.$inferSelect)["status"] }
+  >();
 
   if (user && pageJobs.length > 0) {
-    const jobIds = pageJobs.map((j) => j.id)
+    const jobIds = pageJobs.map((j) => j.id);
     const userApps = await db
-      .select({ id: applications.id, jobId: applications.jobId, status: applications.status })
+      .select({
+        id: applications.id,
+        jobId: applications.jobId,
+        status: applications.status,
+      })
       .from(applications)
-      .where(and(eq(applications.userId, user.id), inArray(applications.jobId, jobIds)))
-    userApps.forEach((a) => userApplicationMap.set(a.jobId, { id: a.id, status: a.status }))
+      .where(
+        and(
+          eq(applications.userId, user.id),
+          inArray(applications.jobId, jobIds),
+        ),
+      );
+    userApps.forEach((a) =>
+      userApplicationMap.set(a.jobId, { id: a.id, status: a.status }),
+    );
   }
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   function pageUrl(p: number) {
-    const params = new URLSearchParams()
-    if (filters.q) params.set("q", filters.q)
-    if (getString("category")) params.set("category", getString("category"))
-    if (filters.sponsorship) params.set("sponsorship", filters.sponsorship)
-    if (filters.workMode) params.set("workMode", filters.workMode)
-    if (filters.employmentType) params.set("employmentType", filters.employmentType)
-    if (filters.sourceType) params.set("sourceType", filters.sourceType)
-    if (filters.country) params.set("country", filters.country)
-    if (filters.minSalary) params.set("minSalary", String(filters.minSalary))
-    if (filters.onlyMatched) params.set("onlyMatched", "true")
-    if (p > 1) params.set("page", String(p))
-    return `/jobs?${params.toString()}`
+    const params = new URLSearchParams();
+    if (filters.q) params.set("q", filters.q);
+    if (getString("category")) params.set("category", getString("category"));
+    if (filters.sponsorship) params.set("sponsorship", filters.sponsorship);
+    if (filters.workMode) params.set("workMode", filters.workMode);
+    if (filters.employmentType)
+      params.set("employmentType", filters.employmentType);
+    if (filters.sourceType) params.set("sourceType", filters.sourceType);
+    if (filters.country) params.set("country", filters.country);
+    if (filters.minSalary) params.set("minSalary", String(filters.minSalary));
+    if (filters.onlyMatched) params.set("onlyMatched", "true");
+    if (p > 1) params.set("page", String(p));
+    return `/jobs?${params.toString()}`;
   }
 
   return (
@@ -198,13 +226,18 @@ export default async function JobsPage({
           <h1 className="text-2xl font-bold">Job Discovery</h1>
           <p className="text-sm text-muted-foreground">
             {total.toLocaleString()} role{total === 1 ? "" : "s"}
-            {Object.values(filters).some(Boolean) ? " matching filters" : " available"}
+            {Object.values(filters).some(Boolean)
+              ? " matching filters"
+              : " available"}
             {totalPages > 1 ? ` · page ${page} of ${totalPages}` : ""}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {user && (
-            <SaveSearchButton query={filters.q} filters={toSavedSearchFilters(filters)} />
+            <SaveSearchButton
+              query={filters.q}
+              filters={toSavedSearchFilters(filters)}
+            />
           )}
           {user && (
             <Button asChild>
@@ -237,32 +270,41 @@ export default async function JobsPage({
                   <Link href={pageUrl(page - 1)}>Previous</Link>
                 </Button>
               ) : (
-                <Button variant="outline" size="sm" disabled>Previous</Button>
+                <Button variant="outline" size="sm" disabled>
+                  Previous
+                </Button>
               )}
 
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                  let p: number
+                  let p: number;
                   if (totalPages <= 7) {
-                    p = i + 1
+                    p = i + 1;
                   } else if (i === 0) {
-                    p = 1
+                    p = 1;
                   } else if (i === 6) {
-                    p = totalPages
+                    p = totalPages;
                   } else if (page <= 4) {
-                    p = i + 1
+                    p = i + 1;
                   } else if (page >= totalPages - 3) {
-                    p = totalPages - 6 + i
+                    p = totalPages - 6 + i;
                   } else {
-                    p = page - 3 + i
+                    p = page - 3 + i;
                   }
 
                   const isEllipsis =
                     totalPages > 7 &&
-                    ((i === 1 && p > 2) || (i === 5 && p < totalPages - 1))
+                    ((i === 1 && p > 2) || (i === 5 && p < totalPages - 1));
 
                   if (isEllipsis) {
-                    return <span key={i} className="px-1 text-sm text-muted-foreground">…</span>
+                    return (
+                      <span
+                        key={i}
+                        className="px-1 text-sm text-muted-foreground"
+                      >
+                        …
+                      </span>
+                    );
                   }
 
                   return (
@@ -274,9 +316,13 @@ export default async function JobsPage({
                       className="w-9"
                       disabled={p === page}
                     >
-                      {p === page ? <span>{p}</span> : <Link href={pageUrl(p)}>{p}</Link>}
+                      {p === page ? (
+                        <span>{p}</span>
+                      ) : (
+                        <Link href={pageUrl(p)}>{p}</Link>
+                      )}
                     </Button>
-                  )
+                  );
                 })}
               </div>
 
@@ -285,7 +331,9 @@ export default async function JobsPage({
                   <Link href={pageUrl(page + 1)}>Next</Link>
                 </Button>
               ) : (
-                <Button variant="outline" size="sm" disabled>Next</Button>
+                <Button variant="outline" size="sm" disabled>
+                  Next
+                </Button>
               )}
             </div>
           )}
@@ -294,7 +342,7 @@ export default async function JobsPage({
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <span className="text-5xl">😑</span>
           <h2 className="mt-4 text-lg font-semibold">No jobs found</h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             Try a different category or remove a filter.
           </p>
           <Button asChild variant="outline" className="mt-4">
@@ -303,5 +351,5 @@ export default async function JobsPage({
         </div>
       )}
     </div>
-  )
+  );
 }

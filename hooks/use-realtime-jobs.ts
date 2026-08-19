@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * Subscribe to job board changes (new jobs, availability updates).
  * Triggers a router.refresh() on any INSERT or UPDATE.
  */
 export function useRealtimeJobs() {
-  const router = useRouter()
-  const supabase = createClient()
+  const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
     const channel = supabase
@@ -18,17 +18,17 @@ export function useRealtimeJobs() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "jobs" },
-        () => router.refresh()
+        () => router.refresh(),
       )
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "jobs" },
-        () => router.refresh()
+        () => router.refresh(),
       )
-      .subscribe()
+      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [router, supabase])
+      supabase.removeChannel(channel);
+    };
+  }, [router, supabase]);
 }

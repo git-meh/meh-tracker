@@ -1,59 +1,59 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { FileText, Trash2, Star, Upload, Loader2 } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import type { Resume } from "@/lib/db/schema"
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { FileText, Trash2, Star, Upload, Loader2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import type { Resume } from "@/lib/db/schema";
 
 function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 interface ResumeManagerProps {
-  initialResumes: Resume[]
+  initialResumes: Resume[];
 }
 
 export function ResumeManager({ initialResumes }: ResumeManagerProps) {
-  const router = useRouter()
-  const [resumes, setResumes] = useState(initialResumes)
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter();
+  const [resumes, setResumes] = useState(initialResumes);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setUploading(true)
-    setError(null)
+    setUploading(true);
+    setError(null);
 
-    const form = new FormData()
-    form.append("file", file)
+    const form = new FormData();
+    form.append("file", file);
 
-    const res = await fetch("/api/resumes", { method: "POST", body: form })
-    const data = await res.json().catch(() => ({ error: "Upload failed" }))
+    const res = await fetch("/api/resumes", { method: "POST", body: form });
+    const data = await res.json().catch(() => ({ error: "Upload failed" }));
 
     if (!res.ok) {
-      setError(data.error ?? "Upload failed")
+      setError(data.error ?? "Upload failed");
     } else {
-      setResumes((prev) => [...prev, data])
-      router.refresh()
+      setResumes((prev) => [...prev, data]);
+      router.refresh();
     }
 
-    setUploading(false)
-    if (fileInputRef.current) fileInputRef.current.value = ""
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function handleDelete(id: string) {
-    const res = await fetch(`/api/resumes/${id}`, { method: "DELETE" })
+    const res = await fetch(`/api/resumes/${id}`, { method: "DELETE" });
     if (res.ok) {
-      setResumes((prev) => prev.filter((r) => r.id !== id))
-      router.refresh()
+      setResumes((prev) => prev.filter((r) => r.id !== id));
+      router.refresh();
     }
   }
 
@@ -62,11 +62,9 @@ export function ResumeManager({ initialResumes }: ResumeManagerProps) {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ isDefault: true }),
-    })
+    });
     if (res.ok) {
-      setResumes((prev) =>
-        prev.map((r) => ({ ...r, isDefault: r.id === id }))
-      )
+      setResumes((prev) => prev.map((r) => ({ ...r, isDefault: r.id === id })));
     }
   }
 
@@ -74,7 +72,7 @@ export function ResumeManager({ initialResumes }: ResumeManagerProps) {
     <div className="space-y-4">
       {/* Upload area */}
       <div
-        className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 cursor-pointer hover:border-muted-foreground/50 transition-colors"
+        className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 transition-colors hover:border-muted-foreground/50"
         onClick={() => fileInputRef.current?.click()}
       >
         {uploading ? (
@@ -100,23 +98,30 @@ export function ResumeManager({ initialResumes }: ResumeManagerProps) {
 
       {/* Resume list */}
       {resumes.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-4">No CVs uploaded yet.</p>
+        <p className="py-4 text-center text-sm text-muted-foreground">
+          No CVs uploaded yet.
+        </p>
       ) : (
         <div className="space-y-2">
           {resumes.map((resume) => (
             <Card key={resume.id}>
               <CardContent className="flex items-center gap-3 p-4">
-                <FileText className="h-8 w-8 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{resume.fileName}</p>
+                <FileText className="h-8 w-8 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
+                    {resume.fileName}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {formatBytes(resume.fileSize)} ·{" "}
-                    {formatDistanceToNow(new Date(resume.createdAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(resume.createdAt), {
+                      addSuffix: true,
+                    })}
                   </p>
                 </div>
                 {resume.isDefault && (
-                  <span className="flex items-center gap-1 text-xs text-yellow-600 font-medium">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" /> Default
+                  <span className="flex items-center gap-1 text-xs font-medium text-yellow-600">
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />{" "}
+                    Default
                   </span>
                 )}
                 <div className="flex items-center gap-1">
@@ -134,7 +139,7 @@ export function ResumeManager({ initialResumes }: ResumeManagerProps) {
                     href={`/api/resumes/${resume.id}/view`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline px-2"
+                    className="px-2 text-xs text-primary hover:underline"
                   >
                     View
                   </a>
@@ -153,5 +158,5 @@ export function ResumeManager({ initialResumes }: ResumeManagerProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

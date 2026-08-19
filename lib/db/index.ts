@@ -1,17 +1,17 @@
-import { drizzle } from "drizzle-orm/postgres-js"
-import postgres from "postgres"
-import * as schema from "./schema"
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "./schema";
 
-const connectionString = process.env.DATABASE_URL!
+const connectionString = process.env.DATABASE_URL!;
 
 if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is not set")
+  throw new Error("DATABASE_URL environment variable is not set");
 }
 
 // Disable prefetch for serverless environments
 const client = postgres(connectionString, {
   prepare: false,
   onnotice: () => {}, // suppress notices
-})
+});
 
-export const db = drizzle(client, { schema })
+export const db = drizzle(client, { schema });

@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server"
-import { z } from "zod"
-import { createClient } from "@/lib/supabase/server"
-import { ingestJobs } from "@/lib/visa-platform/ingestion"
-import { resolveCountryMetadata } from "@/lib/visa-platform/countries"
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
+import { ingestJobs } from "@/lib/visa-platform/ingestion";
+import { resolveCountryMetadata } from "@/lib/visa-platform/countries";
 
 const ingestSchema = z.object({
   sourceId: z.string().uuid().nullable().optional(),
@@ -23,18 +23,22 @@ const ingestSchema = z.object({
         tags: z.array(z.string().max(60)).max(20).optional(),
         eligibleCountries: z.array(z.string().max(2)).max(20).optional(),
         sourceId: z.string().uuid().nullable().optional(),
-        sourceType: z.enum(["manual", "approved_feed", "employer_site", "ats"]).optional(),
+        sourceType: z
+          .enum(["manual", "approved_feed", "employer_site", "ats"])
+          .optional(),
         sourceKey: z.string().max(120).nullable().optional(),
         sourceJobId: z.string().max(200).nullable().optional(),
-        applyAdapter: z.enum([
-          "none",
-          "greenhouse",
-          "lever",
-          "workday",
-          "ashby",
-          "smartrecruiters",
-          "manual_external",
-        ]).optional(),
+        applyAdapter: z
+          .enum([
+            "none",
+            "greenhouse",
+            "lever",
+            "workday",
+            "ashby",
+            "smartrecruiters",
+            "manual_external",
+          ])
+          .optional(),
         visaSponsorshipStatus: z
           .enum(["eligible", "possible", "not_available", "unknown"])
           .optional(),
@@ -51,36 +55,42 @@ const ingestSchema = z.object({
           ])
           .optional(),
         closingAt: z.string().datetime().nullable().optional(),
-      })
+      }),
     )
     .min(1)
     .max(250),
-})
+});
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
-  const configuredIngestionKey = process.env.JOB_INGESTION_API_KEY?.trim()
+  const configuredIngestionKey = process.env.JOB_INGESTION_API_KEY?.trim();
   const requestIngestionKey =
     request.headers.get("x-job-ingestion-key")?.trim() ??
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim()
+    request.headers
+      .get("authorization")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim();
 
   const hasValidIngestionKey =
     Boolean(configuredIngestionKey) &&
     Boolean(requestIngestionKey) &&
-    configuredIngestionKey === requestIngestionKey
+    configuredIngestionKey === requestIngestionKey;
 
   if (!user && !hasValidIngestionKey) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json()
-  const parsed = ingestSchema.safeParse(body)
+  const body = await request.json();
+  const parsed = ingestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   try {
@@ -90,7 +100,7 @@ export async function POST(request: Request) {
         const { countryCode, countryConfidence } = resolveCountryMetadata({
           countryCode: job.countryCode,
           location: job.location,
-        })
+        });
 
         return {
           ...job,
@@ -101,21 +111,23 @@ export async function POST(request: Request) {
           countryCode,
           countryConfidence: job.countryConfidence ?? countryConfidence,
           sourceId: job.sourceId ?? parsed.data.sourceId ?? null,
-          sourceKey: job.sourceKey?.trim().toLowerCase() ?? job.sourceType ?? "approved-feed",
+          sourceKey:
+            job.sourceKey?.trim().toLowerCase() ??
+            job.sourceType ??
+            "approved-feed",
           sourceJobId: job.sourceJobId ?? null,
           closingAt: job.closingAt ? new Date(job.closingAt) : null,
-        }
+        };
       }),
-    })
+    });
 
-    return NextResponse.json(run, { status: 201 })
+    return NextResponse.json(run, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Job ingestion failed",
+        error: error instanceof Error ? error.message : "Job ingestion failed",
       },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }

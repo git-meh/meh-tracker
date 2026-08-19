@@ -1,11 +1,14 @@
-import type { CandidateProfile, Job, ResumeVersion } from "@/lib/db/schema"
-import { chatComplete, isOpenRouterEnabled } from "@/lib/openrouter"
-import { logger } from "@/lib/logger"
-import type { MatchResult } from "@/lib/visa-platform/matching"
+import type { CandidateProfile, Job, ResumeVersion } from "@/lib/db/schema";
+import { chatComplete, isOpenRouterEnabled } from "@/lib/openrouter";
+import { logger } from "@/lib/logger";
+import type { MatchResult } from "@/lib/visa-platform/matching";
 
 // ─── Context builders ─────────────────────────────────────────────────────────
 
-function candidateBlock(profile: CandidateProfile | null, cvText: string | null): string {
+function candidateBlock(
+  profile: CandidateProfile | null,
+  cvText: string | null,
+): string {
   return [
     `Name/identity: (not disclosed)`,
     `Skills: ${profile?.skills?.join(", ") || "not listed"}`,
@@ -22,11 +25,20 @@ function candidateBlock(profile: CandidateProfile | null, cvText: string | null)
       : "\n(No CV uploaded — work from profile data and skills only)",
   ]
     .filter(Boolean)
-    .join("\n")
+    .join("\n");
 }
 
 function jobBlock(
-  job: Pick<Job, "title" | "company" | "description" | "tags" | "location" | "visaSponsorshipStatus" | "workMode">
+  job: Pick<
+    Job,
+    | "title"
+    | "company"
+    | "description"
+    | "tags"
+    | "location"
+    | "visaSponsorshipStatus"
+    | "workMode"
+  >,
 ): string {
   return [
     `Role: ${job.title}`,
@@ -38,16 +50,19 @@ function jobBlock(
     `\nJob description:\n${job.description?.slice(0, 2500) ?? "not provided"}`,
   ]
     .filter(Boolean)
-    .join("\n")
+    .join("\n");
 }
 
-function cvText(profile: CandidateProfile | null, resumeVersion: ResumeVersion | null): string | null {
+function cvText(
+  profile: CandidateProfile | null,
+  resumeVersion: ResumeVersion | null,
+): string | null {
   return (
     resumeVersion?.normalizedText ??
     resumeVersion?.extractedText ??
     profile?.summary ??
     null
-  )
+  );
 }
 
 // ─── Fallback templates (only used when AI is unavailable or fails) ───────────
@@ -56,10 +71,10 @@ function fallbackTailoredResume(
   job: Pick<Job, "title" | "company" | "description" | "tags" | "location">,
   profile: CandidateProfile | null,
   resumeVersion: ResumeVersion | null,
-  match: Pick<MatchResult, "fitSignals" | "concerns">
+  match: Pick<MatchResult, "fitSignals" | "concerns">,
 ): string {
-  const base = cvText(profile, resumeVersion) ?? "Add your experience here."
-  const skills = profile?.skills?.join(", ") || "Add your core skills here."
+  const base = cvText(profile, resumeVersion) ?? "Add your experience here.";
+  const skills = profile?.skills?.join(", ") || "Add your core skills here.";
   return [
     `# CV — ${job.title} at ${job.company}`,
     ``,
@@ -81,13 +96,13 @@ function fallbackTailoredResume(
       : "",
   ]
     .filter((l) => l !== "")
-    .join("\n")
+    .join("\n");
 }
 
 function fallbackCoverLetter(
   job: Pick<Job, "title" | "company" | "location" | "visaSponsorshipStatus">,
   profile: CandidateProfile | null,
-  match: Pick<MatchResult, "rationale">
+  match: Pick<MatchResult, "rationale">,
 ): string {
   return [
     `Dear Hiring Team at ${job.company},`,
@@ -101,13 +116,13 @@ function fallbackCoverLetter(
       : `I am fully eligible to work in the relevant jurisdiction.`,
     ``,
     `Thank you for your time.`,
-  ].join("\n")
+  ].join("\n");
 }
 
 function fallbackApplicationAnswers(
   job: Pick<Job, "title" | "company" | "visaSponsorshipStatus">,
   profile: CandidateProfile | null,
-  match: Pick<MatchResult, "fitSignals" | "concerns">
+  match: Pick<MatchResult, "fitSignals" | "concerns">,
 ): string {
   return [
     `## Why this role?`,
@@ -127,34 +142,34 @@ function fallbackApplicationAnswers(
       : "",
   ]
     .filter((l) => l !== "")
-    .join("\n")
+    .join("\n");
 }
 
 function fallbackPersonalStatement(
   job: Pick<Job, "title">,
-  profile: CandidateProfile | null
+  profile: CandidateProfile | null,
 ): string {
   return [
     `I am a ${profile?.targetRoles?.join(" / ") || job.title} professional with ${profile?.yearsExperience ? `${profile.yearsExperience} years` : "several years"} of experience in ${profile?.skills?.slice(0, 4).join(", ") || "my field"}. I am driven by [add your motivation], committed to [add your value], and currently seeking my next role in ${profile?.targetCountries?.join(", ") || "my target market"}.`,
     ``,
     `[Expand with 2–3 specific achievements before submitting.]`,
-  ].join("\n")
+  ].join("\n");
 }
 
 function fallbackWhyCompany(
   job: Pick<Job, "title" | "company">,
-  profile: CandidateProfile | null
+  profile: CandidateProfile | null,
 ): string {
   return [
     `${job.company} is a strong fit for my next step as a ${profile?.targetRoles?.[0] ?? job.title} professional. The scope of this role aligns with where I want to take my career.`,
     ``,
     `[Add specific reasons — e.g. company mission, products, recent news, or culture — before submitting.]`,
-  ].join("\n")
+  ].join("\n");
 }
 
 function fallbackInterviewQA(
   job: Pick<Job, "title" | "company">,
-  profile: CandidateProfile | null
+  profile: CandidateProfile | null,
 ): string {
   return [
     `## Interview Prep — ${job.title} at ${job.company}`,
@@ -172,26 +187,32 @@ function fallbackInterviewQA(
     `A: ${profile?.needsVisaSponsorship ? "Yes — I require sponsorship and am experienced navigating this process." : "No — I am fully authorised to work in the target country."}`,
     ``,
     `[Add role-specific technical and behavioural questions from the job description.]`,
-  ].join("\n")
+  ].join("\n");
 }
 
 // ─── AI generators ────────────────────────────────────────────────────────────
 
 type ArtifactJob = Pick<
   Job,
-  "title" | "company" | "description" | "tags" | "location" | "visaSponsorshipStatus" | "workMode"
->
+  | "title"
+  | "company"
+  | "description"
+  | "tags"
+  | "location"
+  | "visaSponsorshipStatus"
+  | "workMode"
+>;
 
 async function generateWithFallback(
   artifactType: string,
   job: ArtifactJob,
   profile: CandidateProfile | null,
   aiCall: () => Promise<string>,
-  fallbackCall: () => string
+  fallbackCall: () => string,
 ): Promise<{ content: string; aiGenerated: boolean }> {
   if (!isOpenRouterEnabled()) {
-    logger.info("artifact_ai_skipped", { artifactType, reason: "no_api_key" })
-    return { content: fallbackCall(), aiGenerated: false }
+    logger.info("artifact_ai_skipped", { artifactType, reason: "no_api_key" });
+    return { content: fallbackCall(), aiGenerated: false };
   }
 
   try {
@@ -202,17 +223,21 @@ async function generateWithFallback(
       hasProfile: Boolean(profile),
       hasSkills: (profile?.skills?.length ?? 0) > 0,
       hasTargetRoles: (profile?.targetRoles?.length ?? 0) > 0,
-    })
-    const content = await aiCall()
-    logger.info("artifact_ai_done", { artifactType, jobTitle: job.title, chars: content.length })
-    return { content, aiGenerated: true }
+    });
+    const content = await aiCall();
+    logger.info("artifact_ai_done", {
+      artifactType,
+      jobTitle: job.title,
+      chars: content.length,
+    });
+    return { content, aiGenerated: true };
   } catch (err) {
     logger.error("artifact_ai_failed_using_fallback", {
       artifactType,
       jobTitle: job.title,
       error: String(err),
-    })
-    return { content: fallbackCall(), aiGenerated: false }
+    });
+    return { content: fallbackCall(), aiGenerated: false };
   }
 }
 
@@ -225,22 +250,22 @@ export type ArtifactOutput = {
     | "application_answers"
     | "personal_statement"
     | "why_company"
-    | "interview_qa"
-  title: string
-  content: string
-  aiGenerated: boolean
-}
+    | "interview_qa";
+  title: string;
+  content: string;
+  aiGenerated: boolean;
+};
 
 export async function generateAllArtifacts(
   job: ArtifactJob,
   profile: CandidateProfile | null,
   resumeVersion: ResumeVersion | null,
-  match: MatchResult
+  match: MatchResult,
 ): Promise<ArtifactOutput[]> {
-  const cv = cvText(profile, resumeVersion)
-  const candidate = candidateBlock(profile, cv)
-  const jobCtx = jobBlock(job)
-  const matchCtx = `Match score: ${match.score}/100\nFit signals: ${match.fitSignals.join(", ") || "none"}\nConcerns: ${match.concerns.join(", ") || "none"}`
+  const cv = cvText(profile, resumeVersion);
+  const candidate = candidateBlock(profile, cv);
+  const jobCtx = jobBlock(job);
+  const matchCtx = `Match score: ${match.score}/100\nFit signals: ${match.fitSignals.join(", ") || "none"}\nConcerns: ${match.concerns.join(", ") || "none"}`;
 
   logger.info("generate_artifacts_started", {
     jobTitle: job.title,
@@ -251,20 +276,26 @@ export async function generateAllArtifacts(
     profileTargetRoles: profile?.targetRoles ?? [],
     matchScore: match.score,
     aiEnabled: isOpenRouterEnabled(),
-  })
+  });
 
-  const [tailoredResume, coverLetter, applicationAnswers, personalStatement, whyCompany, interviewQA] =
-    await Promise.all([
-      generateWithFallback(
-        "tailored_resume",
-        job,
-        profile,
-        () =>
-          chatComplete(
-            [
-              {
-                role: "system",
-                content: `You are an expert CV writer specialising in UK visa-sponsored roles. Rewrite and restructure the candidate's CV to specifically target this job.
+  const [
+    tailoredResume,
+    coverLetter,
+    applicationAnswers,
+    personalStatement,
+    whyCompany,
+    interviewQA,
+  ] = await Promise.all([
+    generateWithFallback(
+      "tailored_resume",
+      job,
+      profile,
+      () =>
+        chatComplete(
+          [
+            {
+              role: "system",
+              content: `You are an expert CV writer specialising in UK visa-sponsored roles. Rewrite and restructure the candidate's CV to specifically target this job.
 
 Rules:
 - Mirror the job's language naturally — do not keyword-stuff
@@ -274,27 +305,27 @@ Rules:
 - If no CV is provided, build from the profile skills and summary
 - Format in clean markdown
 - Aim for one-page length equivalent`,
-              },
-              {
-                role: "user",
-                content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}\n\n${matchCtx}`,
-              },
-            ],
-            { temperature: 0.4, maxTokens: 2048 }
-          ),
-        () => fallbackTailoredResume(job, profile, resumeVersion, match)
-      ),
+            },
+            {
+              role: "user",
+              content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}\n\n${matchCtx}`,
+            },
+          ],
+          { temperature: 0.4, maxTokens: 2048 },
+        ),
+      () => fallbackTailoredResume(job, profile, resumeVersion, match),
+    ),
 
-      generateWithFallback(
-        "cover_letter",
-        job,
-        profile,
-        () =>
-          chatComplete(
-            [
-              {
-                role: "system",
-                content: `You are a professional career coach writing cover letters for UK job applications (including visa-sponsored roles).
+    generateWithFallback(
+      "cover_letter",
+      job,
+      profile,
+      () =>
+        chatComplete(
+          [
+            {
+              role: "system",
+              content: `You are a professional career coach writing cover letters for UK job applications (including visa-sponsored roles).
 
 Rules:
 - 3–4 paragraphs, under 350 words
@@ -305,27 +336,27 @@ Rules:
 - Close: confident call to action
 - If visa sponsorship is needed, handle it in one sentence — brief, factual, confident
 - No clichés, no filler phrases`,
-              },
-              {
-                role: "user",
-                content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}\n\n${matchCtx}`,
-              },
-            ],
-            { temperature: 0.6, maxTokens: 1024 }
-          ),
-        () => fallbackCoverLetter(job, profile, match)
-      ),
+            },
+            {
+              role: "user",
+              content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}\n\n${matchCtx}`,
+            },
+          ],
+          { temperature: 0.6, maxTokens: 1024 },
+        ),
+      () => fallbackCoverLetter(job, profile, match),
+    ),
 
-      generateWithFallback(
-        "application_answers",
-        job,
-        profile,
-        () =>
-          chatComplete(
-            [
-              {
-                role: "system",
-                content: `You are a job application coach. Generate model answers to the most likely application form questions for this specific role.
+    generateWithFallback(
+      "application_answers",
+      job,
+      profile,
+      () =>
+        chatComplete(
+          [
+            {
+              role: "system",
+              content: `You are a job application coach. Generate model answers to the most likely application form questions for this specific role.
 
 Format:
 **Q: [question]**
@@ -342,27 +373,27 @@ Cover these question types (customise to this specific role):
 8. Any concerns or gaps (address the match concerns directly)
 
 Base answers on the actual CV content. Be specific.`,
-              },
-              {
-                role: "user",
-                content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}\n\n${matchCtx}`,
-              },
-            ],
-            { temperature: 0.5, maxTokens: 2000 }
-          ),
-        () => fallbackApplicationAnswers(job, profile, match)
-      ),
+            },
+            {
+              role: "user",
+              content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}\n\n${matchCtx}`,
+            },
+          ],
+          { temperature: 0.5, maxTokens: 2000 },
+        ),
+      () => fallbackApplicationAnswers(job, profile, match),
+    ),
 
-      generateWithFallback(
-        "personal_statement",
-        job,
-        profile,
-        () =>
-          chatComplete(
-            [
-              {
-                role: "system",
-                content: `You are a career advisor. Write a 150–200 word professional personal statement for a CV or application form.
+    generateWithFallback(
+      "personal_statement",
+      job,
+      profile,
+      () =>
+        chatComplete(
+          [
+            {
+              role: "system",
+              content: `You are a career advisor. Write a 150–200 word professional personal statement for a CV or application form.
 
 Rules:
 - Confident, first-person, professional tone
@@ -371,27 +402,27 @@ Rules:
 - Sentence 3–4: what they specifically bring + standout achievement or capability from CV
 - Sentence 5: what they are seeking and why this role/company
 - Grounded in the actual CV content`,
-              },
-              {
-                role: "user",
-                content: `TARGET JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}`,
-              },
-            ],
-            { temperature: 0.5, maxTokens: 512 }
-          ),
-        () => fallbackPersonalStatement(job, profile)
-      ),
+            },
+            {
+              role: "user",
+              content: `TARGET JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}`,
+            },
+          ],
+          { temperature: 0.5, maxTokens: 512 },
+        ),
+      () => fallbackPersonalStatement(job, profile),
+    ),
 
-      generateWithFallback(
-        "why_company",
-        job,
-        profile,
-        () =>
-          chatComplete(
-            [
-              {
-                role: "system",
-                content: `You are an interview coach. Write a compelling answer (150–200 words) to "Why do you want to work at [company]?" for this specific role.
+    generateWithFallback(
+      "why_company",
+      job,
+      profile,
+      () =>
+        chatComplete(
+          [
+            {
+              role: "system",
+              content: `You are an interview coach. Write a compelling answer (150–200 words) to "Why do you want to work at [company]?" for this specific role.
 
 Rules:
 - Extract clues from the job description about company focus, culture, values, product, or mission
@@ -399,27 +430,27 @@ Rules:
 - Be concrete — reference things actually in the job description
 - First person, interview-ready tone
 - Do NOT write generic praise ("innovative company", "market leader")`,
-              },
-              {
-                role: "user",
-                content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}`,
-              },
-            ],
-            { temperature: 0.6, maxTokens: 512 }
-          ),
-        () => fallbackWhyCompany(job, profile)
-      ),
+            },
+            {
+              role: "user",
+              content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}`,
+            },
+          ],
+          { temperature: 0.6, maxTokens: 512 },
+        ),
+      () => fallbackWhyCompany(job, profile),
+    ),
 
-      generateWithFallback(
-        "interview_qa",
-        job,
-        profile,
-        () =>
-          chatComplete(
-            [
-              {
-                role: "system",
-                content: `You are an interview preparation coach. Generate 8–10 likely interview questions for this specific role and write model answers based on the candidate's CV.
+    generateWithFallback(
+      "interview_qa",
+      job,
+      profile,
+      () =>
+        chatComplete(
+          [
+            {
+              role: "system",
+              content: `You are an interview preparation coach. Generate 8–10 likely interview questions for this specific role and write model answers based on the candidate's CV.
 
 Format:
 **Q: [question]**
@@ -433,17 +464,17 @@ Include:
 - 1 wildcard (e.g. weakness, failure, disagreement)
 
 Base every answer on the candidate's actual background. Do not fabricate.`,
-              },
-              {
-                role: "user",
-                content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}\n\n${matchCtx}`,
-              },
-            ],
-            { temperature: 0.5, maxTokens: 2500 }
-          ),
-        () => fallbackInterviewQA(job, profile)
-      ),
-    ])
+            },
+            {
+              role: "user",
+              content: `JOB:\n${jobCtx}\n\nCANDIDATE:\n${candidate}\n\n${matchCtx}`,
+            },
+          ],
+          { temperature: 0.5, maxTokens: 2500 },
+        ),
+      () => fallbackInterviewQA(job, profile),
+    ),
+  ]);
 
   return [
     {
@@ -476,5 +507,5 @@ Base every answer on the candidate's actual background. Do not fabricate.`,
       title: `Interview prep — ${job.title} at ${job.company}`,
       ...interviewQA,
     },
-  ]
+  ];
 }

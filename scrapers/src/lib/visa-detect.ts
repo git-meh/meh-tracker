@@ -17,7 +17,7 @@ const ELIGIBLE_PHRASES = [
   "relocation support",
   "we support relocation",
   "global mobility",
-]
+];
 
 const NOT_AVAILABLE_PHRASES = [
   "no sponsorship",
@@ -36,7 +36,7 @@ const NOT_AVAILABLE_PHRASES = [
   "uk right to work is required",
   "without sponsorship",
   "no relocation",
-]
+];
 
 const POSSIBLE_KEYWORDS = [
   "visa",
@@ -47,24 +47,25 @@ const POSSIBLE_KEYWORDS = [
   "relocation",
   "biometric residence",
   "brp",
-]
+];
 
-export type SponsorshipStatus = "eligible" | "possible" | "not_available" | "unknown"
+export type SponsorshipStatus =
+  "eligible" | "possible" | "not_available" | "unknown";
 
 export function detectSponsorshipStatus(text: string): SponsorshipStatus {
-  const lower = text.toLowerCase()
+  const lower = text.toLowerCase();
 
   for (const phrase of ELIGIBLE_PHRASES) {
-    if (lower.includes(phrase)) return "eligible"
+    if (lower.includes(phrase)) return "eligible";
   }
 
   for (const phrase of NOT_AVAILABLE_PHRASES) {
-    if (lower.includes(phrase)) return "not_available"
+    if (lower.includes(phrase)) return "not_available";
   }
 
   for (const keyword of POSSIBLE_KEYWORDS) {
-    if (lower.includes(keyword)) return "possible"
+    if (lower.includes(keyword)) return "possible";
   }
 
-  return "unknown"
+  return "unknown";
 }

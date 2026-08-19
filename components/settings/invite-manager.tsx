@@ -1,43 +1,51 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Copy, Check, PlusCircle } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import type { Invite } from "@/lib/db/schema"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Copy, Check, PlusCircle } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import type { Invite } from "@/lib/db/schema";
 
 interface InviteManagerProps {
-  initialInvites: Invite[]
+  initialInvites: Invite[];
 }
 
 export function InviteManager({ initialInvites }: InviteManagerProps) {
-  const [invites, setInvites] = useState(initialInvites)
-  const [loading, setLoading] = useState(false)
-  const [copied, setCopied] = useState<string | null>(null)
+  const [invites, setInvites] = useState(initialInvites);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
 
   async function handleGenerate() {
-    setLoading(true)
-    const res = await fetch("/api/invites", { method: "POST", body: JSON.stringify({}) })
-    const data = await res.json()
+    setLoading(true);
+    const res = await fetch("/api/invites", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    const data = await res.json();
     if (res.ok) {
-      setInvites((prev) => [data, ...prev])
+      setInvites((prev) => [data, ...prev]);
     }
-    setLoading(false)
+    setLoading(false);
   }
 
   async function handleCopy(code: string) {
-    const url = `${window.location.origin}/invite/${code}`
-    await navigator.clipboard.writeText(url)
-    setCopied(code)
-    setTimeout(() => setCopied(null), 2000)
+    const url = `${window.location.origin}/invite/${code}`;
+    await navigator.clipboard.writeText(url);
+    setCopied(code);
+    setTimeout(() => setCopied(null), 2000);
   }
 
-  const activeInvites = invites.filter((i) => !i.usedBy)
+  const activeInvites = invites.filter((i) => !i.usedBy);
 
   return (
     <div className="space-y-4">
-      <Button onClick={handleGenerate} disabled={loading} size="sm" variant="outline">
-        <PlusCircle className="h-4 w-4 mr-2" />
+      <Button
+        onClick={handleGenerate}
+        disabled={loading}
+        size="sm"
+        variant="outline"
+      >
+        <PlusCircle className="mr-2 h-4 w-4" />
         {loading ? "Generating..." : "Generate Invite Link"}
       </Button>
 
@@ -51,10 +59,15 @@ export function InviteManager({ initialInvites }: InviteManagerProps) {
               className="flex items-center justify-between rounded-md border p-3 text-sm"
             >
               <div>
-                <code className="text-xs bg-muted px-1 py-0.5 rounded">{invite.code}</code>
+                <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                  {invite.code}
+                </code>
                 {invite.expiresAt && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Expires {formatDistanceToNow(new Date(invite.expiresAt), { addSuffix: true })}
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Expires{" "}
+                    {formatDistanceToNow(new Date(invite.expiresAt), {
+                      addSuffix: true,
+                    })}
                   </p>
                 )}
               </div>
@@ -74,5 +87,5 @@ export function InviteManager({ initialInvites }: InviteManagerProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

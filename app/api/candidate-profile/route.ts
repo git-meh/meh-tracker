@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server"
-import { z } from "zod"
-import { eq } from "drizzle-orm"
-import { createClient } from "@/lib/supabase/server"
-import { db } from "@/lib/db"
-import { candidateProfiles } from "@/lib/db/schema"
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { eq } from "drizzle-orm";
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { candidateProfiles } from "@/lib/db/schema";
 import {
   normalizeCountryCode,
   normalizeCountryCodes,
-} from "@/lib/visa-platform/countries"
+} from "@/lib/visa-platform/countries";
 
 const candidateProfileSchema = z.object({
   currentCountry: z.string().max(120).nullable().optional(),
@@ -23,52 +23,58 @@ const candidateProfileSchema = z.object({
   summary: z.string().max(4000).nullable().optional(),
   skills: z.array(z.string().max(80)).max(50).optional(),
   preferredBoards: z.array(z.string().max(120)).max(30).optional(),
-})
+});
 
 async function getUser() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
-  return user
+  return user;
 }
 
 export async function GET() {
-  const user = await getUser()
+  const user = await getUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const [profile] = await db
     .select()
     .from(candidateProfiles)
     .where(eq(candidateProfiles.userId, user.id))
-    .limit(1)
+    .limit(1);
 
-  return NextResponse.json(profile ?? null)
+  return NextResponse.json(profile ?? null);
 }
 
 export async function PUT(request: Request) {
-  const user = await getUser()
+  const user = await getUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json()
-  const parsed = candidateProfileSchema.safeParse(body)
+  const body = await request.json();
+  const parsed = candidateProfileSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
-  const now = new Date()
-  const currentCountry = normalizeCountryCode(parsed.data.currentCountry) ?? null
-  const normalisedTargetCountries = normalizeCountryCodes(parsed.data.targetCountries)
+  const now = new Date();
+  const currentCountry =
+    normalizeCountryCode(parsed.data.currentCountry) ?? null;
+  const normalisedTargetCountries = normalizeCountryCodes(
+    parsed.data.targetCountries,
+  );
   const [existing] = await db
     .select()
     .from(candidateProfiles)
     .where(eq(candidateProfiles.userId, user.id))
-    .limit(1)
+    .limit(1);
 
   if (existing) {
     const [updated] = await db
@@ -84,9 +90,9 @@ export async function PUT(request: Request) {
         updatedAt: now,
       })
       .where(eq(candidateProfiles.userId, user.id))
-      .returning()
+      .returning();
 
-    return NextResponse.json(updated)
+    return NextResponse.json(updated);
   }
 
   const [created] = await db
@@ -108,7 +114,7 @@ export async function PUT(request: Request) {
       preferredBoards: parsed.data.preferredBoards ?? [],
       updatedAt: now,
     })
-    .returning()
+    .returning();
 
-  return NextResponse.json(created, { status: 201 })
+  return NextResponse.json(created, { status: 201 });
 }

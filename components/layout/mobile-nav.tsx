@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { motion, AnimatePresence } from "motion/react"
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Menu,
   X,
@@ -16,13 +16,11 @@ import {
   Target,
   PlusCircle,
   LogIn,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import type { User } from "@supabase/supabase-js"
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { User } from "@supabase/supabase-js";
 
-const publicNavItems = [
-  { href: "/jobs", label: "Job Board", icon: Briefcase },
-]
+const publicNavItems = [{ href: "/jobs", label: "Job Board", icon: Briefcase }];
 
 const authNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -32,25 +30,25 @@ const authNavItems = [
   { href: "/workspace", label: "Workspace", icon: Target },
   { href: "/group", label: "Group Feed", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
-]
+];
 
 interface MobileNavProps {
-  user: User | null
+  user: User | null;
 }
 
 export function MobileNav({ user }: MobileNavProps) {
-  const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
-  const navItems = user ? authNavItems : publicNavItems
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const navItems = user ? authNavItems : publicNavItems;
 
   function close() {
-    setIsOpen(false)
+    setIsOpen(false);
   }
 
   return (
     <>
       <button
-        className="md:hidden p-2 rounded-md hover:bg-accent transition-colors"
+        className="rounded-md p-2 transition-colors hover:bg-accent md:hidden"
         aria-label="Open navigation menu"
         onClick={() => setIsOpen(true)}
       >
@@ -74,14 +72,18 @@ export function MobileNav({ user }: MobileNavProps) {
             {/* Drawer */}
             <motion.div
               key="drawer"
-              className="fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r bg-background shadow-lg md:hidden"
+              className="fixed top-0 left-0 z-50 flex h-full w-72 flex-col border-r bg-background shadow-lg md:hidden"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
             >
               <div className="flex h-16 items-center justify-between border-b px-6">
-                <Link href="/jobs" className="flex items-center gap-2 font-bold text-lg" onClick={close}>
+                <Link
+                  href="/jobs"
+                  className="flex items-center gap-2 text-lg font-bold"
+                  onClick={close}
+                >
                   <span className="text-2xl">😑</span>
                   <span>meh-tracker</span>
                 </Link>
@@ -102,9 +104,10 @@ export function MobileNav({ user }: MobileNavProps) {
                     onClick={close}
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                      pathname === href || (href !== "/jobs" && pathname.startsWith(href + "/"))
+                      pathname === href ||
+                        (href !== "/jobs" && pathname.startsWith(href + "/"))
                         ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -139,5 +142,5 @@ export function MobileNav({ user }: MobileNavProps) {
         )}
       </AnimatePresence>
     </>
-  )
+  );
 }
