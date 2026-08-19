@@ -29,9 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
         run: |
@@ -76,41 +74,41 @@ jobs:
 
           if [ "$GROUP" = "fast" ] || [ "$GROUP" = "all" ]; then
             echo "── Greenhouse ──"
-            npx tsx src/adapters/greenhouse.ts || true
+            bunx tsx src/adapters/greenhouse.ts || true
             echo "── Lever ──"
-            npx tsx src/adapters/lever.ts || true
+            bunx tsx src/adapters/lever.ts || true
           fi
 
           if [ "$GROUP" = "aggregators" ] || [ "$GROUP" = "all" ]; then
             echo "── Indeed ──"
-            npx tsx src/adapters/indeed.ts || true
+            bunx tsx src/adapters/indeed.ts || true
             echo "── Adzuna ──"
-            npx tsx src/adapters/adzuna.ts || true
+            bunx tsx src/adapters/adzuna.ts || true
             echo "── Totaljobs ──"
-            npx tsx src/adapters/totaljobs.ts || true
+            bunx tsx src/adapters/totaljobs.ts || true
             echo "── CV-Library ──"
-            npx tsx src/adapters/cv-library.ts || true
+            bunx tsx src/adapters/cv-library.ts || true
             echo "── Monster ──"
-            npx tsx src/adapters/monster.ts || true
+            bunx tsx src/adapters/monster.ts || true
             echo "── Reed ──"
-            npx tsx src/adapters/reed.ts || true
+            bunx tsx src/adapters/reed.ts || true
           fi
 
           if [ "$GROUP" = "sector" ] || [ "$GROUP" = "all" ]; then
             echo "── CWJobs ──"
-            npx tsx src/adapters/cwjobs.ts || true
+            bunx tsx src/adapters/cwjobs.ts || true
             echo "── Guardian ──"
-            npx tsx src/adapters/guardian.ts || true
+            bunx tsx src/adapters/guardian.ts || true
             echo "── NHS ──"
-            npx tsx src/adapters/nhs.ts || true
+            bunx tsx src/adapters/nhs.ts || true
             echo "── Council ──"
-            npx tsx src/adapters/council.ts || true
+            bunx tsx src/adapters/council.ts || true
             echo "── DWP ──"
-            npx tsx src/adapters/dwp.ts || true
+            bunx tsx src/adapters/dwp.ts || true
             echo "── jobs.ac.uk ──"
-            npx tsx src/adapters/jobs-ac-uk.ts || true
+            bunx tsx src/adapters/jobs-ac-uk.ts || true
             echo "── CharityJob ──"
-            npx tsx src/adapters/charityjob.ts || true
+            bunx tsx src/adapters/charityjob.ts || true
           fi
 
           echo "✅ Done"
