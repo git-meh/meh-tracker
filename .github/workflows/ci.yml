@@ -8,7 +8,7 @@ on:
 
 jobs:
   check:
-    name: Type Check & Lint
+    name: Type Check, Lint & Build
     runs-on: ubuntu-latest
 
     steps:
