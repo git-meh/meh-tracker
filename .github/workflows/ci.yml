@@ -24,3 +24,14 @@ jobs:
 
       - name: Lint
         run: bun run lint
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://ci.example.invalid
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: ci-service-role-key
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/meh_tracker_ci
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          JOB_INGESTION_API_KEY: ci-job-ingestion-key
+          CRON_SECRET: ci-cron-secret
+        run: bun run build
