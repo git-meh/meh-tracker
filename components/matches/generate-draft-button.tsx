@@ -11,7 +11,7 @@ interface GenerateDraftButtonProps {
 
 export function GenerateDraftButton({
   jobId,
-  draftId,
+  draftId
 }: GenerateDraftButtonProps) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export function GenerateDraftButton({
       const response = await fetch("/api/application-drafts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId }),
+        body: JSON.stringify({ jobId })
       });
 
       const data = await response

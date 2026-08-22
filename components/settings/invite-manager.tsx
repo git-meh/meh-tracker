@@ -19,7 +19,7 @@ export function InviteManager({ initialInvites }: InviteManagerProps) {
     setLoading(true);
     const res = await fetch("/api/invites", {
       method: "POST",
-      body: JSON.stringify({}),
+      body: JSON.stringify({})
     });
     const data = await res.json();
     if (res.ok) {
@@ -66,7 +66,7 @@ export function InviteManager({ initialInvites }: InviteManagerProps) {
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     Expires{" "}
                     {formatDistanceToNow(new Date(invite.expiresAt), {
-                      addSuffix: true,
+                      addSuffix: true
                     })}
                   </p>
                 )}

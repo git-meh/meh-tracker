@@ -13,7 +13,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 
 export function LoginForm() {
@@ -34,7 +34,7 @@ export function LoginForm() {
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
-      password,
+      password
     });
 
     if (error) {
@@ -51,8 +51,8 @@ export function LoginForm() {
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`,
-      },
+        redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`
+      }
     });
   }
 

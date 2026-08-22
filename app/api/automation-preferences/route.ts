@@ -13,13 +13,13 @@ const automationPreferenceSchema = z.object({
   supportedCountries: z.array(z.string().max(120)).max(25).optional(),
   emailNotificationsEnabled: z.boolean().optional(),
   dailyDigestEnabled: z.boolean().optional(),
-  instantUpdatesEnabled: z.boolean().optional(),
+  instantUpdatesEnabled: z.boolean().optional()
 });
 
 async function getUser() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   return user;
@@ -51,7 +51,7 @@ export async function PUT(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -71,7 +71,7 @@ export async function PUT(request: Request) {
           parsed.data.supportedCountries !== undefined
             ? normalizeCountryCodes(parsed.data.supportedCountries)
             : existing.supportedCountries,
-        updatedAt: now,
+        updatedAt: now
       })
       .where(eq(automationPreferences.userId, user.id))
       .returning();
@@ -88,13 +88,13 @@ export async function PUT(request: Request) {
       allowedSourceTypes: parsed.data.allowedSourceTypes ?? [
         "approved_feed",
         "employer_site",
-        "ats",
+        "ats"
       ],
       supportedCountries: normalizeCountryCodes(parsed.data.supportedCountries),
       emailNotificationsEnabled: parsed.data.emailNotificationsEnabled ?? true,
       dailyDigestEnabled: parsed.data.dailyDigestEnabled ?? true,
       instantUpdatesEnabled: parsed.data.instantUpdatesEnabled ?? true,
-      updatedAt: now,
+      updatedAt: now
     })
     .returning();
 

@@ -38,13 +38,13 @@ export default function NewJobPage() {
       description: form.get("description") || undefined,
       salaryRange: form.get("salaryRange") || undefined,
       location: form.get("location") || undefined,
-      tags,
+      tags
     };
 
     const res = await fetch("/api/jobs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(body)
     });
 
     if (!res.ok) {
@@ -61,7 +61,7 @@ export default function NewJobPage() {
       const appRes = await fetch("/api/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId: job.id, status: "applied" }),
+        body: JSON.stringify({ jobId: job.id, status: "applied" })
       });
       if (appRes.ok) {
         const app = await appRes.json();

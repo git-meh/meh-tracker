@@ -7,7 +7,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "@/components/ui/select";
 import type { ApplicationStatus } from "@/lib/db/schema";
 
@@ -19,7 +19,7 @@ const STATUSES: { value: ApplicationStatus; label: string }[] = [
   { value: "interview", label: "Interview" },
   { value: "offer", label: "Offer Received" },
   { value: "rejected", label: "Rejected" },
-  { value: "withdrawn", label: "Withdrawn" },
+  { value: "withdrawn", label: "Withdrawn" }
 ];
 
 interface StatusChangerProps {
@@ -29,7 +29,7 @@ interface StatusChangerProps {
 
 export function StatusChanger({
   applicationId,
-  currentStatus,
+  currentStatus
 }: StatusChangerProps) {
   const router = useRouter();
   const [value, setValue] = useState(currentStatus);
@@ -43,7 +43,7 @@ export function StatusChanger({
     await fetch(`/api/applications/${applicationId}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
+      body: JSON.stringify({ status: newStatus })
     });
 
     setLoading(false);

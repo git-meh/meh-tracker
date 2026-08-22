@@ -12,14 +12,14 @@ const STATUS_VARIANTS: Record<
   pending: "warning",
   sent: "success",
   failed: "destructive",
-  skipped: "secondary",
+  skipped: "secondary"
 };
 
 const STATUS_LABELS: Record<NotificationEvent["status"], string> = {
   pending: "Queued",
   sent: "Sent",
   failed: "Failed",
-  skipped: "Skipped",
+  skipped: "Skipped"
 };
 
 export function NotificationFeed({ events }: NotificationFeedProps) {

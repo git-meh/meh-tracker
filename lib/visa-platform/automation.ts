@@ -6,13 +6,13 @@ import {
   type Application,
   type ApplicationDraft,
   type AutomationPreference,
-  type Job,
+  type Job
 } from "@/lib/db/schema";
 import { AUTO_SUBMIT_ELIGIBLE_ADAPTERS } from "@/lib/visa-platform/constants";
 
 export function getAutomationEligibility(
   job: Pick<Job, "sourceType" | "applyAdapter" | "countryCode">,
-  preferences: AutomationPreference | null,
+  preferences: AutomationPreference | null
 ) {
   const reviewRequired = preferences?.reviewRequired ?? true;
   const autoSubmitEnabled = preferences?.autoSubmitEnabled ?? false;
@@ -24,7 +24,7 @@ export function getAutomationEligibility(
     (job.countryCode !== null &&
       preferences.supportedCountries.includes(job.countryCode));
   const adapterAllowed = AUTO_SUBMIT_ELIGIBLE_ADAPTERS.includes(
-    job.applyAdapter,
+    job.applyAdapter
   );
 
   const eligible =
@@ -34,7 +34,7 @@ export function getAutomationEligibility(
     return {
       eligible: false,
       mode: reviewRequired ? "review_required" : "manual",
-      reason: "Auto-submit is disabled for this user",
+      reason: "Auto-submit is disabled for this user"
     };
   }
 
@@ -42,7 +42,7 @@ export function getAutomationEligibility(
     return {
       eligible: false,
       mode: "review_required",
-      reason: "Source type is excluded from automation preferences",
+      reason: "Source type is excluded from automation preferences"
     };
   }
 
@@ -50,7 +50,7 @@ export function getAutomationEligibility(
     return {
       eligible: false,
       mode: "review_required",
-      reason: "Country is outside the automation coverage list",
+      reason: "Country is outside the automation coverage list"
     };
   }
 
@@ -58,14 +58,14 @@ export function getAutomationEligibility(
     return {
       eligible: false,
       mode: "review_required",
-      reason: "Job adapter is not in the supported automation set",
+      reason: "Job adapter is not in the supported automation set"
     };
   }
 
   return {
     eligible,
     mode: eligible ? "auto_submit" : "review_required",
-    reason: eligible ? "Eligible for executor handoff" : "Requires review",
+    reason: eligible ? "Eligible for executor handoff" : "Requires review"
   };
 }
 
@@ -82,7 +82,7 @@ export async function executeApplicationRun({
   application,
   draft,
   job,
-  preferences,
+  preferences
 }: {
   application: Application;
   draft: ApplicationDraft;
@@ -121,7 +121,7 @@ export async function executeApplicationRun({
       log: eligibility.reason,
       externalUrl: job.url,
       startedAt: now,
-      finishedAt: eligibility.eligible ? null : now,
+      finishedAt: eligibility.eligible ? null : now
     })
     .returning();
 
@@ -131,7 +131,7 @@ export async function executeApplicationRun({
       automationMode: eligibility.mode,
       submissionAttempts: attemptNumber,
       lastSubmissionAt: now,
-      updatedAt: now,
+      updatedAt: now
     })
     .where(eq(applications.id, application.id));
 
@@ -139,12 +139,12 @@ export async function executeApplicationRun({
     return {
       run: {
         ...run,
-        status: "manual_required" as const,
+        status: "manual_required" as const
       },
       result: {
         status: "manual_required" as const,
-        log: eligibility.reason,
-      },
+        log: eligibility.reason
+      }
     };
   }
 
@@ -155,19 +155,19 @@ export async function executeApplicationRun({
       .set({
         status: "manual_required",
         log: "Executor webhook is not configured in this environment.",
-        finishedAt: new Date(),
+        finishedAt: new Date()
       })
       .where(eq(applicationRuns.id, run.id));
 
     return {
       run: {
         ...run,
-        status: "manual_required" as const,
+        status: "manual_required" as const
       },
       result: {
         status: "manual_required" as const,
-        log: "Executor webhook is not configured in this environment.",
-      },
+        log: "Executor webhook is not configured in this environment."
+      }
     };
   }
 
@@ -177,14 +177,14 @@ export async function executeApplicationRun({
     applyUrl: job.url,
     adapter: job.applyAdapter,
     company: job.company,
-    title: job.title,
+    title: job.title
   };
 
   try {
     const response = await fetch(executorUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payload)
     });
 
     const result = (await response.json().catch(() => ({}))) as {
@@ -213,7 +213,7 @@ export async function executeApplicationRun({
             ? (result.error ?? "Executor rejected the request.")
             : null,
         finishedAt: finishTime,
-        externalUrl: result.confirmationUrl ?? job.url,
+        externalUrl: result.confirmationUrl ?? job.url
       })
       .where(eq(applicationRuns.id, run.id));
 
@@ -225,7 +225,7 @@ export async function executeApplicationRun({
           appliedAt: finishTime,
           externalApplicationId: result.externalApplicationId ?? null,
           externalConfirmationUrl: result.confirmationUrl ?? null,
-          updatedAt: finishTime,
+          updatedAt: finishTime
         })
         .where(eq(applications.id, application.id));
     }
@@ -233,7 +233,7 @@ export async function executeApplicationRun({
     return {
       run: {
         ...run,
-        status,
+        status
       },
       result: {
         status,
@@ -243,8 +243,8 @@ export async function executeApplicationRun({
         error:
           status === "failed"
             ? (result.error ?? "Executor rejected the request.")
-            : null,
-      },
+            : null
+      }
     };
   } catch (error) {
     const message =
@@ -254,19 +254,19 @@ export async function executeApplicationRun({
       .set({
         status: "failed",
         error: message,
-        finishedAt: new Date(),
+        finishedAt: new Date()
       })
       .where(eq(applicationRuns.id, run.id));
 
     return {
       run: {
         ...run,
-        status: "failed" as const,
+        status: "failed" as const
       },
       result: {
         status: "failed" as const,
-        error: message,
-      },
+        error: message
+      }
     };
   }
 }

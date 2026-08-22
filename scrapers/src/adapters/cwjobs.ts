@@ -23,13 +23,13 @@ const config: BoardConfig = {
     return [...new Set(matches.map((m) => "https://www.cwjobs.co.uk" + m[1]))];
   },
   defaultTags: ["CWJobs", "Tech"],
-  sourceType: "approved_feed",
+  sourceType: "approved_feed"
 };
 
 export async function scrapeCwjobs(keywords?: string[], maxJobs = 30) {
   log.info("cwjobs_start", {
     keywords: keywords?.length ?? 0,
-    mode: keywords ? "keyword" : "location",
+    mode: keywords ? "keyword" : "location"
   });
   return scrapeBoard(config, keywords, maxJobs);
 }

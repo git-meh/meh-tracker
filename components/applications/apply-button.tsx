@@ -13,7 +13,7 @@ export function ApplyButton({ jobId }: { jobId: string }) {
     const res = await fetch("/api/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jobId, status: "saved" }),
+      body: JSON.stringify({ jobId, status: "saved" })
     });
 
     if (res.ok) {

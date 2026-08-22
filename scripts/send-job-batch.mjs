@@ -14,7 +14,7 @@ const sourceIdArg = readArg("--source-id");
 
 if (!fileArg) {
   console.error(
-    "Usage: node scripts/send-job-batch.mjs --file ./jobs.json [--url http://localhost:3000] [--api-key your-key] [--source-id uuid]",
+    "Usage: node scripts/send-job-batch.mjs --file ./jobs.json [--url http://localhost:3000] [--api-key your-key] [--source-id uuid]"
   );
   process.exit(1);
 }
@@ -48,12 +48,12 @@ const response = await fetch(endpoint, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "x-job-ingestion-key": apiKeyArg,
+    "x-job-ingestion-key": apiKeyArg
   },
   body: JSON.stringify({
     sourceId: sourceIdArg,
-    jobs,
-  }),
+    jobs
+  })
 });
 
 const data = await response.json().catch(() => ({}));

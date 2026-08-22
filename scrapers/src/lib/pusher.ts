@@ -6,7 +6,7 @@ const BATCH_SIZE = 50;
 
 export async function pushJobs(
   jobs: IngestibleJob[],
-  opts: { sourceId?: string; label?: string } = {},
+  opts: { sourceId?: string; label?: string } = {}
 ): Promise<void> {
   const appUrl =
     process.env.APP_URL ??
@@ -30,7 +30,7 @@ export async function pushJobs(
     adapter,
     totalJobs: jobs.length,
     totalBatches,
-    batchSize: BATCH_SIZE,
+    batchSize: BATCH_SIZE
   });
 
   let pushed = 0;
@@ -46,12 +46,12 @@ export async function pushJobs(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-job-ingestion-key": apiKey,
+          "x-job-ingestion-key": apiKey
         },
         body: JSON.stringify({
           jobs: batch,
-          ...(opts.sourceId ? { sourceId: opts.sourceId } : {}),
-        }),
+          ...(opts.sourceId ? { sourceId: opts.sourceId } : {})
+        })
       });
 
       if (!res.ok) {
@@ -61,7 +61,7 @@ export async function pushJobs(
           batchIndex,
           totalBatches,
           status: res.status,
-          body: body.slice(0, 500),
+          body: body.slice(0, 500)
         });
         failed += batch.length;
       } else {
@@ -76,7 +76,7 @@ export async function pushJobs(
           count: batch.length,
           inserted: data.jobsInserted ?? 0,
           updated: data.jobsUpdated ?? 0,
-          skipped: skippedInBatch,
+          skipped: skippedInBatch
         });
         pushed += written;
         skipped += skippedInBatch;
@@ -85,7 +85,7 @@ export async function pushJobs(
       log.error("pusher_batch_error", {
         adapter,
         batchIndex,
-        error: String(err),
+        error: String(err)
       });
       failed += batch.length;
     }
@@ -100,6 +100,6 @@ export async function pushJobs(
     pushed,
     skipped,
     failed,
-    total: jobs.length,
+    total: jobs.length
   });
 }

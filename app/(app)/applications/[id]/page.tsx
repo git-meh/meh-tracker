@@ -8,7 +8,7 @@ import {
   applicationStatusHistory,
   generatedArtifacts,
   resumes,
-  profiles,
+  profiles
 } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
@@ -31,11 +31,11 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   interview: "Interview",
   offer: "Offer Received",
   rejected: "Rejected",
-  withdrawn: "Withdrawn",
+  withdrawn: "Withdrawn"
 };
 
 export default async function ApplicationDetailPage({
-  params,
+  params
 }: {
   params: Promise<{ id: string }>;
 }) {
@@ -43,7 +43,7 @@ export default async function ApplicationDetailPage({
 
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
@@ -72,7 +72,7 @@ export default async function ApplicationDetailPage({
       jobUrl: jobs.url,
       jobId: jobs.id,
       jobAvailability: jobs.availability,
-      resumeFileName: resumes.fileName,
+      resumeFileName: resumes.fileName
     })
     .from(applications)
     .leftJoin(jobs, eq(applications.jobId, jobs.id))
@@ -96,7 +96,7 @@ export default async function ApplicationDetailPage({
       toStatus: applicationStatusHistory.toStatus,
       note: applicationStatusHistory.note,
       changedAt: applicationStatusHistory.changedAt,
-      changerName: profiles.name,
+      changerName: profiles.name
     })
     .from(applicationStatusHistory)
     .leftJoin(profiles, eq(applicationStatusHistory.changedBy, profiles.id))

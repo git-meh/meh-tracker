@@ -30,7 +30,7 @@ import {
   detectWorkMode,
   normalizeEmploymentType,
   resolveCountryMetadata,
-  type IngestibleJob,
+  type IngestibleJob
 } from "../lib/normalizer.js";
 import { pushJobs } from "../lib/pusher.js";
 import { log } from "../lib/log.js";
@@ -65,8 +65,8 @@ function extractJsonLd(html: string): ReedJsonLd | null {
   // Find all <script type="application/ld+json"> blocks
   const matches = [
     ...html.matchAll(
-      /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi,
-    ),
+      /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi
+    )
   ];
 
   for (const match of matches) {
@@ -78,7 +78,7 @@ function extractJsonLd(html: string): ReedJsonLd | null {
 
       if (Array.isArray(parsed["@graph"])) {
         const job = parsed["@graph"].find(
-          (item: { "@type": string }) => item["@type"] === "JobPosting",
+          (item: { "@type": string }) => item["@type"] === "JobPosting"
         );
         if (job) return job as ReedJsonLd;
       }
@@ -117,12 +117,12 @@ async function scrapeJobPage(url: string): Promise<IngestibleJob | null> {
     : null;
   const locationParts = [
     jsonLd.jobLocation?.address?.addressLocality,
-    jsonLd.jobLocation?.address?.addressRegion,
+    jsonLd.jobLocation?.address?.addressRegion
   ].filter(Boolean);
   const location = locationParts.length > 0 ? locationParts.join(", ") : null;
   const { countryCode, countryConfidence } = resolveCountryMetadata({
     countryCode: jsonLd.jobLocation?.address?.addressCountry,
-    location,
+    location
   });
   const workMode = detectWorkMode(location, rawDescription);
   const visaSponsorshipStatus = detectSponsorshipStatus(rawDescription ?? "");
@@ -141,7 +141,7 @@ async function scrapeJobPage(url: string): Promise<IngestibleJob | null> {
       salaryRange =
         [
           salaryMin ? `£${salaryMin.toLocaleString("en-GB")}` : null,
-          salaryMax ? `£${salaryMax.toLocaleString("en-GB")}` : null,
+          salaryMax ? `£${salaryMax.toLocaleString("en-GB")}` : null
         ]
           .filter(Boolean)
           .join(" - ") + " per annum";
@@ -175,13 +175,13 @@ async function scrapeJobPage(url: string): Promise<IngestibleJob | null> {
     visaSponsorshipStatus,
     workMode,
     employmentType,
-    closingAt,
+    closingAt
   };
 }
 
 async function scrapeSearchTerm(
   keyword: string,
-  maxPages = 5,
+  maxPages = 5
 ): Promise<IngestibleJob[]> {
   const jobs: IngestibleJob[] = [];
   const seenLinks = new Set<string>();
@@ -194,7 +194,7 @@ async function scrapeSearchTerm(
     log.info("reed_search", {
       keyword: keyword || "(all)",
       page,
-      url: searchUrl,
+      url: searchUrl
     });
 
     let html: string;
@@ -249,7 +249,7 @@ async function scrapeSearchTerm(
  */
 export async function scrapeReed(
   keywords?: string[],
-  maxPagesPerKeyword = 3,
+  maxPagesPerKeyword = 3
 ): Promise<IngestibleJob[]> {
   const all: IngestibleJob[] = [];
 

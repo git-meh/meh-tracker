@@ -11,17 +11,17 @@ import {
   generatedArtifacts,
   jobMatches,
   jobs,
-  resumeVersions,
+  resumeVersions
 } from "@/lib/db/schema";
 import {
   executeApplicationRun,
-  getAutomationEligibility,
+  getAutomationEligibility
 } from "@/lib/visa-platform/automation";
 import { createNotificationEvent } from "@/lib/visa-platform/notifications";
 
 const updateDraftSchema = z.object({
   status: z.enum(["approved", "rejected"]),
-  reviewNotes: z.string().max(2000).nullable().optional(),
+  reviewNotes: z.string().max(2000).nullable().optional()
 });
 
 const saveDraftSchema = z.object({
@@ -30,18 +30,18 @@ const saveDraftSchema = z.object({
     z.object({
       type: z.enum(["tailored_resume", "cover_letter", "application_answers"]),
       title: z.string().max(200).optional(),
-      content: z.string().max(100000),
-    }),
-  ),
+      content: z.string().max(100000)
+    })
+  )
 });
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -70,11 +70,11 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -86,7 +86,7 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -107,7 +107,7 @@ export async function PATCH(
       .set({
         status: "rejected",
         reviewNotes: parsed.data.reviewNotes ?? null,
-        updatedAt: new Date(),
+        updatedAt: new Date()
       })
       .where(eq(applicationDrafts.id, draft.id))
       .returning();
@@ -145,8 +145,8 @@ export async function PATCH(
     .where(
       and(
         eq(generatedArtifacts.draftId, draft.id),
-        eq(generatedArtifacts.type, "tailored_resume"),
-      ),
+        eq(generatedArtifacts.type, "tailored_resume")
+      )
     )
     .orderBy(desc(generatedArtifacts.createdAt))
     .limit(1);
@@ -156,7 +156,7 @@ export async function PATCH(
         .select()
         .from(resumeVersions)
         .where(
-          eq(resumeVersions.id, tailoredResumeArtifact.sourceResumeVersionId),
+          eq(resumeVersions.id, tailoredResumeArtifact.sourceResumeVersionId)
         )
         .limit(1)
     : [];
@@ -174,8 +174,8 @@ export async function PATCH(
         .where(
           and(
             eq(applications.userId, user.id),
-            eq(applications.jobId, draft.jobId),
-          ),
+            eq(applications.jobId, draft.jobId)
+          )
         )
         .limit(1);
 
@@ -195,7 +195,7 @@ export async function PATCH(
             matchedScore: match?.score ?? null,
             matchReason: match?.rationale ?? null,
             automationMode: getAutomationEligibility(job, preferences ?? null)
-              .mode,
+              .mode
           })
           .returning()
       )[0];
@@ -207,7 +207,7 @@ export async function PATCH(
       toStatus: "saved",
       changedBy: user.id,
       changedAt: now,
-      note: "Created from generated draft review.",
+      note: "Created from generated draft review."
     });
   }
 
@@ -223,7 +223,7 @@ export async function PATCH(
       status: "approved",
       reviewNotes: parsed.data.reviewNotes ?? null,
       approvedAt: now,
-      updatedAt: now,
+      updatedAt: now
     })
     .where(eq(applicationDrafts.id, draft.id))
     .returning();
@@ -232,7 +232,7 @@ export async function PATCH(
     application,
     draft: approvedDraft,
     job,
-    preferences: preferences ?? null,
+    preferences: preferences ?? null
   });
 
   if (execution.result.status === "submitted") {
@@ -242,14 +242,14 @@ export async function PATCH(
       toStatus: "applied",
       changedBy: user.id,
       changedAt: new Date(),
-      note: "Submitted through the automation executor.",
+      note: "Submitted through the automation executor."
     });
 
     await db
       .update(applicationDrafts)
       .set({
         status: "submitted",
-        updatedAt: new Date(),
+        updatedAt: new Date()
       })
       .where(eq(applicationDrafts.id, draft.id));
 
@@ -260,7 +260,7 @@ export async function PATCH(
       body: `The approved draft for ${job.company} has been marked as submitted.`,
       jobId: job.id,
       applicationId: application.id,
-      draftId: draft.id,
+      draftId: draft.id
     });
   }
 
@@ -269,7 +269,7 @@ export async function PATCH(
       .update(applicationDrafts)
       .set({
         status: "failed",
-        updatedAt: new Date(),
+        updatedAt: new Date()
       })
       .where(eq(applicationDrafts.id, draft.id));
 
@@ -282,7 +282,7 @@ export async function PATCH(
         "The executor could not complete this application.",
       jobId: job.id,
       applicationId: application.id,
-      draftId: draft.id,
+      draftId: draft.id
     });
   }
 
@@ -290,17 +290,17 @@ export async function PATCH(
     draftId: draft.id,
     applicationId: application.id,
     run: execution.run,
-    result: execution.result,
+    result: execution.result
   });
 }
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -312,7 +312,7 @@ export async function PUT(
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -361,12 +361,12 @@ export async function PUT(
         title:
           artifact.title ?? previous?.title ?? artifact.type.replace(/_/g, " "),
         content: artifact.content,
-        status: "ready" as const,
+        status: "ready" as const
       };
     })
     .filter(
       (
-        value,
+        value
       ): value is {
         userId: string;
         jobId: string;
@@ -377,7 +377,7 @@ export async function PUT(
         title: string;
         content: string;
         status: "ready";
-      } => Boolean(value),
+      } => Boolean(value)
     );
 
   if (inserts.length > 0) {
@@ -388,7 +388,7 @@ export async function PUT(
     .update(applicationDrafts)
     .set({
       reviewNotes: parsed.data.reviewNotes ?? null,
-      updatedAt: new Date(),
+      updatedAt: new Date()
     })
     .where(eq(applicationDrafts.id, draft.id))
     .returning();

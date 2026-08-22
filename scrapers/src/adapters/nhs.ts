@@ -16,7 +16,7 @@ import {
   stripHtml,
   detectWorkMode,
   normalizeEmploymentType,
-  type IngestibleJob,
+  type IngestibleJob
 } from "../lib/normalizer.js";
 import { pushJobs } from "../lib/pusher.js";
 import { log } from "../lib/log.js";
@@ -41,7 +41,7 @@ const NHS_SEARCH_TERMS = [
   "product manager",
   "business analyst",
   "systems engineer",
-  "network engineer",
+  "network engineer"
 ];
 
 function isJobDetailUrl(url: string): boolean {
@@ -55,7 +55,7 @@ function isJobDetailUrl(url: string): boolean {
 function extractDirectJobLinks(html: string, baseUrl: string): string[] {
   const matches = [
     ...html.matchAll(/href="(\/candidate\/jobad\/view\/[^"?#]+)"/gi),
-    ...html.matchAll(/href="(\/xi\/vacancy\/[^"?#]+)"/gi),
+    ...html.matchAll(/href="(\/xi\/vacancy\/[^"?#]+)"/gi)
   ];
   return [...new Set(matches.map((m) => baseUrl + m[1]))];
 }
@@ -65,7 +65,7 @@ async function scrapeDetailPage(url: string): Promise<IngestibleJob | null> {
 
   // Try JSON-LD first
   const jsonLdMatch = html.match(
-    /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i,
+    /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i
   );
   if (jsonLdMatch) {
     try {
@@ -98,7 +98,7 @@ async function scrapeDetailPage(url: string): Promise<IngestibleJob | null> {
           visaSponsorshipStatus: detectSponsorshipStatus(description ?? ""),
           workMode: detectWorkMode(location, description),
           employmentType: normalizeEmploymentType(data.employmentType),
-          closingAt: data.validThrough ? new Date(data.validThrough) : null,
+          closingAt: data.validThrough ? new Date(data.validThrough) : null
         };
       }
     } catch {
@@ -112,7 +112,7 @@ async function scrapeDetailPage(url: string): Promise<IngestibleJob | null> {
   if (!title) return null;
 
   const descMatch = html.match(
-    /<div[^>]+class="[^"]*job-description[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+    /<div[^>]+class="[^"]*job-description[^"]*"[^>]*>([\s\S]*?)<\/div>/i
   );
   const description = descMatch ? stripHtml(descMatch[1]) : null;
 
@@ -133,13 +133,13 @@ async function scrapeDetailPage(url: string): Promise<IngestibleJob | null> {
     applyAdapter: "manual_external",
     visaSponsorshipStatus: detectSponsorshipStatus(description ?? ""),
     workMode: detectWorkMode(null, description),
-    employmentType: "unknown",
+    employmentType: "unknown"
   };
 }
 
 async function scrapeKeyword(
   keyword: string,
-  maxJobs = 30,
+  maxJobs = 30
 ): Promise<IngestibleJob[]> {
   const results: IngestibleJob[] = [];
   const seen = new Set<string>();
@@ -156,7 +156,7 @@ async function scrapeKeyword(
     try {
       const html = await fetchPage(searchUrl, {
         minDelayMs: 2000,
-        maxDelayMs: 4000,
+        maxDelayMs: 4000
       });
       const directLinks = extractDirectJobLinks(html, BASE_URL);
       directLinks.forEach((u) => {
@@ -192,7 +192,7 @@ async function scrapeKeyword(
 
 export async function scrapeNhs(
   keywords: string[] = NHS_SEARCH_TERMS,
-  maxJobsPerKeyword = 25,
+  maxJobsPerKeyword = 25
 ): Promise<IngestibleJob[]> {
   const all: IngestibleJob[] = [];
   for (const keyword of keywords) {

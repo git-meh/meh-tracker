@@ -10,7 +10,7 @@ const SOURCE_TYPE_OPTIONS = [
   { value: "approved_feed", label: "Approved feeds" },
   { value: "employer_site", label: "Employer sites" },
   { value: "ats", label: "ATS" },
-  { value: "manual", label: "Manual jobs" },
+  { value: "manual", label: "Manual jobs" }
 ];
 
 interface AutomationPreferencesFormProps {
@@ -22,7 +22,7 @@ interface AutomationPreferencesFormProps {
 export function AutomationPreferencesForm({
   preferences,
   executorConfigured,
-  notificationWebhookConfigured,
+  notificationWebhookConfigured
 }: AutomationPreferencesFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export function AutomationPreferencesForm({
       emailNotificationsEnabled:
         formData.get("emailNotificationsEnabled") === "on",
       dailyDigestEnabled: formData.get("dailyDigestEnabled") === "on",
-      instantUpdatesEnabled: formData.get("instantUpdatesEnabled") === "on",
+      instantUpdatesEnabled: formData.get("instantUpdatesEnabled") === "on"
     };
 
     startTransition(async () => {
@@ -45,7 +45,7 @@ export function AutomationPreferencesForm({
       const response = await fetch("/api/automation-preferences", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -96,7 +96,7 @@ export function AutomationPreferencesForm({
                   defaultChecked={
                     preferences?.allowedSourceTypes.includes(option.value) ??
                     ["approved_feed", "employer_site", "ats"].includes(
-                      option.value,
+                      option.value
                     )
                   }
                 />

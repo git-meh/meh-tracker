@@ -16,7 +16,7 @@ const ELIGIBLE_PHRASES = [
   "relocation package",
   "relocation support",
   "we support relocation",
-  "global mobility",
+  "global mobility"
 ];
 
 const NOT_AVAILABLE_PHRASES = [
@@ -35,7 +35,7 @@ const NOT_AVAILABLE_PHRASES = [
   "already have right to work",
   "uk right to work is required",
   "without sponsorship",
-  "no relocation",
+  "no relocation"
 ];
 
 const POSSIBLE_KEYWORDS = [
@@ -46,7 +46,7 @@ const POSSIBLE_KEYWORDS = [
   "immigration",
   "relocation",
   "biometric residence",
-  "brp",
+  "brp"
 ];
 
 export type SponsorshipStatus =

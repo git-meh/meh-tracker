@@ -7,7 +7,7 @@ import {
   applicationStatusHistory,
   jobs,
   resumes,
-  resumeVersions,
+  resumeVersions
 } from "@/lib/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { logger } from "@/lib/logger";
@@ -23,19 +23,19 @@ const createSchema = z.object({
       "interview",
       "offer",
       "rejected",
-      "withdrawn",
+      "withdrawn"
     ])
     .default("saved"),
   notes: z.string().max(2000).optional(),
   resumeId: z.string().uuid().optional(),
   resumeVersionId: z.string().uuid().optional(),
-  isPrivate: z.boolean().default(false),
+  isPrivate: z.boolean().default(false)
 });
 
 export async function GET() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -51,7 +51,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   if (!parsed.success)
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
 
   // Prevent duplicate applications
@@ -71,8 +71,8 @@ export async function POST(request: Request) {
     .where(
       and(
         eq(applications.userId, user.id),
-        eq(applications.jobId, parsed.data.jobId),
-      ),
+        eq(applications.jobId, parsed.data.jobId)
+      )
     )
     .limit(1);
 
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     logger.info("application_already_exists", {
       userId: user.id,
       jobId: parsed.data.jobId,
-      applicationId: existing.id,
+      applicationId: existing.id
     });
     return NextResponse.json(existing, { status: 200 });
   }
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
       jobSourceType: job.sourceType,
       matchedScore: null,
       matchReason: null,
-      automationMode: "review_required",
+      automationMode: "review_required"
     })
     .returning();
 
@@ -150,14 +150,14 @@ export async function POST(request: Request) {
     applicationId: app.id,
     fromStatus: null,
     toStatus: app.status,
-    changedBy: user.id,
+    changedBy: user.id
   });
 
   logger.info("application_created", {
     userId: user.id,
     jobId: parsed.data.jobId,
     applicationId: app.id,
-    status: app.status,
+    status: app.status
   });
   return NextResponse.json(app, { status: 201 });
 }

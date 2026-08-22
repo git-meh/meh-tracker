@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
 
 export function DeleteApplicationButton({
-  applicationId,
+  applicationId
 }: {
   applicationId: string;
 }) {
@@ -17,7 +17,7 @@ export function DeleteApplicationButton({
   async function handleDelete() {
     setLoading(true);
     const res = await fetch(`/api/applications/${applicationId}`, {
-      method: "DELETE",
+      method: "DELETE"
     });
     if (res.ok) {
       router.push("/applications");

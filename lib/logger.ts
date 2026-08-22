@@ -13,7 +13,7 @@ function write(level: Level, message: string, payload: LogPayload = {}) {
     ts: new Date().toISOString(),
     level,
     message,
-    ...payload,
+    ...payload
   });
   if (level === "error" || level === "warn") {
     process.stderr.write(line + "\n");
@@ -31,13 +31,13 @@ export const logger = {
     write("error", message, payload),
   debug: (message: string, payload?: LogPayload) => {
     if (process.env.LOG_LEVEL === "debug") write("debug", message, payload);
-  },
+  }
 };
 
 /** Wrap an API route handler with request/response logging. */
 export function withLogging(
   handler: (req: Request, ctx: unknown) => Promise<Response>,
-  route: string,
+  route: string
 ) {
   return async (req: Request, ctx: unknown): Promise<Response> => {
     const start = Date.now();
@@ -51,7 +51,7 @@ export function withLogging(
         route,
         method: req.method,
         status,
-        durationMs: Date.now() - start,
+        durationMs: Date.now() - start
       });
     }
   };

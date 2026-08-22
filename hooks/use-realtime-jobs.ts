@@ -18,12 +18,12 @@ export function useRealtimeJobs() {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "jobs" },
-        () => router.refresh(),
+        () => router.refresh()
       )
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "jobs" },
-        () => router.refresh(),
+        () => router.refresh()
       )
       .subscribe();
 

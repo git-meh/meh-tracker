@@ -21,18 +21,18 @@ const config: BoardConfig = {
   extractLinks: (html) => {
     const matches = [
       ...html.matchAll(/href="(\/job\/[^"?#]+)"/gi),
-      ...html.matchAll(/href="(\/[\w-]+-jobs\/[\w-]+-job-\d+[^"?#]*)"/gi),
+      ...html.matchAll(/href="(\/[\w-]+-jobs\/[\w-]+-job-\d+[^"?#]*)"/gi)
     ];
     return [...new Set(matches.map((m) => "https://www.totaljobs.com" + m[1]))];
   },
   defaultTags: ["Totaljobs"],
-  sourceType: "approved_feed",
+  sourceType: "approved_feed"
 };
 
 export async function scrapeTotaljobs(keywords?: string[], maxJobs = 30) {
   log.info("totaljobs_start", {
     keywords: keywords?.length ?? 0,
-    mode: keywords ? "keyword" : "location",
+    mode: keywords ? "keyword" : "location"
   });
   return scrapeBoard(config, keywords, maxJobs);
 }

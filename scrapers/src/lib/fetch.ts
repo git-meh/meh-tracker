@@ -3,7 +3,7 @@ const USER_AGENTS = [
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Safari/605.1.15",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Safari/605.1.15"
 ];
 
 function randomUA(): string {
@@ -31,7 +31,7 @@ export type FetchOptions = {
 
 export async function fetchPage(
   url: string,
-  opts: FetchOptions = {},
+  opts: FetchOptions = {}
 ): Promise<string> {
   const {
     headers = {},
@@ -40,7 +40,7 @@ export async function fetchPage(
     retries = 3,
     minDelayMs = 1000,
     maxDelayMs = 3000,
-    timeoutMs = 15_000,
+    timeoutMs = 15_000
   } = opts;
 
   const defaultHeaders: Record<string, string> = {
@@ -50,7 +50,7 @@ export async function fetchPage(
     "Accept-Language": "en-GB,en;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
     Connection: "keep-alive",
-    "Cache-Control": "no-cache",
+    "Cache-Control": "no-cache"
   };
 
   for (let attempt = 0; attempt <= retries; attempt++) {
@@ -62,7 +62,7 @@ export async function fetchPage(
         method,
         headers: { ...defaultHeaders, ...headers },
         body,
-        signal: AbortSignal.timeout(timeoutMs),
+        signal: AbortSignal.timeout(timeoutMs)
       });
 
       if (res.status === 404) {
@@ -102,7 +102,7 @@ export async function fetchPage(
       if (attempt === retries) throw err;
       const wait = 2000 * Math.pow(2, attempt);
       console.warn(
-        `[fetch] Attempt ${attempt + 1} failed for ${url}: ${err}. Retrying in ${wait}ms`,
+        `[fetch] Attempt ${attempt + 1} failed for ${url}: ${err}. Retrying in ${wait}ms`
       );
       await sleep(wait);
     }
@@ -113,14 +113,14 @@ export async function fetchPage(
 
 export async function fetchJson<T>(
   url: string,
-  opts: FetchOptions = {},
+  opts: FetchOptions = {}
 ): Promise<T> {
   const text = await fetchPage(url, {
     ...opts,
     headers: {
       Accept: "application/json",
-      ...opts.headers,
-    },
+      ...opts.headers
+    }
   });
   return JSON.parse(text) as T;
 }

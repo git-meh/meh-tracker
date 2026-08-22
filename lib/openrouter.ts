@@ -29,7 +29,7 @@ function getModelCandidates(explicitModel?: string): string[] {
     process.env.OPENROUTER_MODEL,
     DEFAULT_MODEL,
     ...parseFallbackModels(process.env.OPENROUTER_FALLBACK_MODELS),
-    ...DEFAULT_FALLBACK_MODELS,
+    ...DEFAULT_FALLBACK_MODELS
   ].filter(Boolean) as string[];
 
   return [...new Set(models)];
@@ -87,7 +87,7 @@ export async function chatComplete(
     temperature?: number;
     maxTokens?: number;
     jsonMode?: boolean;
-  } = {},
+  } = {}
 ): Promise<string> {
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) throw new Error("OPENROUTER_API_KEY is not configured");
@@ -95,15 +95,15 @@ export async function chatComplete(
   const errors: string[] = [];
   const maxRetries = getEnvNumber(
     process.env.OPENROUTER_MAX_RETRIES,
-    DEFAULT_MAX_RETRIES,
+    DEFAULT_MAX_RETRIES
   );
   const retryBaseDelayMs = getEnvNumber(
     process.env.OPENROUTER_RETRY_BASE_DELAY_MS,
-    DEFAULT_RETRY_BASE_DELAY_MS,
+    DEFAULT_RETRY_BASE_DELAY_MS
   );
   const requestTimeoutMs = getEnvNumber(
     process.env.OPENROUTER_REQUEST_TIMEOUT_MS,
-    DEFAULT_REQUEST_TIMEOUT_MS,
+    DEFAULT_REQUEST_TIMEOUT_MS
   );
 
   for (const model of models) {
@@ -118,7 +118,7 @@ export async function chatComplete(
             "Content-Type": "application/json",
             "HTTP-Referer":
               process.env.NEXT_PUBLIC_APP_URL ?? "https://localhost:3000",
-            "X-Title": "Meh Tracker",
+            "X-Title": "Meh Tracker"
           },
           body: JSON.stringify({
             model,
@@ -127,14 +127,14 @@ export async function chatComplete(
             max_tokens: options.maxTokens ?? 2048,
             ...(options.jsonMode
               ? { response_format: { type: "json_object" } }
-              : {}),
+              : {})
           }),
-          signal: AbortSignal.timeout(requestTimeoutMs),
+          signal: AbortSignal.timeout(requestTimeoutMs)
         });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         errors.push(
-          `model=${model} attempt=${attempt + 1} network_error=${message}`,
+          `model=${model} attempt=${attempt + 1} network_error=${message}`
         );
         break;
       }
@@ -160,14 +160,14 @@ export async function chatComplete(
 
       const data = await response.json();
       const content = extractTextFromContent(
-        data.choices?.[0]?.message?.content,
+        data.choices?.[0]?.message?.content
       );
       if (content) {
         return content;
       }
 
       errors.push(
-        `model=${model} attempt=${attempt + 1} returned empty content`,
+        `model=${model} attempt=${attempt + 1} returned empty content`
       );
 
       if (attempt < maxRetries) {
@@ -180,6 +180,6 @@ export async function chatComplete(
   }
 
   throw new Error(
-    `OpenRouter failed across models: ${errors.join(" | ").slice(0, 1500)}`,
+    `OpenRouter failed across models: ${errors.join(" | ").slice(0, 1500)}`
   );
 }

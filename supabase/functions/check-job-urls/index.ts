@@ -6,7 +6,7 @@ const STALE_HOURS = 6;
 Deno.serve(async () => {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
   const staleThreshold = new Date();
@@ -22,7 +22,7 @@ Deno.serve(async () => {
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+      status: 500
     });
   }
 
@@ -43,8 +43,8 @@ Deno.serve(async () => {
           signal: controller.signal,
           redirect: "follow",
           headers: {
-            "User-Agent": "meh-tracker/1.0 (+https://meh-tracker.vercel.app)",
-          },
+            "User-Agent": "meh-tracker/1.0 (+https://meh-tracker.vercel.app)"
+          }
         });
 
         clearTimeout(timeout);
@@ -65,7 +65,7 @@ Deno.serve(async () => {
         .eq("id", job.id);
 
       return { id: job.id, availability };
-    }),
+    })
   );
 
   const checked = results.filter((r) => r.status === "fulfilled").length;

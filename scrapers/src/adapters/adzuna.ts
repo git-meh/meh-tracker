@@ -19,18 +19,18 @@ const config: BoardConfig = {
     "https://www.adzuna.co.uk/search?q={keyword}&loc=United+Kingdom",
   extractLinks: (html) => {
     const matches = [
-      ...html.matchAll(/href="(\/jobs\/en-gb\/ads\/\d+[^"?#]*)"/gi),
+      ...html.matchAll(/href="(\/jobs\/en-gb\/ads\/\d+[^"?#]*)"/gi)
     ];
     return [...new Set(matches.map((m) => "https://www.adzuna.co.uk" + m[1]))];
   },
   defaultTags: ["Adzuna"],
-  sourceType: "approved_feed",
+  sourceType: "approved_feed"
 };
 
 export async function scrapeAdzuna(keywords?: string[], maxJobs = 30) {
   log.info("adzuna_start", {
     keywords: keywords?.length ?? 0,
-    mode: keywords ? "keyword" : "location",
+    mode: keywords ? "keyword" : "location"
   });
   return scrapeBoard(config, keywords, maxJobs);
 }

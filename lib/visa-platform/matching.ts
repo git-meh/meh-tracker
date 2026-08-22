@@ -44,7 +44,7 @@ const GENERIC_ROLE_WORDS = new Set([
   "executive",
   "officer",
   "coordinator",
-  "assistant",
+  "assistant"
 ]);
 
 function tokenize(value: string | null | undefined) {
@@ -54,8 +54,8 @@ function tokenize(value: string | null | undefined) {
         .toLowerCase()
         .replace(/[^a-z0-9+#./ -]/g, " ")
         .split(/\s+/)
-        .filter((t) => t.length > 1 && !GENERIC_ROLE_WORDS.has(t)),
-    ),
+        .filter((t) => t.length > 1 && !GENERIC_ROLE_WORDS.has(t))
+    )
   ];
 }
 
@@ -64,13 +64,13 @@ function buildSurface(job: MatchableJob) {
     ...tokenize(job.title),
     ...job.tags.flatMap((tag) => tokenize(tag)),
     ...tokenize(job.description),
-    ...tokenize(job.location),
+    ...tokenize(job.location)
   ]);
 }
 
 export function buildMatchResult(
   profile: CandidateProfile | null,
-  job: MatchableJob,
+  job: MatchableJob
 ): MatchResult {
   const factors = {
     sponsorship: 0,
@@ -78,14 +78,14 @@ export function buildMatchResult(
     role: 0,
     skills: 0,
     location: 0,
-    salary: 0,
+    salary: 0
   };
   const fitSignals: string[] = [];
   const concerns: string[] = [];
 
   const roleSurface = new Set([
     ...tokenize(job.title),
-    ...job.tags.flatMap((tag) => tokenize(tag)),
+    ...job.tags.flatMap((tag) => tokenize(tag))
   ]);
   const skillSurface = buildSurface(job);
 
@@ -103,7 +103,7 @@ export function buildMatchResult(
         factors.sponsorship += 12;
         fitSignals.push("Sponsorship may be available");
         concerns.push(
-          "Confirm visa sponsorship directly with the employer before applying",
+          "Confirm visa sponsorship directly with the employer before applying"
         );
         break;
       case "not_available":
@@ -113,7 +113,7 @@ export function buildMatchResult(
       default:
         // "unknown" — neutral, add a soft reminder
         concerns.push(
-          "Sponsorship status not listed — verify with employer before applying",
+          "Sponsorship status not listed — verify with employer before applying"
         );
     }
   } else if (job.visaSponsorshipStatus === "eligible") {
@@ -130,7 +130,7 @@ export function buildMatchResult(
         const hits = roleTokens.filter((t) => roleSurface.has(t));
         return {
           role,
-          coverage: roleTokens.length > 0 ? hits.length / roleTokens.length : 0,
+          coverage: roleTokens.length > 0 ? hits.length / roleTokens.length : 0
         };
       })
       .sort((a, b) => b.coverage - a.coverage);
@@ -151,7 +151,7 @@ export function buildMatchResult(
       // "Full Stack Developer" posting that uses all the right tech).
       factors.role -= 15;
       concerns.push(
-        `Job title does not directly match your target roles (${targetRoles.join(", ")})`,
+        `Job title does not directly match your target roles (${targetRoles.join(", ")})`
       );
     }
   }
@@ -163,19 +163,19 @@ export function buildMatchResult(
     const matchedSkills = [
       ...new Set(
         profileSkills.filter((skill) =>
-          tokenize(skill).some((t) => skillSurface.has(t)),
-        ),
-      ),
+          tokenize(skill).some((t) => skillSurface.has(t))
+        )
+      )
     ];
     if (matchedSkills.length > 0) {
       factors.skills += Math.min(matchedSkills.length * 5, 20);
       fitSignals.push(
-        `Skills overlap: ${matchedSkills.slice(0, 5).join(", ")}`,
+        `Skills overlap: ${matchedSkills.slice(0, 5).join(", ")}`
       );
     } else {
       factors.skills -= 10;
       concerns.push(
-        "None of your saved skills appear in this role's description or title",
+        "None of your saved skills appear in this role's description or title"
       );
     }
   }
@@ -189,28 +189,28 @@ export function buildMatchResult(
     } else if (job.eligibleCountries.some((c) => targetCountries.includes(c))) {
       factors.country += 8;
       fitSignals.push(
-        "Country fit: role is open to one of your target countries",
+        "Country fit: role is open to one of your target countries"
       );
     } else if (job.countryCode) {
       factors.country -= 8;
       concerns.push(
-        `Job is in ${job.countryCode}, which is not in your target countries`,
+        `Job is in ${job.countryCode}, which is not in your target countries`
       );
     } else {
       concerns.push(
-        "Job country is unclear — confirm location before applying",
+        "Job country is unclear — confirm location before applying"
       );
     }
   } else if (job.countryCode && profile?.currentCountry === job.countryCode) {
     factors.country += 4;
     fitSignals.push(
-      `Location matches your current country (${job.countryCode})`,
+      `Location matches your current country (${job.countryCode})`
     );
   }
 
   if (profile?.preferredLocations?.length && job.location) {
     const hit = profile.preferredLocations.some((loc) =>
-      job.location?.toLowerCase().includes(loc.toLowerCase()),
+      job.location?.toLowerCase().includes(loc.toLowerCase())
     );
     if (hit) {
       factors.location += 6;
@@ -239,7 +239,7 @@ export function buildMatchResult(
       profile.preferredCurrency !== job.currency
     ) {
       concerns.push(
-        `Salary listed in ${job.currency}; your floor is in ${profile.preferredCurrency} — verify before applying`,
+        `Salary listed in ${job.currency}; your floor is in ${profile.preferredCurrency} — verify before applying`
       );
     } else if (
       typeof job.salaryMax === "number" &&
@@ -247,7 +247,7 @@ export function buildMatchResult(
     ) {
       factors.salary += 8;
       fitSignals.push(
-        `Salary fit: up to ${job.currency} ${job.salaryMax.toLocaleString()}`,
+        `Salary fit: up to ${job.currency} ${job.salaryMax.toLocaleString()}`
       );
     } else if (
       typeof job.salaryMin === "number" &&
@@ -263,8 +263,8 @@ export function buildMatchResult(
     0,
     Math.min(
       100,
-      Object.values(factors).reduce((s, v) => s + v, 0),
-    ),
+      Object.values(factors).reduce((s, v) => s + v, 0)
+    )
   );
 
   logger.debug("match_scored", {
@@ -274,13 +274,13 @@ export function buildMatchResult(
     profileSkills: profileSkills.length,
     profileTargetRoles: targetRoles,
     factors,
-    score,
+    score
   });
 
   const rationale = [
     fitSignals[0] ?? "Review this listing manually",
     fitSignals[1],
-    concerns[0] ? `Note: ${concerns[0]}` : null,
+    concerns[0] ? `Note: ${concerns[0]}` : null
   ]
     .filter(Boolean)
     .join(". ");
@@ -293,7 +293,7 @@ export function buildMatchResult(
 export async function buildAiMatchResult(
   profile: CandidateProfile | null,
   job: MatchableJob,
-  resumeText: string | null,
+  resumeText: string | null
 ): Promise<MatchResult> {
   // Always run algorithmic first — it enforces visa/salary hard rules reliably.
   const baseline = buildMatchResult(profile, job);
@@ -315,7 +315,7 @@ export async function buildAiMatchResult(
     profile?.summary ? `\nProfessional summary:\n${profile.summary}` : "",
     resumeText
       ? `\nFull CV / Resume:\n${resumeText.slice(0, 3000)}`
-      : "\n(No CV uploaded yet)",
+      : "\n(No CV uploaded yet)"
   ]
     .filter(Boolean)
     .join("\n");
@@ -331,7 +331,7 @@ export async function buildAiMatchResult(
       ? `Salary: ${job.currency ?? ""} ${job.salaryMin ?? "?"} – ${job.salaryMax ?? "?"}`
       : "Salary: not disclosed",
     `Tags: ${job.tags.join(", ") || "none"}`,
-    `\nFull job description:\n${job.description?.slice(0, 2500) ?? "not provided"}`,
+    `\nFull job description:\n${job.description?.slice(0, 2500) ?? "not provided"}`
   ].join("\n");
 
   logger.info("ai_match_started", {
@@ -341,7 +341,7 @@ export async function buildAiMatchResult(
     hasResume: Boolean(resumeText),
     profileSkillsCount: profile?.skills?.length ?? 0,
     profileTargetRoles: profile?.targetRoles ?? [],
-    baselineScore: baseline.score,
+    baselineScore: baseline.score
   });
 
   try {
@@ -373,20 +373,20 @@ CRITICAL RULES:
 - If candidate has saved target roles AND this job title matches none of them: score cannot exceed 45 unless CV experience is a very strong direct match
 - Use evidence from the actual CV text, not just the skills list
 - fitSignals must reference specific things from the CV or job description, not generic phrases
-- Be honest about concerns`,
+- Be honest about concerns`
         },
         {
           role: "user",
-          content: `CANDIDATE PROFILE & CV:\n${candidateContext}\n\n---\n\nJOB:\n${jobContext}\n\n---\n\nAlgorithmic baseline score for reference: ${baseline.score}/100\nBaseline signals: ${baseline.fitSignals.join(", ") || "none"}\nBaseline concerns: ${baseline.concerns.join(", ") || "none"}`,
-        },
+          content: `CANDIDATE PROFILE & CV:\n${candidateContext}\n\n---\n\nJOB:\n${jobContext}\n\n---\n\nAlgorithmic baseline score for reference: ${baseline.score}/100\nBaseline signals: ${baseline.fitSignals.join(", ") || "none"}\nBaseline concerns: ${baseline.concerns.join(", ") || "none"}`
+        }
       ],
-      { temperature: 0.2, maxTokens: 600, jsonMode: true },
+      { temperature: 0.2, maxTokens: 600, jsonMode: true }
     );
 
     const parsed = JSON.parse(response) as Partial<MatchResult>;
     const aiScore = Math.max(
       0,
-      Math.min(100, Number(parsed.score ?? baseline.score)),
+      Math.min(100, Number(parsed.score ?? baseline.score))
     );
 
     logger.info("ai_match_done", {
@@ -395,7 +395,7 @@ CRITICAL RULES:
       baselineScore: baseline.score,
       aiScore,
       fitSignals: parsed.fitSignals,
-      concerns: parsed.concerns,
+      concerns: parsed.concerns
     });
 
     return {
@@ -407,7 +407,7 @@ CRITICAL RULES:
           : baseline.fitSignals,
       concerns: Array.isArray(parsed.concerns)
         ? parsed.concerns
-        : baseline.concerns,
+        : baseline.concerns
     };
   } catch (err) {
     logger.error("ai_match_failed", { jobId: job.id, error: String(err) });

@@ -11,7 +11,7 @@ interface JobBoardPreferencesProps {
 }
 
 export function JobBoardPreferences({
-  currentBoards,
+  currentBoards
 }: JobBoardPreferencesProps) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set(currentBoards));
@@ -46,7 +46,7 @@ export function JobBoardPreferences({
       const res = await fetch("/api/candidate-profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferredBoards: [...selected] }),
+        body: JSON.stringify({ preferredBoards: [...selected] })
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

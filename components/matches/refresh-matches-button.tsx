@@ -20,7 +20,7 @@ export function RefreshMatchesButton() {
       }
 
       setMessage(
-        `Refreshed ${data.refreshed} match${data.refreshed === 1 ? "" : "es"}.`,
+        `Refreshed ${data.refreshed} match${data.refreshed === 1 ? "" : "es"}.`
       );
       router.refresh();
     });

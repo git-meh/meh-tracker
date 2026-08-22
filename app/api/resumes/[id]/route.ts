@@ -7,12 +7,12 @@ import { eq } from "drizzle-orm";
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,12 +40,12 @@ export async function DELETE(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -65,7 +65,7 @@ export async function PATCH(
   if (!parsed.success)
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
 
   if (parsed.data.isDefault) {

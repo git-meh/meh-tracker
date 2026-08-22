@@ -27,6 +27,6 @@ export async function GET(request: Request): Promise<NextResponse> {
     ok: true,
     message:
       "Scraper runs are handled by GitHub Actions. Use the workflow_dispatch trigger or check the Actions tab.",
-    docs: "See .github/workflows/scrapers.yml for schedule and adapter groups.",
+    docs: "See .github/workflows/scrapers.yml for schedule and adapter groups."
   });
 }

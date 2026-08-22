@@ -19,7 +19,7 @@ const STATUS_COLORS: Record<ApplicationStatus, string> = {
   interview: "warning",
   offer: "success",
   rejected: "destructive",
-  withdrawn: "secondary",
+  withdrawn: "secondary"
 } as const;
 
 const STATUS_LABELS: Record<ApplicationStatus, string> = {
@@ -30,18 +30,18 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   interview: "Interview",
   offer: "Offer",
   rejected: "Rejected",
-  withdrawn: "Withdrawn",
+  withdrawn: "Withdrawn"
 };
 
 export default async function ApplicationsPage({
-  searchParams,
+  searchParams
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -56,7 +56,7 @@ export default async function ApplicationsPage({
       jobTitle: jobs.title,
       jobCompany: jobs.company,
       jobId: jobs.id,
-      jobAvailability: jobs.availability,
+      jobAvailability: jobs.availability
     })
     .from(applications)
     .leftJoin(jobs, eq(applications.jobId, jobs.id))
@@ -65,8 +65,8 @@ export default async function ApplicationsPage({
         eq(applications.userId, user.id),
         q
           ? or(ilike(jobs.title, `%${q}%`), ilike(jobs.company, `%${q}%`))
-          : undefined,
-      ),
+          : undefined
+      )
     )
     .orderBy(desc(applications.updatedAt));
 
@@ -139,7 +139,7 @@ export default async function ApplicationsPage({
                     )}
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(app.updatedAt), {
-                        addSuffix: true,
+                        addSuffix: true
                       })}
                     </span>
                   </div>
@@ -194,7 +194,7 @@ export default async function ApplicationsPage({
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDistanceToNow(new Date(app.updatedAt), {
-                        addSuffix: true,
+                        addSuffix: true
                       })}
                     </td>
                     <td className="px-4 py-3">

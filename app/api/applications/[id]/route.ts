@@ -12,7 +12,7 @@ const updateSchema = z.object({
   resumeVersionId: z.string().uuid().nullable().optional(),
   isPrivate: z.boolean().optional(),
   appliedAt: z.string().datetime().optional(),
-  externalConfirmationUrl: z.string().url().nullable().optional(),
+  externalConfirmationUrl: z.string().url().nullable().optional()
 });
 
 async function getOwnedApplication(id: string, userId: string) {
@@ -27,12 +27,12 @@ async function getOwnedApplication(id: string, userId: string) {
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -44,12 +44,12 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,7 +62,7 @@ export async function PATCH(
   if (!parsed.success)
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
 
   const { appliedAt, ...rest } = parsed.data;
@@ -71,7 +71,7 @@ export async function PATCH(
     .set({
       ...rest,
       ...(appliedAt ? { appliedAt: new Date(appliedAt) } : {}),
-      updatedAt: new Date(),
+      updatedAt: new Date()
     })
     .where(eq(applications.id, id))
     .returning();
@@ -81,12 +81,12 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

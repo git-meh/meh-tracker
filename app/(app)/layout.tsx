@@ -8,13 +8,13 @@ import { Header } from "@/components/layout/header";
 // Note: actual route protection is handled by middleware.ts
 // This layout renders for both authenticated and anonymous users.
 export default async function AppLayout({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   let profile = null;

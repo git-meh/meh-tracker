@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { automationPreferences, jobs, savedSearches } from "@/lib/db/schema";
 import {
   filterJobs,
-  parseJobDiscoveryFilters,
+  parseJobDiscoveryFilters
 } from "@/lib/visa-platform/discovery";
 import { createNotificationEvent } from "@/lib/visa-platform/notifications";
 
@@ -33,12 +33,12 @@ function toRawFilterRecord(search: {
       }
 
       return [[key, String(value)] as const];
-    },
+    }
   );
 
   return Object.fromEntries([
     ...entries,
-    ...(search.query ? [["q", search.query] as const] : []),
+    ...(search.query ? [["q", search.query] as const] : [])
   ]) as Record<string, string | string[] | undefined>;
 }
 
@@ -82,8 +82,8 @@ export async function GET(request: Request) {
       .where(
         and(
           inArray(jobs.availability, ["open", "unknown"]),
-          or(gte(jobs.ingestedAt, since), gte(jobs.createdAt, since)),
-        ),
+          or(gte(jobs.ingestedAt, since), gte(jobs.createdAt, since))
+        )
       )
       .orderBy(desc(jobs.ingestedAt));
 
@@ -102,7 +102,7 @@ export async function GET(request: Request) {
             const location = job.location ? ` · ${job.location}` : "";
             return `• ${job.title} at ${job.company}${location}`;
           })
-          .join("\n"),
+          .join("\n")
       });
       eventsCreated += 1;
     }
@@ -116,6 +116,6 @@ export async function GET(request: Request) {
   return NextResponse.json({
     ok: true,
     processed,
-    eventsCreated,
+    eventsCreated
   });
 }

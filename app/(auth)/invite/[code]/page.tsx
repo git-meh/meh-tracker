@@ -12,7 +12,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 
 export default function InvitePage() {
@@ -45,8 +45,8 @@ export default function InvitePage() {
       password,
       options: {
         data: { name, invite_code: code },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+        emailRedirectTo: `${window.location.origin}/auth/callback`
+      }
     });
 
     if (error) {

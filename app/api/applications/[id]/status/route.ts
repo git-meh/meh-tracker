@@ -15,19 +15,19 @@ const statusSchema = z.object({
     "interview",
     "offer",
     "rejected",
-    "withdrawn",
+    "withdrawn"
   ]),
-  note: z.string().max(500).optional(),
+  note: z.string().max(500).optional()
 });
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -45,7 +45,7 @@ export async function PATCH(
   if (!parsed.success)
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
 
   if (parsed.data.status === app.status) return NextResponse.json(app);
@@ -60,7 +60,7 @@ export async function PATCH(
       // Set appliedAt when first moving to "applied"
       ...(parsed.data.status === "applied" && !app.appliedAt
         ? { appliedAt: now }
-        : {}),
+        : {})
     })
     .where(eq(applications.id, id))
     .returning();
@@ -71,7 +71,7 @@ export async function PATCH(
     toStatus: parsed.data.status,
     note: parsed.data.note,
     changedBy: user.id,
-    changedAt: now,
+    changedAt: now
   });
 
   const [job] = await db
@@ -86,7 +86,7 @@ export async function PATCH(
       subject: `${job.title} moved to ${parsed.data.status}`,
       body: `Your application for ${job.company} is now marked as ${parsed.data.status}.`,
       jobId: job.id,
-      applicationId: app.id,
+      applicationId: app.id
     });
   }
 

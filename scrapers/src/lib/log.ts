@@ -8,7 +8,7 @@ function write(level: Level, message: string, payload: Payload = {}) {
     ts: new Date().toISOString(),
     level,
     message,
-    ...payload,
+    ...payload
   });
   if (level === "error" || level === "warn") {
     process.stderr.write(line + "\n");
@@ -24,5 +24,5 @@ export const log = {
     write("error", message, payload),
   debug: (message: string, payload?: Payload) => {
     if (process.env.LOG_LEVEL === "debug") write("debug", message, payload);
-  },
+  }
 };

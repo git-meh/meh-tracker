@@ -24,14 +24,14 @@ export function GroupFeedRealtime({ userId }: GroupFeedRealtimeProps) {
         {
           event: "INSERT",
           schema: "public",
-          table: "application_status_history",
+          table: "application_status_history"
         },
         (payload) => {
           // Only refresh if someone else changed their status
           if (payload.new?.changed_by !== userId) {
             router.refresh();
           }
-        },
+        }
       )
       .subscribe();
 

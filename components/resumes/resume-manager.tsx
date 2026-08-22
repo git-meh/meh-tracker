@@ -61,7 +61,7 @@ export function ResumeManager({ initialResumes }: ResumeManagerProps) {
     const res = await fetch(`/api/resumes/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isDefault: true }),
+      body: JSON.stringify({ isDefault: true })
     });
     if (res.ok) {
       setResumes((prev) => prev.map((r) => ({ ...r, isDefault: r.id === id })));
@@ -114,7 +114,7 @@ export function ResumeManager({ initialResumes }: ResumeManagerProps) {
                   <p className="text-xs text-muted-foreground">
                     {formatBytes(resume.fileSize)} ·{" "}
                     {formatDistanceToNow(new Date(resume.createdAt), {
-                      addSuffix: true,
+                      addSuffix: true
                     })}
                   </p>
                 </div>

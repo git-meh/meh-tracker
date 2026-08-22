@@ -9,12 +9,12 @@ const PDF_TYPES = [".pdf"];
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,7 +43,7 @@ export async function GET(
   const { data, error } = await admin.storage
     .from("resumes")
     .createSignedUrl(storagePath, 60 * 60, {
-      download: isPdf ? false : resume.fileName, // PDFs open in browser, others download with original name
+      download: isPdf ? false : resume.fileName // PDFs open in browser, others download with original name
     });
 
   if (error)

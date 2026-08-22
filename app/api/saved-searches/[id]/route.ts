@@ -7,7 +7,7 @@ import { savedSearches } from "@/lib/db/schema";
 async function getUser() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   return user;
@@ -15,7 +15,7 @@ async function getUser() {
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const user = await getUser();
   if (!user) {

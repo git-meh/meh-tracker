@@ -20,7 +20,7 @@ interface DraftReviewFormProps {
 export function DraftReviewForm({
   draftId,
   initialReviewNotes,
-  initialArtifacts,
+  initialArtifacts
 }: DraftReviewFormProps) {
   const router = useRouter();
   const [reviewNotes, setReviewNotes] = useState(initialReviewNotes ?? "");
@@ -39,20 +39,20 @@ export function DraftReviewForm({
           {
             type: "tailored_resume",
             title: "Tailored Resume",
-            content: artifacts.tailored_resume,
+            content: artifacts.tailored_resume
           },
           {
             type: "cover_letter",
             title: "Cover Letter",
-            content: artifacts.cover_letter,
+            content: artifacts.cover_letter
           },
           {
             type: "application_answers",
             title: "Application Answers",
-            content: artifacts.application_answers,
-          },
-        ],
-      }),
+            content: artifacts.application_answers
+          }
+        ]
+      })
     });
 
     if (!response.ok) {
@@ -74,8 +74,8 @@ export function DraftReviewForm({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             status,
-            reviewNotes: reviewNotes || null,
-          }),
+            reviewNotes: reviewNotes || null
+          })
         });
 
         const data = await response
@@ -91,12 +91,12 @@ export function DraftReviewForm({
         }
 
         setMessage(
-          status === "approved" ? "Draft approved." : "Draft rejected.",
+          status === "approved" ? "Draft approved." : "Draft rejected."
         );
         router.refresh();
       } catch (error) {
         setMessage(
-          error instanceof Error ? error.message : "Draft update failed",
+          error instanceof Error ? error.message : "Draft update failed"
         );
       }
     });
@@ -111,7 +111,7 @@ export function DraftReviewForm({
         router.refresh();
       } catch (error) {
         setMessage(
-          error instanceof Error ? error.message : "Draft save failed",
+          error instanceof Error ? error.message : "Draft save failed"
         );
       }
     });
@@ -142,7 +142,7 @@ export function DraftReviewForm({
           onChange={(event) =>
             setArtifacts((current) => ({
               ...current,
-              tailored_resume: event.target.value,
+              tailored_resume: event.target.value
             }))
           }
           rows={16}
@@ -159,7 +159,7 @@ export function DraftReviewForm({
           onChange={(event) =>
             setArtifacts((current) => ({
               ...current,
-              cover_letter: event.target.value,
+              cover_letter: event.target.value
             }))
           }
           rows={14}
@@ -176,7 +176,7 @@ export function DraftReviewForm({
           onChange={(event) =>
             setArtifacts((current) => ({
               ...current,
-              application_answers: event.target.value,
+              application_answers: event.target.value
             }))
           }
           rows={12}

@@ -15,7 +15,7 @@ import {
   Settings,
   Target,
   PlusCircle,
-  LogIn,
+  LogIn
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
@@ -29,7 +29,7 @@ const authNavItems = [
   { href: "/applications", label: "My Applications", icon: FileText },
   { href: "/workspace", label: "Workspace", icon: Target },
   { href: "/group", label: "Group Feed", icon: Users },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Settings", icon: Settings }
 ];
 
 interface MobileNavProps {
@@ -107,7 +107,7 @@ export function MobileNav({ user }: MobileNavProps) {
                       pathname === href ||
                         (href !== "/jobs" && pathname.startsWith(href + "/"))
                         ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground",
+                        : "text-muted-foreground"
                     )}
                   >
                     <Icon className="h-4 w-4" />

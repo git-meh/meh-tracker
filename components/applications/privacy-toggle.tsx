@@ -12,7 +12,7 @@ interface PrivacyToggleProps {
 
 export function PrivacyToggle({
   applicationId,
-  isPrivate,
+  isPrivate
 }: PrivacyToggleProps) {
   const router = useRouter();
   const [checked, setChecked] = useState(isPrivate);
@@ -22,7 +22,7 @@ export function PrivacyToggle({
     await fetch(`/api/applications/${applicationId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isPrivate: val }),
+      body: JSON.stringify({ isPrivate: val })
     });
     router.refresh();
   }

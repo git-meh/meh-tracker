@@ -5,7 +5,7 @@ import {
   notificationEvents,
   type NotificationEvent,
   type NotificationStatus,
-  type NotificationType,
+  type NotificationType
 } from "@/lib/db/schema";
 
 function getNotificationPreferenceState(
@@ -14,7 +14,7 @@ function getNotificationPreferenceState(
     emailNotificationsEnabled: boolean;
     dailyDigestEnabled: boolean;
     instantUpdatesEnabled: boolean;
-  } | null,
+  } | null
 ) {
   if (!preferences) {
     return { allowed: true, reason: null as string | null };
@@ -23,22 +23,21 @@ function getNotificationPreferenceState(
   if (!preferences.emailNotificationsEnabled) {
     return {
       allowed: false,
-      reason: "Email notifications are disabled in workspace settings.",
+      reason: "Email notifications are disabled in workspace settings."
     };
   }
 
   if (type === "daily_digest" && !preferences.dailyDigestEnabled) {
     return {
       allowed: false,
-      reason: "Daily digest notifications are disabled in workspace settings.",
+      reason: "Daily digest notifications are disabled in workspace settings."
     };
   }
 
   if (type !== "daily_digest" && !preferences.instantUpdatesEnabled) {
     return {
       allowed: false,
-      reason:
-        "Instant notification updates are disabled in workspace settings.",
+      reason: "Instant notification updates are disabled in workspace settings."
     };
   }
 
@@ -59,7 +58,7 @@ export async function createNotificationEvent(input: {
       emailNotificationsEnabled:
         automationPreferences.emailNotificationsEnabled,
       dailyDigestEnabled: automationPreferences.dailyDigestEnabled,
-      instantUpdatesEnabled: automationPreferences.instantUpdatesEnabled,
+      instantUpdatesEnabled: automationPreferences.instantUpdatesEnabled
     })
     .from(automationPreferences)
     .where(eq(automationPreferences.userId, input.userId))
@@ -67,7 +66,7 @@ export async function createNotificationEvent(input: {
 
   const preferenceState = getNotificationPreferenceState(
     input.type,
-    preferences ?? null,
+    preferences ?? null
   );
   const webhookConfigured = Boolean(process.env.NOTIFICATION_WEBHOOK_URL);
   const initialStatus: NotificationStatus = preferenceState.allowed
@@ -86,7 +85,7 @@ export async function createNotificationEvent(input: {
       status: initialStatus,
       body: preferenceState.allowed
         ? input.body
-        : `${input.body}\n\nDelivery skipped: ${preferenceState.reason}`,
+        : `${input.body}\n\nDelivery skipped: ${preferenceState.reason}`
     })
     .returning();
 
@@ -98,7 +97,7 @@ export async function createNotificationEvent(input: {
 }
 
 export async function dispatchNotificationEvent(
-  event: NotificationEvent,
+  event: NotificationEvent
 ): Promise<NotificationEvent> {
   const webhookUrl = process.env.NOTIFICATION_WEBHOOK_URL;
 
@@ -110,7 +109,7 @@ export async function dispatchNotificationEvent(
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(event),
+      body: JSON.stringify(event)
     });
 
     const status: NotificationStatus = response.ok ? "sent" : "failed";
@@ -118,7 +117,7 @@ export async function dispatchNotificationEvent(
       .update(notificationEvents)
       .set({
         status,
-        sentAt: response.ok ? new Date() : null,
+        sentAt: response.ok ? new Date() : null
       })
       .where(eq(notificationEvents.id, event.id))
       .returning();

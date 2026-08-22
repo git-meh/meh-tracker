@@ -7,7 +7,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
-  uuid,
+  uuid
 } from "drizzle-orm/pg-core";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ export const visibilityEnum = pgEnum("visibility", ["public", "private"]);
 export const availabilityEnum = pgEnum("availability", [
   "open",
   "closed",
-  "unknown",
+  "unknown"
 ]);
 
 export const applicationStatusEnum = pgEnum("application_status", [
@@ -28,28 +28,28 @@ export const applicationStatusEnum = pgEnum("application_status", [
   "interview",
   "offer",
   "rejected",
-  "withdrawn",
+  "withdrawn"
 ]);
 
 export const jobSourceTypeEnum = pgEnum("job_source_type", [
   "manual",
   "approved_feed",
   "employer_site",
-  "ats",
+  "ats"
 ]);
 
 export const visaSponsorshipStatusEnum = pgEnum("visa_sponsorship_status", [
   "eligible",
   "possible",
   "not_available",
-  "unknown",
+  "unknown"
 ]);
 
 export const workModeEnum = pgEnum("work_mode", [
   "remote",
   "hybrid",
   "onsite",
-  "unknown",
+  "unknown"
 ]);
 
 export const employmentTypeEnum = pgEnum("employment_type", [
@@ -59,7 +59,7 @@ export const employmentTypeEnum = pgEnum("employment_type", [
   "internship",
   "temporary",
   "apprenticeship",
-  "unknown",
+  "unknown"
 ]);
 
 export const applyAdapterEnum = pgEnum("apply_adapter", [
@@ -69,20 +69,20 @@ export const applyAdapterEnum = pgEnum("apply_adapter", [
   "workday",
   "ashby",
   "smartrecruiters",
-  "manual_external",
+  "manual_external"
 ]);
 
 export const ingestionRunStatusEnum = pgEnum("ingestion_run_status", [
   "queued",
   "running",
   "succeeded",
-  "failed",
+  "failed"
 ]);
 
 export const resumeExtractionStatusEnum = pgEnum("resume_extraction_status", [
   "pending",
   "ready",
-  "failed",
+  "failed"
 ]);
 
 export const artifactTypeEnum = pgEnum("artifact_type", [
@@ -92,13 +92,13 @@ export const artifactTypeEnum = pgEnum("artifact_type", [
   "personal_statement",
   "why_company",
   "interview_qa",
-  "email_digest",
+  "email_digest"
 ]);
 
 export const artifactStatusEnum = pgEnum("artifact_status", [
   "pending",
   "ready",
-  "failed",
+  "failed"
 ]);
 
 export const draftStatusEnum = pgEnum("draft_status", [
@@ -107,7 +107,7 @@ export const draftStatusEnum = pgEnum("draft_status", [
   "approved",
   "rejected",
   "submitted",
-  "failed",
+  "failed"
 ]);
 
 export const applicationRunStatusEnum = pgEnum("application_run_status", [
@@ -115,7 +115,7 @@ export const applicationRunStatusEnum = pgEnum("application_run_status", [
   "ready_to_submit",
   "manual_required",
   "submitted",
-  "failed",
+  "failed"
 ]);
 
 export const notificationTypeEnum = pgEnum("notification_type", [
@@ -124,14 +124,14 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "application_submitted",
   "application_failed",
   "job_closed",
-  "status_changed",
+  "status_changed"
 ]);
 
 export const notificationStatusEnum = pgEnum("notification_status", [
   "pending",
   "sent",
   "failed",
-  "skipped",
+  "skipped"
 ]);
 
 // ─── Tables ───────────────────────────────────────────────────────────────────
@@ -143,7 +143,7 @@ export const profiles = pgTable("profiles", {
   visibility: visibilityEnum("visibility").notNull().default("public"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const invites = pgTable("invites", {
@@ -157,7 +157,7 @@ export const invites = pgTable("invites", {
   usedAt: timestamp("used_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const jobSources = pgTable("job_sources", {
@@ -173,17 +173,17 @@ export const jobSources = pgTable("job_sources", {
   defaultAdapter: applyAdapterEnum("default_adapter").notNull().default("none"),
   isActive: boolean("is_active").notNull().default(true),
   createdBy: uuid("created_by").references(() => profiles.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const jobIngestionRuns = pgTable("job_ingestion_runs", {
   id: uuid("id").primaryKey().defaultRandom(),
   sourceId: uuid("source_id").references(() => jobSources.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   status: ingestionRunStatusEnum("status").notNull().default("queued"),
   jobsSeen: integer("jobs_seen").notNull().default(0),
@@ -195,7 +195,7 @@ export const jobIngestionRuns = pgTable("job_ingestion_runs", {
   finishedAt: timestamp("finished_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const jobs = pgTable("jobs", {
@@ -214,7 +214,7 @@ export const jobs = pgTable("jobs", {
   tags: text("tags").array().notNull().default([]),
   eligibleCountries: text("eligible_countries").array().notNull().default([]),
   sourceId: uuid("source_id").references(() => jobSources.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   sourceType: jobSourceTypeEnum("source_type").notNull().default("manual"),
   sourceKey: text("source_key").notNull().default("manual"),
@@ -229,7 +229,7 @@ export const jobs = pgTable("jobs", {
     .notNull()
     .default("unknown"),
   postedBy: uuid("posted_by").references(() => profiles.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   availability: availabilityEnum("availability").notNull().default("unknown"),
   closingAt: timestamp("closing_at", { withTimezone: true }),
@@ -242,7 +242,7 @@ export const jobs = pgTable("jobs", {
     .defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const resumes = pgTable("resumes", {
@@ -256,7 +256,7 @@ export const resumes = pgTable("resumes", {
   isDefault: boolean("is_default").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const resumeVersions = pgTable(
@@ -278,14 +278,14 @@ export const resumeVersions = pgTable(
       .default("pending"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
-      .defaultNow(),
+      .defaultNow()
   },
   (table) => ({
     resumeVersionUnique: uniqueIndex("resume_versions_resume_version_idx").on(
       table.resumeId,
-      table.versionNumber,
-    ),
-  }),
+      table.versionNumber
+    )
+  })
 );
 
 export const candidateProfiles = pgTable("candidate_profiles", {
@@ -316,7 +316,7 @@ export const candidateProfiles = pgTable("candidate_profiles", {
     .defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const automationPreferences = pgTable("automation_preferences", {
@@ -344,7 +344,7 @@ export const automationPreferences = pgTable("automation_preferences", {
     .defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const applications = pgTable("applications", {
@@ -356,13 +356,13 @@ export const applications = pgTable("applications", {
     .notNull()
     .references(() => jobs.id, { onDelete: "cascade" }),
   resumeId: uuid("resume_id").references(() => resumes.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   resumeVersionId: uuid("resume_version_id").references(
     () => resumeVersions.id,
     {
-      onDelete: "set null",
-    },
+      onDelete: "set null"
+    }
   ),
   status: applicationStatusEnum("status").notNull().default("saved"),
   notes: text("notes"),
@@ -384,7 +384,7 @@ export const applications = pgTable("applications", {
     .defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const applicationStatusHistory = pgTable("application_status_history", {
@@ -400,7 +400,7 @@ export const applicationStatusHistory = pgTable("application_status_history", {
     .defaultNow(),
   changedBy: uuid("changed_by")
     .notNull()
-    .references(() => profiles.id, { onDelete: "cascade" }),
+    .references(() => profiles.id, { onDelete: "cascade" })
 });
 
 export const jobMatches = pgTable(
@@ -422,14 +422,14 @@ export const jobMatches = pgTable(
       .defaultNow(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
-      .defaultNow(),
+      .defaultNow()
   },
   (table) => ({
     jobMatchUserJobUnique: uniqueIndex("job_matches_user_job_idx").on(
       table.userId,
-      table.jobId,
-    ),
-  }),
+      table.jobId
+    )
+  })
 );
 
 export const applicationDrafts = pgTable(
@@ -443,10 +443,10 @@ export const applicationDrafts = pgTable(
       .notNull()
       .references(() => jobs.id, { onDelete: "cascade" }),
     applicationId: uuid("application_id").references(() => applications.id, {
-      onDelete: "set null",
+      onDelete: "set null"
     }),
     jobMatchId: uuid("job_match_id").references(() => jobMatches.id, {
-      onDelete: "set null",
+      onDelete: "set null"
     }),
     status: draftStatusEnum("status").notNull().default("ready_for_review"),
     reviewNotes: text("review_notes"),
@@ -459,13 +459,13 @@ export const applicationDrafts = pgTable(
       .defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
-      .defaultNow(),
+      .defaultNow()
   },
   (table) => ({
     applicationDraftUserJobUnique: uniqueIndex(
-      "application_drafts_user_job_idx",
-    ).on(table.userId, table.jobId),
-  }),
+      "application_drafts_user_job_idx"
+    ).on(table.userId, table.jobId)
+  })
 );
 
 export const generatedArtifacts = pgTable("generated_artifacts", {
@@ -477,16 +477,16 @@ export const generatedArtifacts = pgTable("generated_artifacts", {
     .notNull()
     .references(() => jobs.id, { onDelete: "cascade" }),
   applicationId: uuid("application_id").references(() => applications.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   draftId: uuid("draft_id").references(() => applicationDrafts.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   sourceResumeVersionId: uuid("source_resume_version_id").references(
     () => resumeVersions.id,
     {
-      onDelete: "set null",
-    },
+      onDelete: "set null"
+    }
   ),
   type: artifactTypeEnum("type").notNull(),
   status: artifactStatusEnum("status").notNull().default("ready"),
@@ -495,7 +495,7 @@ export const generatedArtifacts = pgTable("generated_artifacts", {
   aiGenerated: boolean("ai_generated").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const applicationRuns = pgTable("application_runs", {
@@ -507,7 +507,7 @@ export const applicationRuns = pgTable("application_runs", {
     .notNull()
     .references(() => applications.id, { onDelete: "cascade" }),
   draftId: uuid("draft_id").references(() => applicationDrafts.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   status: applicationRunStatusEnum("status").notNull().default("queued"),
   mode: text("mode").notNull().default("review_required"),
@@ -520,7 +520,7 @@ export const applicationRuns = pgTable("application_runs", {
   finishedAt: timestamp("finished_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export type SavedSearchFilters = Record<string, unknown>;
@@ -537,7 +537,7 @@ export const savedSearches = pgTable("saved_searches", {
   lastDigestAt: timestamp("last_digest_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 export const notificationEvents = pgTable("notification_events", {
@@ -550,18 +550,18 @@ export const notificationEvents = pgTable("notification_events", {
   subject: text("subject").notNull(),
   body: text("body").notNull(),
   jobId: uuid("job_id").references(() => jobs.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   applicationId: uuid("application_id").references(() => applications.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   draftId: uuid("draft_id").references(() => applicationDrafts.id, {
-    onDelete: "set null",
+    onDelete: "set null"
   }),
   sentAt: timestamp("sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
-    .defaultNow(),
+    .defaultNow()
 });
 
 // ─── Type exports ─────────────────────────────────────────────────────────────

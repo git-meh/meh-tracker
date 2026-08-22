@@ -6,7 +6,7 @@ import {
   jobMatches,
   jobs,
   jobSources,
-  profiles,
+  profiles
 } from "@/lib/db/schema";
 import { createClient } from "@/lib/supabase/server";
 import { JobCard } from "@/components/jobs/job-card";
@@ -15,14 +15,14 @@ import { SaveSearchButton } from "@/components/jobs/save-search-button";
 import { Button } from "@/components/ui/button";
 import {
   parseJobDiscoveryFilters,
-  toSavedSearchFilters,
+  toSavedSearchFilters
 } from "@/lib/visa-platform/discovery";
 import type { SQL } from "drizzle-orm";
 
 const PAGE_SIZE = 24;
 
 export default async function JobsPage({
-  searchParams,
+  searchParams
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
@@ -38,7 +38,7 @@ export default async function JobsPage({
 
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   const userMatchScore = user
@@ -73,7 +73,7 @@ export default async function JobsPage({
         asc(sponsorshipRank),
         desc(sql<number>`coalesce(${userMatchScore}, -1)`),
         asc(countryRank),
-        desc(jobs.createdAt),
+        desc(jobs.createdAt)
       ]
     : [asc(sponsorshipRank), asc(countryRank), desc(jobs.createdAt)];
 
@@ -86,8 +86,8 @@ export default async function JobsPage({
           ilike(jobs.title, pattern),
           ilike(jobs.company, pattern),
           ilike(jobs.location, pattern),
-          sql`exists (select 1 from unnest(${jobs.tags}) as t where t ilike ${pattern})`,
-        )!,
+          sql`exists (select 1 from unnest(${jobs.tags}) as t where t ilike ${pattern})`
+        )!
       );
     }
   }
@@ -114,7 +114,7 @@ export default async function JobsPage({
               and ${jobMatches.userId} = ${user.id}
               and ${jobMatches.score} > 0
           )`
-        : sql`false`,
+        : sql`false`
     );
   }
 
@@ -161,7 +161,7 @@ export default async function JobsPage({
         matchScore: userMatchScore,
         applicantCount: sql<number>`cast(count(distinct ${applications.id}) as int)`,
         posterName: profiles.name,
-        sourceName: jobSources.name,
+        sourceName: jobSources.name
       })
       .from(jobs)
       .leftJoin(applications, eq(applications.jobId, jobs.id))
@@ -171,7 +171,7 @@ export default async function JobsPage({
       .groupBy(jobs.id, profiles.name, jobSources.name)
       .orderBy(...ordering)
       .limit(PAGE_SIZE)
-      .offset(offset),
+      .offset(offset)
   ]);
 
   const categories = categoryRows.map((r) => r.tag).filter(Boolean);
@@ -187,17 +187,17 @@ export default async function JobsPage({
       .select({
         id: applications.id,
         jobId: applications.jobId,
-        status: applications.status,
+        status: applications.status
       })
       .from(applications)
       .where(
         and(
           eq(applications.userId, user.id),
-          inArray(applications.jobId, jobIds),
-        ),
+          inArray(applications.jobId, jobIds)
+        )
       );
     userApps.forEach((a) =>
-      userApplicationMap.set(a.jobId, { id: a.id, status: a.status }),
+      userApplicationMap.set(a.jobId, { id: a.id, status: a.status })
     );
   }
 

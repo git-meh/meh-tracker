@@ -6,7 +6,7 @@ import { jobs } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import {
   normalizeCountryCodes,
-  resolveCountryMetadata,
+  resolveCountryMetadata
 } from "@/lib/visa-platform/countries";
 
 const updateJobSchema = z.object({
@@ -37,7 +37,7 @@ const updateJobSchema = z.object({
       "workday",
       "ashby",
       "smartrecruiters",
-      "manual_external",
+      "manual_external"
     ])
     .optional(),
   visaSponsorshipStatus: z
@@ -52,15 +52,15 @@ const updateJobSchema = z.object({
       "internship",
       "temporary",
       "apprenticeship",
-      "unknown",
+      "unknown"
     ])
     .optional(),
-  closingAt: z.string().datetime().nullable().optional(),
+  closingAt: z.string().datetime().nullable().optional()
 });
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const [job] = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
@@ -70,12 +70,12 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -90,12 +90,12 @@ export async function PATCH(
   if (!parsed.success)
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
 
   const { countryCode, countryConfidence } = resolveCountryMetadata({
     countryCode: parsed.data.countryCode ?? job.countryCode,
-    location: parsed.data.location ?? job.location,
+    location: parsed.data.location ?? job.location
   });
   const eligibleCountries = parsed.data.eligibleCountries
     ? normalizeCountryCodes(parsed.data.eligibleCountries)
@@ -112,7 +112,7 @@ export async function PATCH(
       closingAt: parsed.data.closingAt
         ? new Date(parsed.data.closingAt)
         : undefined,
-      updatedAt: new Date(),
+      updatedAt: new Date()
     })
     .where(eq(jobs.id, id))
     .returning();
@@ -121,12 +121,12 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

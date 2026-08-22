@@ -22,20 +22,20 @@ const config: BoardConfig = {
   extractLinks: (html) => {
     const matches = [
       ...html.matchAll(/href="(\/job\/\d+[^"?#]*)"/gi),
-      ...html.matchAll(/href="(\/[\w-]+-job-\d+[^"?#]*)"/gi),
+      ...html.matchAll(/href="(\/[\w-]+-job-\d+[^"?#]*)"/gi)
     ];
     return [
-      ...new Set(matches.map((m) => "https://www.cv-library.co.uk" + m[1])),
+      ...new Set(matches.map((m) => "https://www.cv-library.co.uk" + m[1]))
     ];
   },
   defaultTags: ["CV-Library"],
-  sourceType: "approved_feed",
+  sourceType: "approved_feed"
 };
 
 export async function scrapeCvLibrary(keywords?: string[], maxJobs = 30) {
   log.info("cv-library_start", {
     keywords: keywords?.length ?? 0,
-    mode: keywords ? "keyword" : "location",
+    mode: keywords ? "keyword" : "location"
   });
   return scrapeBoard(config, keywords, maxJobs);
 }

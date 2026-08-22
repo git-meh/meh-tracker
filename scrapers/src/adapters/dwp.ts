@@ -19,7 +19,7 @@ import {
   stripHtml,
   detectWorkMode,
   normalizeEmploymentType,
-  type IngestibleJob,
+  type IngestibleJob
 } from "../lib/normalizer.js";
 import { pushJobs } from "../lib/pusher.js";
 
@@ -50,7 +50,7 @@ const DWP_SEARCH_TERMS = [
   "engineering manager",
   "technical project manager",
   "business analyst",
-  "scrum master",
+  "scrum master"
 ];
 
 const BASE_URL = "https://findajob.dwp.gov.uk";
@@ -59,7 +59,7 @@ function extractJobLinks(html: string): string[] {
   // DWP search results link to /details/{id} or /job/{id}
   const matches = [
     ...html.matchAll(/href="(\/details\/\d+[^"]*)"/gi),
-    ...html.matchAll(/href="(\/job\/[^"]+)"/gi),
+    ...html.matchAll(/href="(\/job\/[^"]+)"/gi)
   ];
   const links = matches.map((m) => m[1]);
   return [...new Set(links)];
@@ -81,7 +81,7 @@ async function scrapeDetailPage(path: string): Promise<IngestibleJob | null> {
   // DWP detail pages use schema.org JSON-LD where available, otherwise HTML
   // Try JSON-LD first
   const jsonLdMatch = html.match(
-    /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i,
+    /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i
   );
   if (jsonLdMatch) {
     try {
@@ -118,7 +118,7 @@ type DwpJsonLd = {
 function parseJsonLdJob(
   data: DwpJsonLd,
   url: string,
-  path: string,
+  path: string
 ): IngestibleJob | null {
   const title = data.title?.trim();
   const company = data.hiringOrganization?.name?.trim();
@@ -153,14 +153,14 @@ function parseJsonLdJob(
     visaSponsorshipStatus,
     workMode,
     employmentType,
-    closingAt: data.validThrough ? new Date(data.validThrough) : null,
+    closingAt: data.validThrough ? new Date(data.validThrough) : null
   };
 }
 
 function parseHtmlJob(
   html: string,
   url: string,
-  path: string,
+  path: string
 ): IngestibleJob | null {
   // Generic HTML selectors for DWP job detail pages
   // These may need updating if DWP changes their HTML structure
@@ -183,7 +183,7 @@ function parseHtmlJob(
 
   // Description — grab the main content area
   const descMatch = html.match(
-    /class="[^"]*description[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+    /class="[^"]*description[^"]*"[^>]*>([\s\S]*?)<\/div>/i
   );
   const description = descMatch ? stripHtml(descMatch[1]) : null;
 
@@ -212,13 +212,13 @@ function parseHtmlJob(
     applyAdapter: "manual_external",
     visaSponsorshipStatus: detectSponsorshipStatus(description ?? ""),
     workMode: detectWorkMode("United Kingdom", description),
-    employmentType: "unknown",
+    employmentType: "unknown"
   };
 }
 
 async function scrapeSearchTerm(
   keyword: string,
-  maxPages = 5,
+  maxPages = 5
 ): Promise<IngestibleJob[]> {
   const jobs: IngestibleJob[] = [];
   const seenLinks = new Set<string>();
@@ -235,7 +235,7 @@ async function scrapeSearchTerm(
     } catch (err) {
       if (err instanceof NotFoundError || err instanceof BlockedError) {
         console.warn(
-          `[dwp] ${keyword} page ${page}: ${err instanceof Error ? err.message : err} — stopping`,
+          `[dwp] ${keyword} page ${page}: ${err instanceof Error ? err.message : err} — stopping`
         );
         break;
       }
@@ -270,7 +270,7 @@ async function scrapeSearchTerm(
 
 export async function scrapeDwp(
   keywords: string[] = DWP_SEARCH_TERMS,
-  maxPagesPerKeyword = 3,
+  maxPagesPerKeyword = 3
 ): Promise<IngestibleJob[]> {
   const all: IngestibleJob[] = [];
 

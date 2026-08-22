@@ -96,7 +96,7 @@ function ensureDOMMatrix() {
             this.m41,
             this.m42,
             this.m43,
-            this.m44,
+            this.m44
           ] = init;
           this.a = this.m11;
           this.b = this.m12;
@@ -123,7 +123,7 @@ function ensureDOMMatrix() {
         this.a * other.c + this.c * other.d,
         this.b * other.c + this.d * other.d,
         this.a * other.e + this.c * other.f + this.e,
-        this.b * other.e + this.d * other.f + this.f,
+        this.b * other.e + this.d * other.f + this.f
       ]);
     }
 
@@ -147,8 +147,8 @@ function ensureDOMMatrix() {
           -this.c * i,
           this.a * i,
           (this.c * this.f - this.d * this.e) * i,
-          (this.b * this.e - this.a * this.f) * i,
-        ]),
+          (this.b * this.e - this.a * this.f) * i
+        ])
       );
     }
 
@@ -172,7 +172,7 @@ function ensureDOMMatrix() {
         x: this.a * x + this.c * y + this.e,
         y: this.b * x + this.d * y + this.f,
         z: 0,
-        w: 1,
+        w: 1
       };
     }
   }
@@ -194,7 +194,7 @@ export async function extractResumeText(file: File): Promise<{
       const { PDFParse } = await import("pdf-parse");
 
       const parser = new PDFParse({
-        data: new Uint8Array(await file.arrayBuffer()),
+        data: new Uint8Array(await file.arrayBuffer())
       });
       try {
         const result = await parser.getText();
@@ -207,7 +207,7 @@ export async function extractResumeText(file: File): Promise<{
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ) {
       const result = await mammoth.extractRawText({
-        buffer: Buffer.from(await file.arrayBuffer()),
+        buffer: Buffer.from(await file.arrayBuffer())
       });
       extractedText = result.value ?? null;
     } else if (file.type.startsWith("text/")) {
@@ -222,7 +222,7 @@ export async function extractResumeText(file: File): Promise<{
     return {
       extractedText: extractedText?.trim() ?? normalizedText,
       normalizedText,
-      status: "ready",
+      status: "ready"
     };
   } catch (err) {
     console.error("[extractResumeText]", err);

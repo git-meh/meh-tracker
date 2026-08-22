@@ -4,7 +4,7 @@ import {
   applications,
   jobs,
   profiles,
-  applicationStatusHistory,
+  applicationStatusHistory
 } from "@/lib/db/schema";
 import { eq, desc, and, ne } from "drizzle-orm";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,13 +21,13 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   interview: "has an interview for",
   offer: "received an offer from",
   rejected: "was rejected from",
-  withdrawn: "withdrew from",
+  withdrawn: "withdrew from"
 };
 
 export default async function GroupFeedPage() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -44,20 +44,20 @@ export default async function GroupFeedPage() {
       jobAvailability: jobs.availability,
       jobId: jobs.id,
       userName: profiles.name,
-      userId: profiles.id,
+      userId: profiles.id
     })
     .from(applicationStatusHistory)
     .innerJoin(
       applications,
-      eq(applicationStatusHistory.applicationId, applications.id),
+      eq(applicationStatusHistory.applicationId, applications.id)
     )
     .innerJoin(jobs, eq(applications.jobId, jobs.id))
     .innerJoin(profiles, eq(applicationStatusHistory.changedBy, profiles.id))
     .where(
       and(
         ne(applicationStatusHistory.changedBy, user.id),
-        eq(applications.isPrivate, false),
-      ),
+        eq(applications.isPrivate, false)
+      )
     )
     .orderBy(desc(applicationStatusHistory.changedAt))
     .limit(50);
@@ -117,7 +117,7 @@ export default async function GroupFeedPage() {
                     )}
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(item.changedAt), {
-                        addSuffix: true,
+                        addSuffix: true
                       })}
                     </span>
                   </div>

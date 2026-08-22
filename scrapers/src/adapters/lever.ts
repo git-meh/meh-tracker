@@ -35,7 +35,7 @@ import {
   detectWorkMode,
   normalizeEmploymentType,
   resolveCountryMetadata,
-  type IngestibleJob,
+  type IngestibleJob
 } from "../lib/normalizer.js";
 import { pushJobs } from "../lib/pusher.js";
 
@@ -79,12 +79,12 @@ function normaliseJob(posting: LeverPosting, slug: string): IngestibleJob {
 
   const location = posting.categories?.location ?? null;
   const { countryCode, countryConfidence } = resolveCountryMetadata({
-    location,
+    location
   });
   const workMode = detectWorkMode(location, fullDescription);
   const visaSponsorshipStatus = detectSponsorshipStatus(fullDescription);
   const employmentType = normalizeEmploymentType(
-    posting.categories?.commitment,
+    posting.categories?.commitment
   );
 
   const tags: string[] = [];
@@ -122,7 +122,7 @@ function normaliseJob(posting: LeverPosting, slug: string): IngestibleJob {
     applyAdapter: "lever",
     visaSponsorshipStatus,
     workMode,
-    employmentType,
+    employmentType
   };
 }
 
@@ -134,7 +134,7 @@ export async function scrapeLever(slugs: string[]): Promise<IngestibleJob[]> {
       console.log(`[lever] Fetching ${slug}...`);
       const postings = await fetchJson<LeverPosting[]>(
         `https://api.lever.co/v0/postings/${slug}?mode=json`,
-        { minDelayMs: 800, maxDelayMs: 2000 },
+        { minDelayMs: 800, maxDelayMs: 2000 }
       );
 
       // Empty array = valid slug but no open roles right now

@@ -11,7 +11,7 @@ if (!connectionString) {
 // Disable prefetch for serverless environments
 const client = postgres(connectionString, {
   prepare: false,
-  onnotice: () => {}, // suppress notices
+  onnotice: () => {} // suppress notices
 });
 
 export const db = drizzle(client, { schema });

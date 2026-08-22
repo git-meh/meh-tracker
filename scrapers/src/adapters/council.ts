@@ -17,7 +17,7 @@ import {
   stripHtml,
   detectWorkMode,
   normalizeEmploymentType,
-  type IngestibleJob,
+  type IngestibleJob
 } from "../lib/normalizer.js";
 import { pushJobs } from "../lib/pusher.js";
 import { log } from "../lib/log.js";
@@ -42,7 +42,7 @@ const COUNCIL_SEARCH_TERMS = [
   "business analyst",
   "product manager",
   "cloud engineer",
-  "devops",
+  "devops"
 ];
 
 function isJobDetailUrl(url: string): boolean {
@@ -60,7 +60,7 @@ async function scrapeDetailPage(url: string): Promise<IngestibleJob | null> {
 
   // Try JSON-LD
   const jsonLdMatch = html.match(
-    /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i,
+    /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i
   );
   if (jsonLdMatch) {
     try {
@@ -94,7 +94,7 @@ async function scrapeDetailPage(url: string): Promise<IngestibleJob | null> {
           visaSponsorshipStatus: detectSponsorshipStatus(description ?? ""),
           workMode: detectWorkMode(location, description),
           employmentType: normalizeEmploymentType(data.employmentType),
-          closingAt: data.validThrough ? new Date(data.validThrough) : null,
+          closingAt: data.validThrough ? new Date(data.validThrough) : null
         };
       }
     } catch {
@@ -126,13 +126,13 @@ async function scrapeDetailPage(url: string): Promise<IngestibleJob | null> {
     applyAdapter: "manual_external",
     visaSponsorshipStatus: "unknown",
     workMode: "unknown",
-    employmentType: "unknown",
+    employmentType: "unknown"
   };
 }
 
 async function scrapeKeyword(
   keyword: string,
-  maxJobs = 30,
+  maxJobs = 30
 ): Promise<IngestibleJob[]> {
   const results: IngestibleJob[] = [];
   const seen = new Set<string>();
@@ -149,7 +149,7 @@ async function scrapeKeyword(
     try {
       const html = await fetchPage(searchUrl, {
         minDelayMs: 2000,
-        maxDelayMs: 4000,
+        maxDelayMs: 4000
       });
       const directLinks = extractDirectJobLinks(html);
       directLinks.forEach((u) => {
@@ -185,7 +185,7 @@ async function scrapeKeyword(
 
 export async function scrapeCouncil(
   keywords: string[] = COUNCIL_SEARCH_TERMS,
-  maxJobsPerKeyword = 25,
+  maxJobsPerKeyword = 25
 ): Promise<IngestibleJob[]> {
   const all: IngestibleJob[] = [];
   for (const keyword of keywords) {

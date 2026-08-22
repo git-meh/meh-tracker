@@ -7,11 +7,11 @@ const config: Record<
 > = {
   open: { label: "Open", variant: "success" },
   closed: { label: "Closed", variant: "destructive" },
-  unknown: { label: "Unknown", variant: "secondary" },
+  unknown: { label: "Unknown", variant: "secondary" }
 };
 
 export function AvailabilityBadge({
-  availability,
+  availability
 }: {
   availability: Availability;
 }) {

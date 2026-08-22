@@ -6,7 +6,7 @@ const PROTECTED_PATHS = [
   "/applications",
   "/group",
   "/settings",
-  "/jobs/new",
+  "/jobs/new"
 ];
 
 export async function proxy(request: NextRequest) {
@@ -22,20 +22,20 @@ export async function proxy(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
+            request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, options)
           );
-        },
-      },
-    },
+        }
+      }
+    }
   );
 
   // Refresh session - do not remove this
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
@@ -60,6 +60,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"
+  ]
 };

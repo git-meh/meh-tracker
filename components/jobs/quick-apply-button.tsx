@@ -15,7 +15,7 @@ interface QuickApplyButtonProps {
 export function QuickApplyButton({
   jobId,
   existingApplicationId,
-  existingStatus,
+  existingStatus
 }: QuickApplyButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export function QuickApplyButton({
     const res = await fetch("/api/applications", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jobId, status }),
+      body: JSON.stringify({ jobId, status })
     });
     if (res.ok) router.refresh();
     setLoading(false);
@@ -35,7 +35,7 @@ export function QuickApplyButton({
     if (!existingApplicationId) return;
     setLoading(true);
     const res = await fetch(`/api/applications/${existingApplicationId}`, {
-      method: "DELETE",
+      method: "DELETE"
     });
     if (res.ok) router.refresh();
     setLoading(false);

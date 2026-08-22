@@ -30,7 +30,7 @@ export type DiscoveredUrl = {
 export async function discoverJobUrls(
   domain: string,
   keyword: string,
-  maxResults = 30,
+  maxResults = 30
 ): Promise<DiscoveredUrl[]> {
   const found: DiscoveredUrl[] = [];
   const seen = new Set<string>();
@@ -51,15 +51,15 @@ export async function discoverJobUrls(
         minDelayMs: 2000,
         maxDelayMs: 4000,
         headers: {
-          Referer: "https://lite.duckduckgo.com/",
-        },
+          Referer: "https://lite.duckduckgo.com/"
+        }
       });
     } catch (err) {
       log.warn("search_discovery_fetch_error", {
         domain,
         keyword,
         offset,
-        error: String(err),
+        error: String(err)
       });
       break;
     }
@@ -68,17 +68,17 @@ export async function discoverJobUrls(
     const linkMatches = [
       ...html.matchAll(/<a[^>]+class="[^"]*result[^"]*"[^>]+href="([^"]+)"/gi),
       ...html.matchAll(
-        /href="(https?:\/\/[^"]*\b${domain.replace(".", "\\.")}[^"]*\b[^"]*)"/gi,
-      ),
+        /href="(https?:\/\/[^"]*\b${domain.replace(".", "\\.")}[^"]*\b[^"]*)"/gi
+      )
     ];
 
     // Also try extracting from result snippet URLs in DDG lite format
     const allHrefs = [...html.matchAll(/href="(https?:\/\/[^"]+)"/gi)].map(
-      (m) => m[1],
+      (m) => m[1]
     );
 
     const candidates = [...linkMatches.map((m) => m[1]), ...allHrefs].filter(
-      (u) => u.includes(domain) && !seen.has(u),
+      (u) => u.includes(domain) && !seen.has(u)
     );
 
     for (const candidate of candidates) {
@@ -96,7 +96,7 @@ export async function discoverJobUrls(
       log.info("search_discovery_exhausted", {
         domain,
         keyword,
-        total: found.length,
+        total: found.length
       });
       break;
     }

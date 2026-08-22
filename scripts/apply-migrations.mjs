@@ -42,7 +42,7 @@ function loadEnvFile(filename) {
 const env = {
   ...loadEnvFile(".env"),
   ...loadEnvFile(".env.local"),
-  ...process.env,
+  ...process.env
 };
 
 const connectionString = env.DATABASE_URL;
@@ -61,7 +61,7 @@ const migrationFiles = fs
 const sql = postgres(connectionString, {
   prepare: false,
   max: 1,
-  onnotice: () => {},
+  onnotice: () => {}
 });
 
 const migrationProbes = {
@@ -82,7 +82,7 @@ const migrationProbes = {
     `;
 
     return Boolean(row?.candidate_profiles_table && row?.job_sources_table);
-  },
+  }
 };
 
 try {
@@ -117,7 +117,7 @@ try {
 
     const migrationSql = fs.readFileSync(
       path.join(migrationsDir, file),
-      "utf8",
+      "utf8"
     );
     console.log(`Applying ${file}`);
 

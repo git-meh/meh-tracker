@@ -10,7 +10,7 @@ import {
   jobMatches,
   jobs,
   resumes,
-  resumeVersions,
+  resumeVersions
 } from "@/lib/db/schema";
 import { generateAllArtifacts } from "@/lib/visa-platform/drafts";
 import { buildAiMatchResult } from "@/lib/visa-platform/matching";
@@ -18,13 +18,13 @@ import { createNotificationEvent } from "@/lib/visa-platform/notifications";
 import { logger } from "@/lib/logger";
 
 const createDraftSchema = z.object({
-  jobId: z.string().uuid(),
+  jobId: z.string().uuid()
 });
 
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -68,13 +68,13 @@ export async function POST(request: Request) {
     targetCountries: profile?.targetCountries ?? [],
     needsVisaSponsorship: profile?.needsVisaSponsorship ?? null,
     prefersRemote: profile?.prefersRemote ?? null,
-    salaryFloor: profile?.salaryFloor ?? null,
+    salaryFloor: profile?.salaryFloor ?? null
   });
 
   if (!profile) {
     logger.warn("draft_generate_no_profile", {
       userId: user.id,
-      jobId: job.id,
+      jobId: job.id
     });
   }
 
@@ -113,14 +113,14 @@ export async function POST(request: Request) {
     hasDefaultResume: Boolean(preferredResume?.isDefault),
     resumeFileName: preferredResume?.fileName ?? null,
     hasExtractedText: Boolean(resumeText),
-    extractedTextChars: resumeText?.length ?? 0,
+    extractedTextChars: resumeText?.length ?? 0
   });
 
   // ── AI match scoring ────────────────────────────────────────────────────────
   const computedMatch = await buildAiMatchResult(
     profile ?? null,
     job,
-    resumeText,
+    resumeText
   );
 
   const [existingMatch] = await db
@@ -129,8 +129,8 @@ export async function POST(request: Request) {
     .where(
       and(
         eq(jobMatches.userId, user.id),
-        eq(jobMatches.jobId, parsed.data.jobId),
-      ),
+        eq(jobMatches.jobId, parsed.data.jobId)
+      )
     )
     .limit(1);
 
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
             rationale: computedMatch.rationale,
             fitSignals: computedMatch.fitSignals,
             concerns: computedMatch.concerns,
-            refreshedAt: new Date(),
+            refreshedAt: new Date()
           })
           .where(eq(jobMatches.id, existingMatch.id))
           .returning()
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
             score: computedMatch.score,
             rationale: computedMatch.rationale,
             fitSignals: computedMatch.fitSignals,
-            concerns: computedMatch.concerns,
+            concerns: computedMatch.concerns
           })
           .returning()
       )[0];
@@ -170,8 +170,8 @@ export async function POST(request: Request) {
     .where(
       and(
         eq(applicationDrafts.userId, user.id),
-        eq(applicationDrafts.jobId, parsed.data.jobId),
-      ),
+        eq(applicationDrafts.jobId, parsed.data.jobId)
+      )
     )
     .limit(1);
 
@@ -184,7 +184,7 @@ export async function POST(request: Request) {
             status: "ready_for_review",
             reviewNotes: null,
             generatedAt: now,
-            updatedAt: now,
+            updatedAt: now
           })
           .where(eq(applicationDrafts.id, existingDraft.id))
           .returning()
@@ -198,7 +198,7 @@ export async function POST(request: Request) {
             jobMatchId: match.id,
             status: "ready_for_review",
             generatedAt: now,
-            updatedAt: now,
+            updatedAt: now
           })
           .returning()
       )[0];
@@ -208,7 +208,7 @@ export async function POST(request: Request) {
     job,
     profile ?? null,
     preferredResumeVersion ?? null,
-    computedMatch,
+    computedMatch
   );
 
   const aiGeneratedCount = artifactOutputs.filter((a) => a.aiGenerated).length;
@@ -218,7 +218,7 @@ export async function POST(request: Request) {
     jobId: job.id,
     totalArtifacts: artifactOutputs.length,
     aiGenerated: aiGeneratedCount,
-    templateFallback: artifactOutputs.length - aiGeneratedCount,
+    templateFallback: artifactOutputs.length - aiGeneratedCount
   });
 
   const artifacts = await db
@@ -232,8 +232,8 @@ export async function POST(request: Request) {
         type,
         title,
         content,
-        aiGenerated,
-      })),
+        aiGenerated
+      }))
     )
     .returning();
 
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
     subject: `Draft ready: ${job.title} at ${job.company}`,
     body: `${aiGeneratedCount === artifactOutputs.length ? "AI-generated" : "Tailored"} application package ready — match score ${computedMatch.score}/100.`,
     jobId: job.id,
-    draftId: draft.id,
+    draftId: draft.id
   });
 
   return NextResponse.json(
@@ -253,8 +253,8 @@ export async function POST(request: Request) {
       artifacts,
       resumeVersion: preferredResumeVersion ?? null,
       aiGeneratedCount,
-      reviewUrl: `/matches/${draft.id}`,
+      reviewUrl: `/matches/${draft.id}`
     },
-    { status: 201 },
+    { status: 201 }
   );
 }

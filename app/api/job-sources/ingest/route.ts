@@ -36,7 +36,7 @@ const ingestSchema = z.object({
             "workday",
             "ashby",
             "smartrecruiters",
-            "manual_external",
+            "manual_external"
           ])
           .optional(),
         visaSponsorshipStatus: z
@@ -51,20 +51,20 @@ const ingestSchema = z.object({
             "internship",
             "temporary",
             "apprenticeship",
-            "unknown",
+            "unknown"
           ])
           .optional(),
-        closingAt: z.string().datetime().nullable().optional(),
-      }),
+        closingAt: z.string().datetime().nullable().optional()
+      })
     )
     .min(1)
-    .max(250),
+    .max(250)
 });
 
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   const configuredIngestionKey = process.env.JOB_INGESTION_API_KEY?.trim();
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       payload: parsed.data.jobs.map((job) => {
         const { countryCode, countryConfidence } = resolveCountryMetadata({
           countryCode: job.countryCode,
-          location: job.location,
+          location: job.location
         });
 
         return {
@@ -116,18 +116,18 @@ export async function POST(request: Request) {
             job.sourceType ??
             "approved-feed",
           sourceJobId: job.sourceJobId ?? null,
-          closingAt: job.closingAt ? new Date(job.closingAt) : null,
+          closingAt: job.closingAt ? new Date(job.closingAt) : null
         };
-      }),
+      })
     });
 
     return NextResponse.json(run, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Job ingestion failed",
+        error: error instanceof Error ? error.message : "Job ingestion failed"
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

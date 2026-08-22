@@ -15,7 +15,7 @@ const UPSERT_BATCH_SIZE = 500;
 export async function POST() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -48,15 +48,15 @@ export async function POST() {
           preferredCurrency: profile.preferredCurrency,
           currentCountry: profile.currentCountry,
           yearsExperience: profile.yearsExperience,
-          preferredBoards: profile.preferredBoards,
+          preferredBoards: profile.preferredBoards
         }
-      : "NO PROFILE — fill in workspace to get real matches",
+      : "NO PROFILE — fill in workspace to get real matches"
   });
 
   if (!profile) {
     logger.warn("matches_refresh_no_profile", {
       userId: user.id,
-      action: "Scoring all jobs with null profile — most will score 0",
+      action: "Scoring all jobs with null profile — most will score 0"
     });
   }
 
@@ -67,7 +67,7 @@ export async function POST() {
     preferredBoards.length > 0
       ? sql`${jobs.sourceKey} = any (ARRAY[${sql.join(
           preferredBoards.map((b) => sql`${b}`),
-          sql`, `,
+          sql`, `
         )}]::text[])`
       : undefined;
 
@@ -77,14 +77,14 @@ export async function POST() {
     .where(
       boardFilter
         ? sql`${availabilityFilter} AND (${boardFilter})`
-        : availabilityFilter,
+        : availabilityFilter
     );
 
   logger.info("matches_refresh_jobs_loaded", {
     userId: user.id,
     totalJobsInDb: allJobs.length,
     boardFilter: preferredBoards.length > 0 ? preferredBoards : "all boards",
-    note: "Scoring ALL jobs — no cap",
+    note: "Scoring ALL jobs — no cap"
   });
 
   // ── Score every job in memory ───────────────────────────────────────────────
@@ -104,7 +104,7 @@ export async function POST() {
     "20-39": 0,
     "40-59": 0,
     "60-79": 0,
-    "80-100": 0,
+    "80-100": 0
   };
 
   for (const job of allJobs) {
@@ -126,7 +126,7 @@ export async function POST() {
       fitSignals: result.fitSignals,
       concerns: result.concerns,
       jobTitle: job.title,
-      company: job.company,
+      company: job.company
     });
   }
 
@@ -141,8 +141,8 @@ export async function POST() {
         company: q.company,
         score: q.score,
         fitSignals: q.fitSignals,
-        concerns: q.concerns,
-      })),
+        concerns: q.concerns
+      }))
   });
 
   // ── Bulk upsert qualifying matches ─────────────────────────────────────────
@@ -162,8 +162,8 @@ export async function POST() {
           rationale: q.rationale,
           fitSignals: q.fitSignals,
           concerns: q.concerns,
-          refreshedAt: now,
-        })),
+          refreshedAt: now
+        }))
       )
       .onConflictDoUpdate({
         target: [jobMatches.userId, jobMatches.jobId],
@@ -172,8 +172,8 @@ export async function POST() {
           rationale: sql`excluded.rationale`,
           fitSignals: sql`excluded.fit_signals`,
           concerns: sql`excluded.concerns`,
-          refreshedAt: sql`excluded.refreshed_at`,
-        },
+          refreshedAt: sql`excluded.refreshed_at`
+        }
       });
   }
 
@@ -185,8 +185,8 @@ export async function POST() {
       .where(
         and(
           eq(jobMatches.userId, user.id),
-          notInArray(jobMatches.jobId, qualifyingJobIds),
-        ),
+          notInArray(jobMatches.jobId, qualifyingJobIds)
+        )
       )
       .returning({ id: jobMatches.id });
     deletedStale = deleteResult.length;
@@ -205,12 +205,12 @@ export async function POST() {
     matchesStored: qualifying.length,
     staleMatchesDeleted: deletedStale,
     scoreDistribution,
-    durationMs: Date.now() - start,
+    durationMs: Date.now() - start
   });
 
   return NextResponse.json({
     refreshed: qualifying.length,
     totalScored: allJobs.length,
-    staleDeleted: deletedStale,
+    staleDeleted: deletedStale
   });
 }

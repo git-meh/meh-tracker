@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { candidateProfiles } from "@/lib/db/schema";
 import {
   normalizeCountryCode,
-  normalizeCountryCodes,
+  normalizeCountryCodes
 } from "@/lib/visa-platform/countries";
 
 const candidateProfileSchema = z.object({
@@ -22,13 +22,13 @@ const candidateProfileSchema = z.object({
   prefersRemote: z.boolean().optional(),
   summary: z.string().max(4000).nullable().optional(),
   skills: z.array(z.string().max(80)).max(50).optional(),
-  preferredBoards: z.array(z.string().max(120)).max(30).optional(),
+  preferredBoards: z.array(z.string().max(120)).max(30).optional()
 });
 
 async function getUser() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   return user;
@@ -60,7 +60,7 @@ export async function PUT(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -68,7 +68,7 @@ export async function PUT(request: Request) {
   const currentCountry =
     normalizeCountryCode(parsed.data.currentCountry) ?? null;
   const normalisedTargetCountries = normalizeCountryCodes(
-    parsed.data.targetCountries,
+    parsed.data.targetCountries
   );
   const [existing] = await db
     .select()
@@ -87,7 +87,7 @@ export async function PUT(request: Request) {
         yearsExperience: parsed.data.yearsExperience ?? null,
         salaryFloor: parsed.data.salaryFloor ?? null,
         summary: parsed.data.summary ?? null,
-        updatedAt: now,
+        updatedAt: now
       })
       .where(eq(candidateProfiles.userId, user.id))
       .returning();
@@ -112,7 +112,7 @@ export async function PUT(request: Request) {
       summary: parsed.data.summary ?? null,
       skills: parsed.data.skills ?? [],
       preferredBoards: parsed.data.preferredBoards ?? [],
-      updatedAt: now,
+      updatedAt: now
     })
     .returning();
 

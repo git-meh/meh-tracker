@@ -9,13 +9,13 @@ const savedSearchSchema = z.object({
   name: z.string().min(1).max(120),
   query: z.string().max(200).nullable().optional(),
   filters: z.record(z.string(), z.unknown()).default({}),
-  emailDaily: z.boolean().default(true),
+  emailDaily: z.boolean().default(true)
 });
 
 async function getUser() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   return user;
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       name: parsed.data.name,
       query: parsed.data.query ?? null,
       filters: parsed.data.filters,
-      emailDaily: parsed.data.emailDaily,
+      emailDaily: parsed.data.emailDaily
     })
     .returning();
 

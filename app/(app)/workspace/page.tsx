@@ -7,7 +7,7 @@ import {
   notificationEvents,
   resumes,
   resumeVersions,
-  savedSearches,
+  savedSearches
 } from "@/lib/db/schema";
 import { ResumeManager } from "@/components/resumes/resume-manager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,7 +20,7 @@ import { JobBoardPreferences } from "@/components/workspace/job-board-preference
 export default async function WorkspacePage() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -142,10 +142,10 @@ export default async function WorkspacePage() {
           <AutomationPreferencesForm
             preferences={preferences ?? null}
             executorConfigured={Boolean(
-              process.env.AUTOMATION_EXECUTOR_WEBHOOK_URL,
+              process.env.AUTOMATION_EXECUTOR_WEBHOOK_URL
             )}
             notificationWebhookConfigured={Boolean(
-              process.env.NOTIFICATION_WEBHOOK_URL,
+              process.env.NOTIFICATION_WEBHOOK_URL
             )}
           />
         </CardContent>

@@ -8,7 +8,7 @@ import {
   applications,
   generatedArtifacts,
   jobMatches,
-  jobs,
+  jobs
 } from "@/lib/db/schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,11 @@ import {
   JOB_BOARD_LABELS,
   JOB_SOURCE_TYPE_LABELS,
   VISA_SPONSORSHIP_LABELS,
-  WORK_MODE_LABELS,
+  WORK_MODE_LABELS
 } from "@/lib/visa-platform/constants";
 
 export default async function DraftReviewPage({
-  params,
+  params
 }: {
   params: Promise<{ draftId: string }>;
 }) {
@@ -30,7 +30,7 @@ export default async function DraftReviewPage({
 
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -43,8 +43,8 @@ export default async function DraftReviewPage({
     .where(
       and(
         eq(applicationDrafts.id, draftId),
-        eq(applicationDrafts.userId, user.id),
-      ),
+        eq(applicationDrafts.userId, user.id)
+      )
     )
     .limit(1);
 
@@ -184,7 +184,7 @@ export default async function DraftReviewPage({
                 latestByType.get("tailored_resume")?.content ?? "",
               cover_letter: latestByType.get("cover_letter")?.content ?? "",
               application_answers:
-                latestByType.get("application_answers")?.content ?? "",
+                latestByType.get("application_answers")?.content ?? ""
             }}
           />
         </CardContent>

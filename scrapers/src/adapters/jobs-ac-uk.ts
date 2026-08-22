@@ -31,7 +31,7 @@ const ACADEMIC_SEARCH_TERMS: string[] = [
   "finance officer",
   "hr advisor",
   "project manager",
-  "communications officer",
+  "communications officer"
 ];
 
 const config: BoardConfig = {
@@ -46,12 +46,12 @@ const config: BoardConfig = {
     return [...new Set(matches.map((m) => "https://www.jobs.ac.uk" + m[1]))];
   },
   defaultTags: ["Academic", "Higher Education", "Research"],
-  sourceType: "approved_feed",
+  sourceType: "approved_feed"
 };
 
 export async function scrapeJobsAcUk(
   keywords = ACADEMIC_SEARCH_TERMS,
-  maxJobsPerKeyword = 15,
+  maxJobsPerKeyword = 15
 ) {
   log.info("jobs_ac_uk_start", { keywords: keywords.length });
   return scrapeBoard(config, keywords, maxJobsPerKeyword);

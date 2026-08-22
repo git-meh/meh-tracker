@@ -11,7 +11,7 @@ interface VisibilitySettingsProps {
 }
 
 export function VisibilitySettings({
-  currentVisibility,
+  currentVisibility
 }: VisibilitySettingsProps) {
   const router = useRouter();
   const [isPublic, setIsPublic] = useState(currentVisibility === "public");
@@ -20,7 +20,7 @@ export function VisibilitySettings({
     setIsPublic(val);
     const supabase = createClient();
     const {
-      data: { user },
+      data: { user }
     } = await supabase.auth.getUser();
     if (!user) return;
 

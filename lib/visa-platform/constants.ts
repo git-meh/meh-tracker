@@ -4,7 +4,7 @@ import type {
   EmploymentType,
   JobSourceType,
   VisaSponsorshipStatus,
-  WorkMode,
+  WorkMode
 } from "@/lib/db/schema";
 
 export const SUPPORTED_COUNTRIES = [
@@ -13,28 +13,28 @@ export const SUPPORTED_COUNTRIES = [
   "DE",
   "CA",
   "NL",
-  "AU",
+  "AU"
 ] as const;
 
 export const JOB_SOURCE_TYPE_LABELS: Record<JobSourceType, string> = {
   manual: "Manual",
   approved_feed: "Approved Feed",
   employer_site: "Employer Site",
-  ats: "ATS",
+  ats: "ATS"
 };
 
 export const VISA_SPONSORSHIP_LABELS: Record<VisaSponsorshipStatus, string> = {
   eligible: "Visa Sponsor",
   possible: "Check Sponsorship",
   not_available: "No Sponsorship",
-  unknown: "Unknown",
+  unknown: "Unknown"
 };
 
 export const WORK_MODE_LABELS: Record<WorkMode, string> = {
   remote: "Remote",
   hybrid: "Hybrid",
   onsite: "Onsite",
-  unknown: "Unknown",
+  unknown: "Unknown"
 };
 
 export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = {
@@ -44,7 +44,7 @@ export const EMPLOYMENT_TYPE_LABELS: Record<EmploymentType, string> = {
   internship: "Internship",
   temporary: "Temporary",
   apprenticeship: "Apprenticeship",
-  unknown: "Unknown",
+  unknown: "Unknown"
 };
 
 export const APPLY_ADAPTER_LABELS: Record<ApplyAdapter, string> = {
@@ -54,20 +54,20 @@ export const APPLY_ADAPTER_LABELS: Record<ApplyAdapter, string> = {
   workday: "Workday",
   ashby: "Ashby",
   smartrecruiters: "SmartRecruiters",
-  manual_external: "External manual flow",
+  manual_external: "External manual flow"
 };
 
 export const AVAILABILITY_LABELS: Record<Availability, string> = {
   open: "Open",
   closed: "Closed",
-  unknown: "Unknown",
+  unknown: "Unknown"
 };
 
 export const AUTO_SUBMIT_ELIGIBLE_ADAPTERS: ApplyAdapter[] = [
   "greenhouse",
   "lever",
   "ashby",
-  "smartrecruiters",
+  "smartrecruiters"
 ];
 
 export type BoardEntry = {
@@ -82,96 +82,96 @@ export const JOB_BOARDS: BoardEntry[] = [
     key: "indeed",
     label: "Indeed",
     sector: "Aggregator",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "adzuna",
     label: "Adzuna",
     sector: "Aggregator",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "totaljobs",
     label: "Totaljobs",
     sector: "Aggregator",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "cv-library",
     label: "CV-Library",
     sector: "Aggregator",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "monster",
     label: "Monster",
     sector: "Aggregator",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "reed",
     label: "Reed",
     sector: "General",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "guardian-jobs",
     label: "Guardian Jobs",
     sector: "General",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "cwjobs",
     label: "CWJobs",
     sector: "Tech",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "nhs",
     label: "NHS Jobs",
     sector: "Public Sector",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "local-government",
     label: "Council / lgjobs",
     sector: "Public Sector",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "dwp",
     label: "DWP Find a Job",
     sector: "Public Sector",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "jobs-ac-uk",
     label: "jobs.ac.uk",
     sector: "Education",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "charityjob",
     label: "CharityJob",
     sector: "Charity / Third Sector",
-    sourceType: "approved_feed",
+    sourceType: "approved_feed"
   },
   {
     key: "greenhouse",
     label: "Greenhouse (company sites)",
     sector: "Company ATS",
-    sourceType: "ats",
+    sourceType: "ats"
   },
   {
     key: "lever",
     label: "Lever (company sites)",
     sector: "Company ATS",
-    sourceType: "ats",
-  },
+    sourceType: "ats"
+  }
 ];
 
 export const BOARD_SECTORS = [...new Set(JOB_BOARDS.map((b) => b.sector))];
 
 export const JOB_BOARD_LABELS = Object.fromEntries(
-  JOB_BOARDS.map((board) => [board.key, board.label]),
+  JOB_BOARDS.map((board) => [board.key, board.label])
 ) as Record<string, string>;

@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { SavedSearchFilters } from "@/lib/db/schema";
@@ -38,8 +38,8 @@ export function SaveSearchButton({ query, filters }: SaveSearchButtonProps) {
           name,
           query: query || null,
           filters,
-          emailDaily,
-        }),
+          emailDaily
+        })
       });
 
       if (!response.ok) {

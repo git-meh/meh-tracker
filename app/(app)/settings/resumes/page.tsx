@@ -7,7 +7,7 @@ import { ResumeManager } from "@/components/resumes/resume-manager";
 export default async function ResumesPage() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) return null;
 

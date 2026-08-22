@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 export default async function SettingsPage() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) return null;
 

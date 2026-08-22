@@ -58,7 +58,7 @@ export function JobFilters({ categories }: Props) {
         router.push(`/jobs?${params.toString()}`);
       });
     },
-    [router, searchParams],
+    [router, searchParams]
   );
 
   const countryIsExplicit = country && country !== "all";
@@ -186,7 +186,7 @@ export function JobFilters({ categories }: Props) {
             const val = e.target.value;
             debounceRef.current = setTimeout(
               () => push({ minSalary: val }),
-              500,
+              500
             );
           }}
         />

@@ -5,7 +5,7 @@ import type {
   JobSourceType,
   SavedSearchFilters,
   VisaSponsorshipStatus,
-  WorkMode,
+  WorkMode
 } from "@/lib/db/schema";
 import { normalizeCountryFilter } from "@/lib/visa-platform/countries";
 
@@ -25,7 +25,7 @@ const rawJobDiscoverySchema = z.object({
       "internship",
       "temporary",
       "apprenticeship",
-      "unknown",
+      "unknown"
     ])
     .optional(),
   sourceType: z
@@ -35,7 +35,7 @@ const rawJobDiscoverySchema = z.object({
   onlyMatched: z
     .union([z.literal("true"), z.literal("false"), z.boolean()])
     .transform((value) => value === true || value === "true")
-    .optional(),
+    .optional()
 });
 
 export type JobDiscoveryFilters = {
@@ -51,13 +51,13 @@ export type JobDiscoveryFilters = {
 };
 
 export function parseJobDiscoveryFilters(
-  raw: Record<string, string | string[] | undefined>,
+  raw: Record<string, string | string[] | undefined>
 ): JobDiscoveryFilters {
   const normalised = Object.fromEntries(
     Object.entries(raw).map(([key, value]) => [
       key,
-      Array.isArray(value) ? value[0] : value,
-    ]),
+      Array.isArray(value) ? value[0] : value
+    ])
   );
 
   const parsed = rawJobDiscoverySchema.safeParse(normalised);
@@ -77,12 +77,12 @@ export function parseJobDiscoveryFilters(
     employmentType: parsed.data.employmentType,
     sourceType: parsed.data.sourceType,
     minSalary: parsed.data.minSalary,
-    onlyMatched: parsed.data.onlyMatched,
+    onlyMatched: parsed.data.onlyMatched
   };
 }
 
 export function toSavedSearchFilters(
-  filters: JobDiscoveryFilters,
+  filters: JobDiscoveryFilters
 ): SavedSearchFilters {
   return {
     q: filters.q || null,
@@ -93,7 +93,7 @@ export function toSavedSearchFilters(
     employmentType: filters.employmentType ?? null,
     sourceType: filters.sourceType ?? null,
     minSalary: filters.minSalary ?? null,
-    onlyMatched: Boolean(filters.onlyMatched),
+    onlyMatched: Boolean(filters.onlyMatched)
   };
 }
 
@@ -116,7 +116,7 @@ type FilterableJob = {
 
 export function filterJobs<T extends FilterableJob>(
   jobs: T[],
-  filters: JobDiscoveryFilters,
+  filters: JobDiscoveryFilters
 ) {
   const queryWords = filters.q
     .trim()
@@ -131,7 +131,7 @@ export function filterJobs<T extends FilterableJob>(
         job.company,
         job.description ?? "",
         job.location ?? "",
-        ...job.tags,
+        ...job.tags
       ]
         .join(" ")
         .toLowerCase();

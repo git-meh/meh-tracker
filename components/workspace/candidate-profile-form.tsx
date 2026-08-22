@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { CandidateProfile } from "@/lib/db/schema";
 import {
   COUNTRY_OPTIONS,
-  normalizeCountryCode,
+  normalizeCountryCode
 } from "@/lib/visa-platform/countries";
 
 function splitList(value: string) {
@@ -34,7 +34,7 @@ export function CandidateProfileForm({ profile }: CandidateProfileFormProps) {
       needsVisaSponsorship: formData.get("needsVisaSponsorship") === "on",
       targetCountries: formData.getAll("targetCountries"),
       preferredLocations: splitList(
-        (formData.get("preferredLocations") as string) || "",
+        (formData.get("preferredLocations") as string) || ""
       ),
       targetRoles: splitList((formData.get("targetRoles") as string) || ""),
       yearsExperience: formData.get("yearsExperience")
@@ -46,7 +46,7 @@ export function CandidateProfileForm({ profile }: CandidateProfileFormProps) {
       preferredCurrency: (formData.get("preferredCurrency") as string) || "GBP",
       prefersRemote: formData.get("prefersRemote") === "on",
       summary: (formData.get("summary") as string) || null,
-      skills: splitList((formData.get("skills") as string) || ""),
+      skills: splitList((formData.get("skills") as string) || "")
     };
 
     startTransition(async () => {
@@ -54,7 +54,7 @@ export function CandidateProfileForm({ profile }: CandidateProfileFormProps) {
       const response = await fetch("/api/candidate-profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {

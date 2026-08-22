@@ -21,17 +21,17 @@ const config: BoardConfig = {
   extractLinks: (html) => {
     const matches = [...html.matchAll(/href="(\/job\/\d+[^"?#]*)"/gi)];
     return [
-      ...new Set(matches.map((m) => "https://jobs.theguardian.com" + m[1])),
+      ...new Set(matches.map((m) => "https://jobs.theguardian.com" + m[1]))
     ];
   },
   defaultTags: ["Guardian Jobs", "Public Sector"],
-  sourceType: "approved_feed",
+  sourceType: "approved_feed"
 };
 
 export async function scrapeGuardian(keywords?: string[], maxJobs = 30) {
   log.info("guardian_start", {
     keywords: keywords?.length ?? 0,
-    mode: keywords ? "keyword" : "location",
+    mode: keywords ? "keyword" : "location"
   });
   return scrapeBoard(config, keywords, maxJobs);
 }

@@ -13,10 +13,10 @@ const FiraCode = Fira_Code({
     "greek",
     "greek-ext",
     "latin",
-    "latin-ext",
+    "latin-ext"
   ],
   weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-fira-code",
+  variable: "--font-fira-code"
 });
 
 // const muktaMukta = Mukta({subsets:['devanagari','latin','latin-ext'],weight:['200','300','400','500','600','700','800'],variable:'--font-mukta'});
@@ -25,22 +25,22 @@ const FiraCode = Fira_Code({
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin"]
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  subsets: ["latin"]
 });
 
 export const metadata: Metadata = {
   title: "meh-tracker - Job Application Tracker",
   description:
-    "Track job applications, share opportunities, and stay on top of your job hunt with friends.",
+    "Track job applications, share opportunities, and stay on top of your job hunt with friends."
 };
 
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
@@ -55,7 +55,7 @@ export default function RootLayout({
         geistMono.variable,
         CalSansUI.variable,
         CalSansText.variable,
-        CalSansGeo.variable,
+        CalSansGeo.variable
       )}
     >
       <body className="min-h-full">{children}</body>

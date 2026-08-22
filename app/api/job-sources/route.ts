@@ -20,15 +20,15 @@ const sourceSchema = z.object({
     "workday",
     "ashby",
     "smartrecruiters",
-    "manual_external",
+    "manual_external"
   ]),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean().default(true)
 });
 
 async function getUser() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   return user;
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
   const slug = parsed.data.slug.trim().toLowerCase();
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   if (existing) {
     return NextResponse.json(
       { error: "A source with this slug already exists." },
-      { status: 409 },
+      { status: 409 }
     );
   }
 
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       slug,
       countryCodes: normalizeCountryCodes(parsed.data.countryCodes),
       baseUrl: parsed.data.baseUrl ?? null,
-      createdBy: user.id,
+      createdBy: user.id
     })
     .returning();
 

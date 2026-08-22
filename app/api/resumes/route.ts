@@ -15,7 +15,7 @@ const ALLOWED_TYPES = [PDF_TYPE, DOCX_TYPE];
 export async function GET() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,7 +30,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -40,9 +40,9 @@ export async function POST(request: Request) {
     {
       id: user.id,
       name: user.user_metadata?.name ?? user.email?.split("@")[0] ?? "User",
-      avatar_url: user.user_metadata?.avatar_url ?? null,
+      avatar_url: user.user_metadata?.avatar_url ?? null
     },
-    { onConflict: "id", ignoreDuplicates: true },
+    { onConflict: "id", ignoreDuplicates: true }
   );
 
   const formData = await request.formData();
@@ -53,21 +53,21 @@ export async function POST(request: Request) {
   if (file.size > MAX_FILE_SIZE)
     return NextResponse.json(
       { error: "File too large (max 5MB)" },
-      { status: 400 },
+      { status: 400 }
     );
   if (file.type === LEGACY_DOC_TYPE) {
     return NextResponse.json(
       {
         error:
-          "Legacy .doc files are not supported yet. Upload a PDF or DOCX file.",
+          "Legacy .doc files are not supported yet. Upload a PDF or DOCX file."
       },
-      { status: 400 },
+      { status: 400 }
     );
   }
   if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json(
       { error: "Only PDF and DOCX resumes are supported" },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -76,9 +76,9 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "We could not extract text from that file. Upload a text-based PDF or DOCX resume.",
+          "We could not extract text from that file. Upload a text-based PDF or DOCX resume."
       },
-      { status: 422 },
+      { status: 422 }
     );
   }
 
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       userId: user.id,
       fileName: file.name,
       fileUrl: storagePath,
-      fileSize: file.size,
+      fileSize: file.size
     })
     .returning();
 
@@ -113,12 +113,12 @@ export async function POST(request: Request) {
       label: "Original upload",
       extractedText: extraction.extractedText,
       normalizedText: extraction.normalizedText,
-      extractionStatus: extraction.status,
+      extractionStatus: extraction.status
     })
     .returning();
 
   return NextResponse.json(
     { ...resume, latestVersion: resumeVersion },
-    { status: 201 },
+    { status: 201 }
   );
 }

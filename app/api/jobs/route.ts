@@ -6,11 +6,11 @@ import { db } from "@/lib/db";
 import { jobMatches, jobs } from "@/lib/db/schema";
 import {
   filterJobs,
-  parseJobDiscoveryFilters,
+  parseJobDiscoveryFilters
 } from "@/lib/visa-platform/discovery";
 import {
   normalizeCountryCodes,
-  resolveCountryMetadata,
+  resolveCountryMetadata
 } from "@/lib/visa-platform/countries";
 
 const createJobSchema = z.object({
@@ -40,7 +40,7 @@ const createJobSchema = z.object({
       "workday",
       "ashby",
       "smartrecruiters",
-      "manual_external",
+      "manual_external"
     ])
     .optional(),
   visaSponsorshipStatus: z
@@ -55,10 +55,10 @@ const createJobSchema = z.object({
       "internship",
       "temporary",
       "apprenticeship",
-      "unknown",
+      "unknown"
     ])
     .optional(),
-  closingAt: z.string().datetime().nullable().optional(),
+  closingAt: z.string().datetime().nullable().optional()
 });
 
 function deriveFromUrl(url: string) {
@@ -78,13 +78,13 @@ function deriveFromUrl(url: string) {
 export async function GET(request: Request) {
   const allJobs = await db.select().from(jobs).orderBy(desc(jobs.createdAt));
   const searchParams = Object.fromEntries(
-    new URL(request.url).searchParams.entries(),
+    new URL(request.url).searchParams.entries()
   );
   const filters = parseJobDiscoveryFilters(searchParams);
 
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   const matches = user
@@ -96,15 +96,15 @@ export async function GET(request: Request) {
     eligible: 0,
     possible: 1,
     unknown: 2,
-    not_available: 3,
+    not_available: 3
   } as const;
 
   const filteredJobs = filterJobs(
     allJobs.map((job) => ({
       ...job,
-      matchScore: matchMap.get(job.id) ?? null,
+      matchScore: matchMap.get(job.id) ?? null
     })),
-    filters,
+    filters
   ).sort((left, right) => {
     const sponsorshipDiff =
       sponsorshipRank[left.visaSponsorshipStatus] -
@@ -135,7 +135,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   if (!user) {
@@ -148,14 +148,14 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
   const derived = deriveFromUrl(parsed.data.url);
   const { countryCode, countryConfidence } = resolveCountryMetadata({
     countryCode: parsed.data.countryCode,
-    location: parsed.data.location,
+    location: parsed.data.location
   });
   const sourceKey = (
     parsed.data.sourceKey ??
@@ -169,7 +169,7 @@ export async function POST(request: Request) {
       ? parsed.data.eligibleCountries
       : countryCode
         ? [countryCode]
-        : [],
+        : []
   );
 
   const [job] = await db
@@ -195,7 +195,7 @@ export async function POST(request: Request) {
       closingAt: parsed.data.closingAt ? new Date(parsed.data.closingAt) : null,
       postedBy: user.id,
       ingestedAt: new Date(),
-      updatedAt: new Date(),
+      updatedAt: new Date()
     })
     .returning();
 

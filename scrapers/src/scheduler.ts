@@ -42,7 +42,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 async function runGreenhouse(): Promise<void> {
   log.info("scheduler_adapter_start", { adapter: "greenhouse" });
   const slugs: string[] = JSON.parse(
-    readFileSync(join(__dirname, "company-list/greenhouse.json"), "utf-8"),
+    readFileSync(join(__dirname, "company-list/greenhouse.json"), "utf-8")
   );
   const jobs = await scrapeGreenhouse(slugs);
   await pushJobs(jobs, { label: "greenhouse" });
@@ -51,7 +51,7 @@ async function runGreenhouse(): Promise<void> {
 async function runLever(): Promise<void> {
   log.info("scheduler_adapter_start", { adapter: "lever" });
   const slugs: string[] = JSON.parse(
-    readFileSync(join(__dirname, "company-list/lever.json"), "utf-8"),
+    readFileSync(join(__dirname, "company-list/lever.json"), "utf-8")
   );
   const jobs = await scrapeLever(slugs);
   await pushJobs(jobs, { label: "lever" });
@@ -152,7 +152,7 @@ const ADAPTERS: Record<string, () => Promise<void>> = {
   adzuna: runAdzuna,
   monster: runMonster,
   "jobs-ac-uk": runJobsAcUk,
-  charityjob: runCharityjob,
+  charityjob: runCharityjob
 };
 
 // ─── Main ────────────────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ async function main(): Promise<void> {
   if (target) {
     log.error("scheduler_unknown_adapter", {
       target,
-      available: Object.keys(ADAPTERS),
+      available: Object.keys(ADAPTERS)
     });
     process.exit(1);
   }
@@ -216,7 +216,7 @@ async function main(): Promise<void> {
   const elapsed = Math.round((Date.now() - start) / 1000);
   log.info("scheduler_done", {
     elapsed,
-    adapters: Object.keys(ADAPTERS).length,
+    adapters: Object.keys(ADAPTERS).length
   });
 }
 

@@ -7,11 +7,11 @@ import {
   type EmploymentType,
   type JobSourceType,
   type VisaSponsorshipStatus,
-  type WorkMode,
+  type WorkMode
 } from "@/lib/db/schema";
 import {
   normalizeCountryCodes,
-  resolveCountryMetadata,
+  resolveCountryMetadata
 } from "@/lib/visa-platform/countries";
 
 export type IngestibleJob = {
@@ -43,7 +43,7 @@ export function buildJobDedupeKey(
   job: Pick<
     IngestibleJob,
     "url" | "sourceJobId" | "company" | "title" | "sourceKey" | "sourceType"
-  >,
+  >
 ) {
   const sourcePrefix = (
     job.sourceKey ??
@@ -74,7 +74,7 @@ export async function ingestJobs(args: {
     .values({
       sourceId: args.sourceId ?? null,
       status: "running",
-      startedAt: new Date(),
+      startedAt: new Date()
     })
     .returning();
 
@@ -95,7 +95,7 @@ export async function ingestJobs(args: {
 
       const { countryCode, countryConfidence } = resolveCountryMetadata({
         countryCode: payload.countryCode,
-        location: payload.location,
+        location: payload.location
       });
       const dedupeKey = buildJobDedupeKey(payload);
       const [existing] = await db
@@ -109,7 +109,7 @@ export async function ingestJobs(args: {
           ? payload.eligibleCountries
           : countryCode
             ? [countryCode]
-            : [],
+            : []
       );
 
       const values = {
@@ -139,7 +139,7 @@ export async function ingestJobs(args: {
         employmentType: payload.employmentType ?? "unknown",
         closingAt: payload.closingAt ?? null,
         ingestedAt: new Date(),
-        updatedAt: new Date(),
+        updatedAt: new Date()
       } satisfies typeof jobs.$inferInsert;
 
       if (existing) {
@@ -159,7 +159,7 @@ export async function ingestJobs(args: {
         jobsInserted,
         jobsUpdated,
         jobsSkipped,
-        finishedAt: new Date(),
+        finishedAt: new Date()
       })
       .where(eq(jobIngestionRuns.id, run.id))
       .returning();
@@ -175,7 +175,7 @@ export async function ingestJobs(args: {
         jobsUpdated,
         jobsSkipped,
         error: error instanceof Error ? error.message : "Ingestion failed",
-        finishedAt: new Date(),
+        finishedAt: new Date()
       })
       .where(eq(jobIngestionRuns.id, run.id))
       .returning();

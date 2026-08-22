@@ -21,7 +21,7 @@ import {
   detectWorkMode,
   normalizeEmploymentType,
   resolveCountryMetadata,
-  type IngestibleJob,
+  type IngestibleJob
 } from "../lib/normalizer.js";
 import { pushJobs } from "../lib/pusher.js";
 import { sleep } from "../lib/fetch.js";
@@ -57,7 +57,7 @@ function normaliseJob(job: GreenhouseJob): IngestibleJob {
   const description = job.content ? stripHtml(job.content) : null;
   const location = job.location?.name ?? null;
   const { countryCode, countryConfidence } = resolveCountryMetadata({
-    location,
+    location
   });
   const workMode = detectWorkMode(location, description);
   const visaSponsorshipStatus = detectSponsorshipStatus(description ?? "");
@@ -71,7 +71,7 @@ function normaliseJob(job: GreenhouseJob): IngestibleJob {
     const typeMeta = job.metadata.find(
       (m) =>
         m.name.toLowerCase().includes("type") ||
-        m.name.toLowerCase().includes("commitment"),
+        m.name.toLowerCase().includes("commitment")
     );
     if (typeMeta?.value) {
       employmentType = normalizeEmploymentType(typeMeta.value);
@@ -95,12 +95,12 @@ function normaliseJob(job: GreenhouseJob): IngestibleJob {
     applyAdapter: "greenhouse",
     visaSponsorshipStatus,
     workMode,
-    employmentType,
+    employmentType
   };
 }
 
 export async function scrapeGreenhouse(
-  slugs: string[],
+  slugs: string[]
 ): Promise<IngestibleJob[]> {
   const all: IngestibleJob[] = [];
 
@@ -109,7 +109,7 @@ export async function scrapeGreenhouse(
       console.log(`[greenhouse] Fetching ${slug}...`);
       const data = await fetchJson<GreenhouseResponse>(
         `https://boards-api.greenhouse.io/v1/boards/${slug}/jobs?content=true`,
-        { minDelayMs: 800, maxDelayMs: 2000 },
+        { minDelayMs: 800, maxDelayMs: 2000 }
       );
 
       const jobs = data.jobs ?? [];

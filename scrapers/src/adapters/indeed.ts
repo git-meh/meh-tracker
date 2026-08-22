@@ -24,18 +24,18 @@ const config: BoardConfig = {
   extractLinks: (html) => {
     const matches = [
       ...html.matchAll(/href="(\/viewjob\?[^"]+)"/gi),
-      ...html.matchAll(/href="(\/rc\/clk\?[^"]+)"/gi),
+      ...html.matchAll(/href="(\/rc\/clk\?[^"]+)"/gi)
     ];
     return [...new Set(matches.map((m) => "https://uk.indeed.com" + m[1]))];
   },
   defaultTags: ["Indeed"],
-  sourceType: "approved_feed",
+  sourceType: "approved_feed"
 };
 
 export async function scrapeIndeed(keywords?: string[], maxJobs = 30) {
   log.info("indeed_start", {
     keywords: keywords?.length ?? 0,
-    mode: keywords ? "keyword" : "location",
+    mode: keywords ? "keyword" : "location"
   });
   return scrapeBoard(config, keywords, maxJobs);
 }

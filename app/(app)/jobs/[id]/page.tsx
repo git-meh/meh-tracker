@@ -8,7 +8,7 @@ import {
   profiles,
   jobMatches,
   applicationDrafts,
-  jobSources,
+  jobSources
 } from "@/lib/db/schema";
 import { eq, sql, and } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +21,7 @@ import {
   DollarSign,
   ExternalLink,
   Calendar,
-  Users,
+  Users
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ApplyButton } from "@/components/applications/apply-button";
@@ -29,11 +29,11 @@ import { GenerateDraftButton } from "@/components/matches/generate-draft-button"
 import {
   JOB_SOURCE_TYPE_LABELS,
   VISA_SPONSORSHIP_LABELS,
-  WORK_MODE_LABELS,
+  WORK_MODE_LABELS
 } from "@/lib/visa-platform/constants";
 
 export default async function JobDetailPage({
-  params,
+  params
 }: {
   params: Promise<{ id: string }>;
 }) {
@@ -62,7 +62,7 @@ export default async function JobDetailPage({
       closingAt: jobs.closingAt,
       lastChecked: jobs.lastChecked,
       createdAt: jobs.createdAt,
-      posterName: profiles.name,
+      posterName: profiles.name
     })
     .from(jobs)
     .leftJoin(profiles, eq(profiles.id, jobs.postedBy))
@@ -80,7 +80,7 @@ export default async function JobDetailPage({
 
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
 
   // Check if user already applied
@@ -108,8 +108,8 @@ export default async function JobDetailPage({
       .where(
         and(
           eq(applicationDrafts.jobId, id),
-          eq(applicationDrafts.userId, user.id),
-        ),
+          eq(applicationDrafts.userId, user.id)
+        )
       )
       .limit(1);
     userDraft = draft ?? null;
@@ -152,7 +152,7 @@ export default async function JobDetailPage({
               <Calendar className="h-4 w-4" />
               Posted{" "}
               {formatDistanceToNow(new Date(job.createdAt), {
-                addSuffix: true,
+                addSuffix: true
               })}
             </span>
             <span className="flex items-center gap-1">
@@ -226,18 +226,18 @@ export default async function JobDetailPage({
                       "a",
                       "blockquote",
                       "pre",
-                      "code",
+                      "code"
                     ],
                     allowedAttributes: {
-                      a: ["href", "target", "rel"],
+                      a: ["href", "target", "rel"]
                     },
                     transformTags: {
                       a: sanitizeHtml.simpleTransform("a", {
                         target: "_blank",
-                        rel: "noopener noreferrer",
-                      }),
-                    },
-                  }),
+                        rel: "noopener noreferrer"
+                      })
+                    }
+                  })
                 }}
               />
             </div>

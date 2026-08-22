@@ -20,7 +20,7 @@ import {
   resolveCountryMetadata,
   normalizeEmploymentType,
   type IngestibleJob,
-  type JobSourceType,
+  type JobSourceType
 } from "./normalizer.js";
 import { log } from "./log.js";
 
@@ -50,7 +50,7 @@ export type BoardConfig = {
   /** Custom HTML parser for boards without JSON-LD (returns partial IngestibleJob) */
   parseHtmlFallback?: (
     html: string,
-    url: string,
+    url: string
   ) => Partial<IngestibleJob> | null;
 };
 
@@ -58,15 +58,15 @@ export type BoardConfig = {
 
 async function scrapeDetailPage(
   url: string,
-  config: BoardConfig,
+  config: BoardConfig
 ): Promise<IngestibleJob | null> {
   const html = await fetchPage(url, { minDelayMs: 1500, maxDelayMs: 3500 });
 
   // ── Try JSON-LD first ────────────────────────────────────────────────────
   const jsonLdMatches = [
     ...html.matchAll(
-      /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi,
-    ),
+      /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi
+    )
   ];
   for (const match of jsonLdMatches) {
     try {
@@ -76,7 +76,7 @@ async function scrapeDetailPage(
           ? raw
           : Array.isArray(raw["@graph"])
             ? raw["@graph"].find(
-                (x: { "@type": string }) => x["@type"] === "JobPosting",
+                (x: { "@type": string }) => x["@type"] === "JobPosting"
               )
             : null;
       if (!data?.title) continue;
@@ -90,7 +90,7 @@ async function scrapeDetailPage(
       // Prefer explicit addressCountry from JSON-LD; fall back to text detection
       const { countryCode, countryConfidence } = resolveCountryMetadata({
         countryCode: data.jobLocation?.address?.addressCountry,
-        location: locationStr,
+        location: locationStr
       });
 
       const idMatch = url.match(/\/(\d+)\/?(?:[?#].*)?$/);
@@ -118,7 +118,7 @@ async function scrapeDetailPage(
         visaSponsorshipStatus: detectSponsorshipStatus(description ?? ""),
         workMode: detectWorkMode(locationStr, description),
         employmentType: normalizeEmploymentType(data.employmentType),
-        closingAt: data.validThrough ? new Date(data.validThrough) : null,
+        closingAt: data.validThrough ? new Date(data.validThrough) : null
       };
     } catch {
       /* fall through to next block */
@@ -131,7 +131,7 @@ async function scrapeDetailPage(
     if (partial?.title) {
       const { countryCode, countryConfidence } = resolveCountryMetadata({
         countryCode: partial.countryCode ?? null,
-        location: partial.location ?? null,
+        location: partial.location ?? null
       });
       return {
         url,
@@ -149,7 +149,7 @@ async function scrapeDetailPage(
         employmentType: "unknown",
         countryConfidence,
         ...partial,
-        countryCode,
+        countryCode
       } as IngestibleJob;
     }
   }
@@ -160,7 +160,7 @@ async function scrapeDetailPage(
   if (!title) return null;
 
   const descMatch = html.match(
-    /<div[^>]+(?:class|id)="[^"]*(?:job-desc|description|vacancy-desc|content)[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+    /<div[^>]+(?:class|id)="[^"]*(?:job-desc|description|vacancy-desc|content)[^"]*"[^>]*>([\s\S]*?)<\/div>/i
   );
   const description = descMatch ? stripHtml(descMatch[1]) : null;
 
@@ -181,14 +181,14 @@ async function scrapeDetailPage(
     applyAdapter: "manual_external",
     visaSponsorshipStatus: detectSponsorshipStatus(description ?? ""),
     workMode: detectWorkMode(null, description),
-    employmentType: "unknown",
+    employmentType: "unknown"
   };
 }
 
 async function scrapeWithKeyword(
   keyword: string | null,
   config: BoardConfig,
-  maxJobs: number,
+  maxJobs: number
 ): Promise<IngestibleJob[]> {
   const results: IngestibleJob[] = [];
   const seen = new Set<string>();
@@ -203,7 +203,7 @@ async function scrapeWithKeyword(
   const discovered = await discoverJobUrls(
     config.domain,
     discoveryKeyword,
-    maxJobs,
+    maxJobs
   );
   const jobUrls = discovered
     .map((d) => d.url)
@@ -215,7 +215,7 @@ async function scrapeWithKeyword(
     const searchUrl = keyword
       ? config.searchUrlTemplate.replace(
           "{keyword}",
-          encodeURIComponent(keyword),
+          encodeURIComponent(keyword)
         )
       : config.searchUrlTemplate
           .replace("{keyword}", "")
@@ -223,7 +223,7 @@ async function scrapeWithKeyword(
     try {
       const html = await fetchPage(searchUrl, {
         minDelayMs: 2000,
-        maxDelayMs: 4000,
+        maxDelayMs: 4000
       });
       const links = config.extractLinks ? config.extractLinks(html) : [];
       links.forEach((u) => {
@@ -268,7 +268,7 @@ async function scrapeWithKeyword(
 export async function scrapeBoard(
   config: BoardConfig,
   keywords?: string[],
-  maxJobsPerKeyword = 30,
+  maxJobsPerKeyword = 30
 ): Promise<IngestibleJob[]> {
   const all: IngestibleJob[] = [];
 

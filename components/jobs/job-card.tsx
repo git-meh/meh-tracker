@@ -11,12 +11,12 @@ import type {
   Availability,
   JobSourceType,
   VisaSponsorshipStatus,
-  WorkMode,
+  WorkMode
 } from "@/lib/db/schema";
 import {
   JOB_SOURCE_TYPE_LABELS,
   VISA_SPONSORSHIP_LABELS,
-  WORK_MODE_LABELS,
+  WORK_MODE_LABELS
 } from "@/lib/visa-platform/constants";
 
 interface JobCardProps {
@@ -50,7 +50,7 @@ export function JobCard({
   job,
   userApplication,
   isAuthenticated,
-  matchScore,
+  matchScore
 }: JobCardProps) {
   return (
     <Card className="transition-shadow hover:shadow-md">

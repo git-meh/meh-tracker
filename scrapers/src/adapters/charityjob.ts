@@ -29,7 +29,7 @@ const CHARITY_SEARCH_TERMS: string[] = [
   "operations manager",
   "administrator",
   "advocacy officer",
-  "research officer",
+  "research officer"
 ];
 
 const config: BoardConfig = {
@@ -41,16 +41,16 @@ const config: BoardConfig = {
   extractLinks: (html) => {
     const matches = [...html.matchAll(/href="(\/jobs\/[^/]+\/\d+[^"?#]*)"/gi)];
     return [
-      ...new Set(matches.map((m) => "https://www.charityjob.co.uk" + m[1])),
+      ...new Set(matches.map((m) => "https://www.charityjob.co.uk" + m[1]))
     ];
   },
   defaultTags: ["Charity", "Non-Profit", "Third Sector"],
-  sourceType: "approved_feed",
+  sourceType: "approved_feed"
 };
 
 export async function scrapeCharityjob(
   keywords = CHARITY_SEARCH_TERMS,
-  maxJobsPerKeyword = 15,
+  maxJobsPerKeyword = 15
 ) {
   log.info("charityjob_start", { keywords: keywords.length });
   return scrapeBoard(config, keywords, maxJobsPerKeyword);

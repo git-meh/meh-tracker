@@ -1,6 +1,6 @@
 import {
   detectCountryCodeFromLocation,
-  resolveCountryMetadata as resolveCountryMetadataShared,
+  resolveCountryMetadata as resolveCountryMetadataShared
 } from "../../../lib/visa-platform/countries.js";
 
 export type ApplyAdapter =
@@ -97,7 +97,7 @@ export function stripHtml(html: string): string {
  * Bangalore, etc. to be mislabelled as UK jobs.
  */
 export function detectCountryCode(
-  location: string | null | undefined,
+  location: string | null | undefined
 ): string | null {
   return detectCountryCodeFromLocation(location);
 }
@@ -114,7 +114,7 @@ export function resolveCountryMetadata(input: {
  */
 export function detectWorkMode(
   location: string | null | undefined,
-  description: string | null | undefined,
+  description: string | null | undefined
 ): WorkMode {
   const combined = `${location ?? ""} ${description ?? ""}`.toLowerCase();
 
@@ -209,6 +209,6 @@ export function parseSalaryRange(raw: string | null | undefined): {
   return {
     salaryMin: min || null,
     salaryMax: max || null,
-    currency,
+    currency
   };
 }

@@ -8,7 +8,7 @@ import {
   candidateProfiles,
   generatedArtifacts,
   jobMatches,
-  jobs,
+  jobs
 } from "@/lib/db/schema";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,13 +19,13 @@ import {
   JOB_BOARD_LABELS,
   JOB_SOURCE_TYPE_LABELS,
   VISA_SPONSORSHIP_LABELS,
-  WORK_MODE_LABELS,
+  WORK_MODE_LABELS
 } from "@/lib/visa-platform/constants";
 
 export default async function MatchesPage() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -34,14 +34,14 @@ export default async function MatchesPage() {
     .select({
       skills: candidateProfiles.skills,
       targetRoles: candidateProfiles.targetRoles,
-      preferredBoards: candidateProfiles.preferredBoards,
+      preferredBoards: candidateProfiles.preferredBoards
     })
     .from(candidateProfiles)
     .where(eq(candidateProfiles.userId, user.id))
     .limit(1);
 
   const hasProfile = Boolean(
-    profile?.skills?.length || profile?.targetRoles?.length,
+    profile?.skills?.length || profile?.targetRoles?.length
   );
   const preferredBoards = profile?.preferredBoards ?? [];
 
@@ -64,7 +64,7 @@ export default async function MatchesPage() {
       sourceKey: jobs.sourceKey,
       visaSponsorshipStatus: jobs.visaSponsorshipStatus,
       workMode: jobs.workMode,
-      createdAt: jobs.createdAt,
+      createdAt: jobs.createdAt
     })
     .from(jobMatches)
     .innerJoin(jobs, eq(jobMatches.jobId, jobs.id))
@@ -72,12 +72,12 @@ export default async function MatchesPage() {
       applicationDrafts,
       and(
         eq(applicationDrafts.userId, user.id),
-        eq(applicationDrafts.jobId, jobs.id),
-      ),
+        eq(applicationDrafts.jobId, jobs.id)
+      )
     )
     .leftJoin(
       applications,
-      and(eq(applications.userId, user.id), eq(applications.jobId, jobs.id)),
+      and(eq(applications.userId, user.id), eq(applications.jobId, jobs.id))
     )
     .where(
       preferredBoards.length > 0
@@ -85,15 +85,15 @@ export default async function MatchesPage() {
             eq(jobMatches.userId, user.id),
             sql`${jobs.sourceKey} = any (ARRAY[${sql.join(
               preferredBoards.map((board) => sql`${board}`),
-              sql`, `,
-            )}]::text[])`,
+              sql`, `
+            )}]::text[])`
           )
-        : eq(jobMatches.userId, user.id),
+        : eq(jobMatches.userId, user.id)
     )
     // Visa-eligible jobs first, then by match score descending
     .orderBy(
       sql`case when ${jobs.visaSponsorshipStatus} = 'eligible' then 0 when ${jobs.visaSponsorshipStatus} = 'possible' then 1 else 2 end`,
-      desc(jobMatches.score),
+      desc(jobMatches.score)
     );
 
   const draftIds = matches

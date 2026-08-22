@@ -4,7 +4,7 @@ import {
   applicationDrafts,
   applications,
   jobMatches,
-  jobs,
+  jobs
 } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ const STATUS_COLUMNS: {
   { status: "oa", label: "OA / Assessment", color: "bg-purple-50" },
   { status: "phone_screen", label: "Phone Screen", color: "bg-yellow-50" },
   { status: "interview", label: "Interview", color: "bg-orange-50" },
-  { status: "offer", label: "Offer", color: "bg-green-50" },
+  { status: "offer", label: "Offer", color: "bg-green-50" }
 ];
 
 const FINAL_STATUSES: ApplicationStatus[] = ["rejected", "withdrawn"];
@@ -31,7 +31,7 @@ const FINAL_STATUSES: ApplicationStatus[] = ["rejected", "withdrawn"];
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -43,7 +43,7 @@ export default async function DashboardPage() {
       createdAt: applications.createdAt,
       jobTitle: jobs.title,
       jobCompany: jobs.company,
-      jobId: jobs.id,
+      jobId: jobs.id
     })
     .from(applications)
     .leftJoin(jobs, eq(applications.jobId, jobs.id))
@@ -54,11 +54,11 @@ export default async function DashboardPage() {
       acc[col.status] = userApplications.filter((a) => a.status === col.status);
       return acc;
     },
-    {} as Record<ApplicationStatus, typeof userApplications>,
+    {} as Record<ApplicationStatus, typeof userApplications>
   );
 
   const finalApps = userApplications.filter((a) =>
-    FINAL_STATUSES.includes(a.status),
+    FINAL_STATUSES.includes(a.status)
   );
 
   const topMatches = await db
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       score: jobMatches.score,
       jobId: jobs.id,
       title: jobs.title,
-      company: jobs.company,
+      company: jobs.company
     })
     .from(jobMatches)
     .innerJoin(jobs, eq(jobMatches.jobId, jobs.id))
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(app.createdAt), {
-                          addSuffix: true,
+                          addSuffix: true
                         })}
                       </p>
                       {app.isPrivate && (
