@@ -88,30 +88,33 @@ export default async function JobDetailPage({
   let userMatch = null;
   let userDraft = null;
   if (user) {
-    const [existing] = await db
-      .select()
-      .from(applications)
-      .where(and(eq(applications.jobId, id), eq(applications.userId, user.id)))
-      .limit(1);
-    userApplication = existing ?? null;
-
-    const [match] = await db
-      .select()
-      .from(jobMatches)
-      .where(and(eq(jobMatches.jobId, id), eq(jobMatches.userId, user.id)))
-      .limit(1);
-    userMatch = match ?? null;
-
-    const [draft] = await db
-      .select()
-      .from(applicationDrafts)
-      .where(
-        and(
-          eq(applicationDrafts.jobId, id),
-          eq(applicationDrafts.userId, user.id)
+    const [[existing], [match], [draft]] = await Promise.all([
+      db
+        .select()
+        .from(applications)
+        .where(
+          and(eq(applications.jobId, id), eq(applications.userId, user.id))
         )
-      )
-      .limit(1);
+        .limit(1),
+      db
+        .select()
+        .from(jobMatches)
+        .where(and(eq(jobMatches.jobId, id), eq(jobMatches.userId, user.id)))
+        .limit(1),
+      db
+        .select()
+        .from(applicationDrafts)
+        .where(
+          and(
+            eq(applicationDrafts.jobId, id),
+            eq(applicationDrafts.userId, user.id)
+          )
+        )
+        .limit(1)
+    ]);
+
+    userApplication = existing ?? null;
+    userMatch = match ?? null;
     userDraft = draft ?? null;
   }
 

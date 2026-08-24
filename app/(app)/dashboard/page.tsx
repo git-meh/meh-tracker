@@ -35,19 +35,40 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const userApplications = await db
-    .select({
-      id: applications.id,
-      status: applications.status,
-      isPrivate: applications.isPrivate,
-      createdAt: applications.createdAt,
-      jobTitle: jobs.title,
-      jobCompany: jobs.company,
-      jobId: jobs.id
-    })
-    .from(applications)
-    .leftJoin(jobs, eq(applications.jobId, jobs.id))
-    .where(eq(applications.userId, user.id));
+  const [userApplications, topMatches, drafts] = await Promise.all([
+    db
+      .select({
+        id: applications.id,
+        status: applications.status,
+        isPrivate: applications.isPrivate,
+        createdAt: applications.createdAt,
+        jobTitle: jobs.title,
+        jobCompany: jobs.company,
+        jobId: jobs.id
+      })
+      .from(applications)
+      .leftJoin(jobs, eq(applications.jobId, jobs.id))
+      .where(eq(applications.userId, user.id)),
+
+    db
+      .select({
+        id: jobMatches.id,
+        score: jobMatches.score,
+        jobId: jobs.id,
+        title: jobs.title,
+        company: jobs.company
+      })
+      .from(jobMatches)
+      .innerJoin(jobs, eq(jobMatches.jobId, jobs.id))
+      .where(eq(jobMatches.userId, user.id))
+      .orderBy(desc(jobMatches.score), desc(jobMatches.refreshedAt))
+      .limit(3),
+
+    db
+      .select({ id: applicationDrafts.id })
+      .from(applicationDrafts)
+      .where(eq(applicationDrafts.userId, user.id))
+  ]);
 
   const grouped = STATUS_COLUMNS.reduce(
     (acc, col) => {
@@ -60,25 +81,6 @@ export default async function DashboardPage() {
   const finalApps = userApplications.filter((a) =>
     FINAL_STATUSES.includes(a.status)
   );
-
-  const topMatches = await db
-    .select({
-      id: jobMatches.id,
-      score: jobMatches.score,
-      jobId: jobs.id,
-      title: jobs.title,
-      company: jobs.company
-    })
-    .from(jobMatches)
-    .innerJoin(jobs, eq(jobMatches.jobId, jobs.id))
-    .where(eq(jobMatches.userId, user.id))
-    .orderBy(desc(jobMatches.score), desc(jobMatches.refreshedAt))
-    .limit(3);
-
-  const drafts = await db
-    .select({ id: applicationDrafts.id })
-    .from(applicationDrafts)
-    .where(eq(applicationDrafts.userId, user.id));
 
   return (
     <div className="space-y-6">
