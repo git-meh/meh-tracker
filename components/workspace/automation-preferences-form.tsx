@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
-import { Button } from "@/components/ui/button"
-import type { AutomationPreference } from "@/lib/db/schema"
-import { COUNTRY_OPTIONS } from "@/lib/visa-platform/countries"
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
+import type { AutomationPreference } from "@/lib/db/schema";
+import { COUNTRY_OPTIONS } from "@/lib/visa-platform/countries";
 
 const SOURCE_TYPE_OPTIONS = [
   { value: "approved_feed", label: "Approved feeds" },
   { value: "employer_site", label: "Employer sites" },
   { value: "ats", label: "ATS" },
-  { value: "manual", label: "Manual jobs" },
-]
+  { value: "manual", label: "Manual jobs" }
+];
 
 interface AutomationPreferencesFormProps {
-  preferences: AutomationPreference | null
-  executorConfigured: boolean
-  notificationWebhookConfigured: boolean
+  preferences: AutomationPreference | null;
+  executorConfigured: boolean;
+  notificationWebhookConfigured: boolean;
 }
 
 export function AutomationPreferencesForm({
   preferences,
   executorConfigured,
-  notificationWebhookConfigured,
+  notificationWebhookConfigured
 }: AutomationPreferencesFormProps) {
-  const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   async function handleSubmit(formData: FormData) {
     const payload = {
@@ -37,25 +37,27 @@ export function AutomationPreferencesForm({
       emailNotificationsEnabled:
         formData.get("emailNotificationsEnabled") === "on",
       dailyDigestEnabled: formData.get("dailyDigestEnabled") === "on",
-      instantUpdatesEnabled: formData.get("instantUpdatesEnabled") === "on",
-    }
+      instantUpdatesEnabled: formData.get("instantUpdatesEnabled") === "on"
+    };
 
     startTransition(async () => {
-      setError(null)
+      setError(null);
       const response = await fetch("/api/automation-preferences", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
+        body: JSON.stringify(payload)
+      });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "Save failed" }))
-        setError(data.error?.formErrors?.[0] ?? data.error ?? "Save failed")
-        return
+        const data = await response
+          .json()
+          .catch(() => ({ error: "Save failed" }));
+        setError(data.error?.formErrors?.[0] ?? data.error ?? "Save failed");
+        return;
       }
 
-      router.refresh()
-    })
+      router.refresh();
+    });
   }
 
   return (
@@ -64,29 +66,38 @@ export function AutomationPreferencesForm({
         <p className="font-medium">Beta Runtime Status</p>
         <div className="mt-2 space-y-1 text-muted-foreground">
           <p>
-            Auto-submit executor: {executorConfigured ? "configured" : "manual-only in this environment"}
+            Auto-submit executor:{" "}
+            {executorConfigured
+              ? "configured"
+              : "manual-only in this environment"}
           </p>
           <p>
-            Notification delivery: {notificationWebhookConfigured ? "configured" : "events will be queued until a delivery webhook is configured"}
+            Notification delivery:{" "}
+            {notificationWebhookConfigured
+              ? "configured"
+              : "events will be queued until a delivery webhook is configured"}
           </p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-medium">
-            Allowed Source Types
-          </label>
+          <label className="text-sm font-medium">Allowed Source Types</label>
           <div className="space-y-2 rounded-md border p-3">
             {SOURCE_TYPE_OPTIONS.map((option) => (
-              <label key={option.value} className="flex items-center gap-2 text-sm">
+              <label
+                key={option.value}
+                className="flex items-center gap-2 text-sm"
+              >
                 <input
                   type="checkbox"
                   name="allowedSourceTypes"
                   value={option.value}
                   defaultChecked={
                     preferences?.allowedSourceTypes.includes(option.value) ??
-                    ["approved_feed", "employer_site", "ats"].includes(option.value)
+                    ["approved_feed", "employer_site", "ats"].includes(
+                      option.value
+                    )
                   }
                 />
                 {option.label}
@@ -112,7 +123,8 @@ export function AutomationPreferencesForm({
             ))}
           </select>
           <p className="text-xs text-muted-foreground">
-            Leave this empty to allow any supported country. Hold Command or Ctrl to select more than one.
+            Leave this empty to allow any supported country. Hold Command or
+            Ctrl to select more than one.
           </p>
         </div>
       </div>
@@ -156,7 +168,8 @@ export function AutomationPreferencesForm({
             name="instantUpdatesEnabled"
             defaultChecked={preferences?.instantUpdatesEnabled ?? true}
           />
-          Immediate updates for draft-ready, submission, and status-change events
+          Immediate updates for draft-ready, submission, and status-change
+          events
         </label>
       </div>
 
@@ -166,5 +179,5 @@ export function AutomationPreferencesForm({
         {isPending ? "Saving..." : "Save Automation Settings"}
       </Button>
     </form>
-  )
+  );
 }

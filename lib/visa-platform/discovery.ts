@@ -1,13 +1,13 @@
-import { z } from "zod"
+import { z } from "zod";
 import type {
   Availability,
   EmploymentType,
   JobSourceType,
   SavedSearchFilters,
   VisaSponsorshipStatus,
-  WorkMode,
-} from "@/lib/db/schema"
-import { normalizeCountryFilter } from "@/lib/visa-platform/countries"
+  WorkMode
+} from "@/lib/db/schema";
+import { normalizeCountryFilter } from "@/lib/visa-platform/countries";
 
 const rawJobDiscoverySchema = z.object({
   q: z.string().trim().optional().default(""),
@@ -25,28 +25,30 @@ const rawJobDiscoverySchema = z.object({
       "internship",
       "temporary",
       "apprenticeship",
-      "unknown",
+      "unknown"
     ])
     .optional(),
-  sourceType: z.enum(["manual", "approved_feed", "employer_site", "ats"]).optional(),
+  sourceType: z
+    .enum(["manual", "approved_feed", "employer_site", "ats"])
+    .optional(),
   minSalary: z.coerce.number().int().min(0).optional(),
   onlyMatched: z
     .union([z.literal("true"), z.literal("false"), z.boolean()])
     .transform((value) => value === true || value === "true")
-    .optional(),
-})
+    .optional()
+});
 
 export type JobDiscoveryFilters = {
-  q: string
-  availability?: Availability
-  sponsorship?: VisaSponsorshipStatus
-  country?: string
-  workMode?: WorkMode
-  employmentType?: EmploymentType
-  sourceType?: JobSourceType
-  minSalary?: number
-  onlyMatched?: boolean
-}
+  q: string;
+  availability?: Availability;
+  sponsorship?: VisaSponsorshipStatus;
+  country?: string;
+  workMode?: WorkMode;
+  employmentType?: EmploymentType;
+  sourceType?: JobSourceType;
+  minSalary?: number;
+  onlyMatched?: boolean;
+};
 
 export function parseJobDiscoveryFilters(
   raw: Record<string, string | string[] | undefined>
@@ -54,17 +56,17 @@ export function parseJobDiscoveryFilters(
   const normalised = Object.fromEntries(
     Object.entries(raw).map(([key, value]) => [
       key,
-      Array.isArray(value) ? value[0] : value,
+      Array.isArray(value) ? value[0] : value
     ])
-  )
+  );
 
-  const parsed = rawJobDiscoverySchema.safeParse(normalised)
+  const parsed = rawJobDiscoverySchema.safeParse(normalised);
 
   if (!parsed.success) {
-    return { q: "" }
+    return { q: "" };
   }
 
-  const country = normalizeCountryFilter(parsed.data.country)
+  const country = normalizeCountryFilter(parsed.data.country);
 
   return {
     q: parsed.data.q,
@@ -75,11 +77,13 @@ export function parseJobDiscoveryFilters(
     employmentType: parsed.data.employmentType,
     sourceType: parsed.data.sourceType,
     minSalary: parsed.data.minSalary,
-    onlyMatched: parsed.data.onlyMatched,
-  }
+    onlyMatched: parsed.data.onlyMatched
+  };
 }
 
-export function toSavedSearchFilters(filters: JobDiscoveryFilters): SavedSearchFilters {
+export function toSavedSearchFilters(
+  filters: JobDiscoveryFilters
+): SavedSearchFilters {
   return {
     q: filters.q || null,
     availability: filters.availability ?? null,
@@ -89,26 +93,26 @@ export function toSavedSearchFilters(filters: JobDiscoveryFilters): SavedSearchF
     employmentType: filters.employmentType ?? null,
     sourceType: filters.sourceType ?? null,
     minSalary: filters.minSalary ?? null,
-    onlyMatched: Boolean(filters.onlyMatched),
-  }
+    onlyMatched: Boolean(filters.onlyMatched)
+  };
 }
 
 type FilterableJob = {
-  title: string
-  company: string
-  description: string | null
-  location: string | null
-  tags: string[]
-  availability: Availability
-  visaSponsorshipStatus: VisaSponsorshipStatus
-  countryCode: string | null
-  workMode: WorkMode
-  employmentType: EmploymentType
-  sourceType: JobSourceType
-  salaryMin: number | null
-  eligibleCountries: string[]
-  matchScore?: number | null
-}
+  title: string;
+  company: string;
+  description: string | null;
+  location: string | null;
+  tags: string[];
+  availability: Availability;
+  visaSponsorshipStatus: VisaSponsorshipStatus;
+  countryCode: string | null;
+  workMode: WorkMode;
+  employmentType: EmploymentType;
+  sourceType: JobSourceType;
+  salaryMin: number | null;
+  eligibleCountries: string[];
+  matchScore?: number | null;
+};
 
 export function filterJobs<T extends FilterableJob>(
   jobs: T[],
@@ -118,7 +122,7 @@ export function filterJobs<T extends FilterableJob>(
     .trim()
     .toLowerCase()
     .split(/\s+/)
-    .filter(Boolean)
+    .filter(Boolean);
 
   return jobs.filter((job) => {
     if (queryWords.length > 0) {
@@ -127,44 +131,44 @@ export function filterJobs<T extends FilterableJob>(
         job.company,
         job.description ?? "",
         job.location ?? "",
-        ...job.tags,
+        ...job.tags
       ]
         .join(" ")
-        .toLowerCase()
+        .toLowerCase();
 
       if (!queryWords.every((word) => haystack.includes(word))) {
-        return false
+        return false;
       }
     }
 
     if (filters.availability && job.availability !== filters.availability) {
-      return false
+      return false;
     }
 
     if (
       filters.sponsorship &&
       job.visaSponsorshipStatus !== filters.sponsorship
     ) {
-      return false
+      return false;
     }
 
     if (filters.country && job.countryCode !== filters.country) {
-      return false
+      return false;
     }
 
     if (filters.workMode && job.workMode !== filters.workMode) {
-      return false
+      return false;
     }
 
     if (
       filters.employmentType &&
       job.employmentType !== filters.employmentType
     ) {
-      return false
+      return false;
     }
 
     if (filters.sourceType && job.sourceType !== filters.sourceType) {
-      return false
+      return false;
     }
 
     if (
@@ -172,13 +176,13 @@ export function filterJobs<T extends FilterableJob>(
       typeof job.salaryMin === "number" &&
       job.salaryMin < filters.minSalary
     ) {
-      return false
+      return false;
     }
 
     if (filters.onlyMatched && !(job.matchScore && job.matchScore > 0)) {
-      return false
+      return false;
     }
 
-    return true
-  })
+    return true;
+  });
 }

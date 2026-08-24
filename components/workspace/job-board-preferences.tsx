@@ -1,65 +1,67 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { JOB_BOARDS, BOARD_SECTORS } from "@/lib/visa-platform/constants"
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { JOB_BOARDS, BOARD_SECTORS } from "@/lib/visa-platform/constants";
 
 interface JobBoardPreferencesProps {
-  currentBoards: string[]
+  currentBoards: string[];
 }
 
-export function JobBoardPreferences({ currentBoards }: JobBoardPreferencesProps) {
-  const router = useRouter()
-  const [selected, setSelected] = useState<Set<string>>(new Set(currentBoards))
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
+export function JobBoardPreferences({
+  currentBoards
+}: JobBoardPreferencesProps) {
+  const router = useRouter();
+  const [selected, setSelected] = useState<Set<string>>(new Set(currentBoards));
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   function toggle(tag: string) {
-    setSaved(false)
+    setSaved(false);
     setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(tag)) next.delete(tag)
-      else next.add(tag)
-      return next
-    })
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag);
+      else next.add(tag);
+      return next;
+    });
   }
 
   function selectAll() {
-    setSaved(false)
-    setSelected(new Set(JOB_BOARDS.map((b) => b.key)))
+    setSaved(false);
+    setSelected(new Set(JOB_BOARDS.map((b) => b.key)));
   }
 
   function selectNone() {
-    setSaved(false)
-    setSelected(new Set())
+    setSaved(false);
+    setSelected(new Set());
   }
 
   async function save() {
     startTransition(async () => {
-      setError(null)
-      setSaved(false)
+      setError(null);
+      setSaved(false);
       const res = await fetch("/api/candidate-profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ preferredBoards: [...selected] }),
-      })
+        body: JSON.stringify({ preferredBoards: [...selected] })
+      });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(data.error ?? "Save failed")
-        return
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Save failed");
+        return;
       }
-      setSaved(true)
-      router.refresh()
-    })
+      setSaved(true);
+      router.refresh();
+    });
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <p className="text-sm text-muted-foreground flex-1">
+        <p className="flex-1 text-sm text-muted-foreground">
           {selected.size === 0
             ? "All boards shown (no filter active)"
             : `${selected.size} board${selected.size === 1 ? "" : "s"} selected`}
@@ -82,12 +84,12 @@ export function JobBoardPreferences({ currentBoards }: JobBoardPreferencesProps)
 
       {BOARD_SECTORS.map((sector) => (
         <div key={sector} className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {sector}
           </p>
           <div className="flex flex-wrap gap-2">
             {JOB_BOARDS.filter((b) => b.sector === sector).map((board) => {
-              const isOn = selected.has(board.key)
+              const isOn = selected.has(board.key);
               return (
                 <button
                   key={board.key}
@@ -99,7 +101,7 @@ export function JobBoardPreferences({ currentBoards }: JobBoardPreferencesProps)
                     {board.label}
                   </Badge>
                 </button>
-              )
+              );
             })}
           </div>
         </div>
@@ -110,11 +112,11 @@ export function JobBoardPreferences({ currentBoards }: JobBoardPreferencesProps)
           {isPending ? "Saving…" : "Save Preferences"}
         </Button>
         {saved && (
-          <span className="text-sm text-green-600 dark:text-green-400">Saved!</span>
+          <span className="text-sm text-green-600 dark:text-green-400">
+            Saved!
+          </span>
         )}
-        {error && (
-          <span className="text-sm text-destructive">{error}</span>
-        )}
+        {error && <span className="text-sm text-destructive">{error}</span>}
       </div>
 
       {selected.size === 0 && (
@@ -124,5 +126,5 @@ export function JobBoardPreferences({ currentBoards }: JobBoardPreferencesProps)
         </p>
       )}
     </div>
-  )
+  );
 }

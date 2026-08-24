@@ -19,7 +19,7 @@ const STATUS_COLORS: Record<ApplicationStatus, string> = {
   interview: "warning",
   offer: "success",
   rejected: "destructive",
-  withdrawn: "secondary",
+  withdrawn: "secondary"
 } as const;
 
 const STATUS_LABELS: Record<ApplicationStatus, string> = {
@@ -30,18 +30,18 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   interview: "Interview",
   offer: "Offer",
   rejected: "Rejected",
-  withdrawn: "Withdrawn",
+  withdrawn: "Withdrawn"
 };
 
 export default async function ApplicationsPage({
-  searchParams,
+  searchParams
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
   const supabase = await createClient();
   const {
-    data: { user },
+    data: { user }
   } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -56,7 +56,7 @@ export default async function ApplicationsPage({
       jobTitle: jobs.title,
       jobCompany: jobs.company,
       jobId: jobs.id,
-      jobAvailability: jobs.availability,
+      jobAvailability: jobs.availability
     })
     .from(applications)
     .leftJoin(jobs, eq(applications.jobId, jobs.id))
@@ -65,8 +65,8 @@ export default async function ApplicationsPage({
         eq(applications.userId, user.id),
         q
           ? or(ilike(jobs.title, `%${q}%`), ilike(jobs.company, `%${q}%`))
-          : undefined,
-      ),
+          : undefined
+      )
     )
     .orderBy(desc(applications.updatedAt));
 
@@ -78,7 +78,7 @@ export default async function ApplicationsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="">
           <h1 className="text-2xl font-bold">My Applications</h1>
           <p className="text-sm text-muted-foreground">
@@ -105,13 +105,13 @@ export default async function ApplicationsPage({
       ) : (
         <>
           {/* Mobile card list */}
-          <div className="sm:hidden space-y-3">
+          <div className="space-y-3 sm:hidden">
             {userApplications.map((app) => (
               <Link key={app.id} href={`/applications/${app.id}`}>
-                <div className="rounded-lg border bg-background p-4 hover:shadow-sm transition-shadow">
-                  <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="rounded-lg border bg-background p-4 transition-shadow hover:shadow-sm">
+                  <div className="mb-2 flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">
+                      <p className="truncate text-sm font-medium">
                         {app.jobTitle}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -121,10 +121,7 @@ export default async function ApplicationsPage({
                     <Badge
                       variant={
                         STATUS_COLORS[app.status] as
-                          | "default"
-                          | "secondary"
-                          | "destructive"
-                          | "outline"
+                          "default" | "secondary" | "destructive" | "outline"
                       }
                       className="shrink-0"
                     >
@@ -136,13 +133,13 @@ export default async function ApplicationsPage({
                       <AvailabilityBadge availability={app.jobAvailability} />
                     )}
                     {app.isPrivate && (
-                      <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Lock className="h-3 w-3" /> Private
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(app.updatedAt), {
-                        addSuffix: true,
+                        addSuffix: true
                       })}
                     </span>
                   </div>
@@ -152,7 +149,7 @@ export default async function ApplicationsPage({
           </div>
 
           {/* Desktop table */}
-          <div className="hidden sm:block rounded-lg border bg-background overflow-x-auto">
+          <div className="hidden overflow-x-auto rounded-lg border bg-background sm:block">
             <table className="w-full text-sm">
               <thead className="border-b bg-muted/50">
                 <tr>
@@ -170,12 +167,12 @@ export default async function ApplicationsPage({
                 {userApplications.map((app) => (
                   <tr
                     key={app.id}
-                    className="hover:bg-muted/30 transition-colors"
+                    className="transition-colors hover:bg-muted/30"
                   >
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-medium">{app.jobTitle}</p>
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-xs text-muted-foreground">
                           {app.jobCompany}
                         </p>
                       </div>
@@ -184,10 +181,7 @@ export default async function ApplicationsPage({
                       <Badge
                         variant={
                           STATUS_COLORS[app.status] as
-                            | "default"
-                            | "secondary"
-                            | "destructive"
-                            | "outline"
+                            "default" | "secondary" | "destructive" | "outline"
                         }
                       >
                         {STATUS_LABELS[app.status]}
@@ -200,12 +194,12 @@ export default async function ApplicationsPage({
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDistanceToNow(new Date(app.updatedAt), {
-                        addSuffix: true,
+                        addSuffix: true
                       })}
                     </td>
                     <td className="px-4 py-3">
                       {app.isPrivate && (
-                        <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Lock className="h-3 w-3" /> Private
                         </span>
                       )}

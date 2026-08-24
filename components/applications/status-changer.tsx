@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import type { ApplicationStatus } from "@/lib/db/schema"
+  SelectValue
+} from "@/components/ui/select";
+import type { ApplicationStatus } from "@/lib/db/schema";
 
 const STATUSES: { value: ApplicationStatus; label: string }[] = [
   { value: "saved", label: "Saved" },
@@ -19,32 +19,35 @@ const STATUSES: { value: ApplicationStatus; label: string }[] = [
   { value: "interview", label: "Interview" },
   { value: "offer", label: "Offer Received" },
   { value: "rejected", label: "Rejected" },
-  { value: "withdrawn", label: "Withdrawn" },
-]
+  { value: "withdrawn", label: "Withdrawn" }
+];
 
 interface StatusChangerProps {
-  applicationId: string
-  currentStatus: ApplicationStatus
+  applicationId: string;
+  currentStatus: ApplicationStatus;
 }
 
-export function StatusChanger({ applicationId, currentStatus }: StatusChangerProps) {
-  const router = useRouter()
-  const [value, setValue] = useState(currentStatus)
-  const [loading, setLoading] = useState(false)
+export function StatusChanger({
+  applicationId,
+  currentStatus
+}: StatusChangerProps) {
+  const router = useRouter();
+  const [value, setValue] = useState(currentStatus);
+  const [loading, setLoading] = useState(false);
 
   async function handleChange(newStatus: string) {
-    if (newStatus === value) return
-    setLoading(true)
-    setValue(newStatus as ApplicationStatus)
+    if (newStatus === value) return;
+    setLoading(true);
+    setValue(newStatus as ApplicationStatus);
 
     await fetch(`/api/applications/${applicationId}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: newStatus }),
-    })
+      body: JSON.stringify({ status: newStatus })
+    });
 
-    setLoading(false)
-    router.refresh()
+    setLoading(false);
+    router.refresh();
   }
 
   return (
@@ -60,5 +63,5 @@ export function StatusChanger({ applicationId, currentStatus }: StatusChangerPro
         ))}
       </SelectContent>
     </Select>
-  )
+  );
 }

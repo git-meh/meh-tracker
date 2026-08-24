@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm"
-import { db } from "@/lib/db"
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
 import {
   jobIngestionRuns,
   jobs,
@@ -7,91 +7,102 @@ import {
   type EmploymentType,
   type JobSourceType,
   type VisaSponsorshipStatus,
-  type WorkMode,
-} from "@/lib/db/schema"
+  type WorkMode
+} from "@/lib/db/schema";
 import {
   normalizeCountryCodes,
-  resolveCountryMetadata,
-} from "@/lib/visa-platform/countries"
+  resolveCountryMetadata
+} from "@/lib/visa-platform/countries";
 
 export type IngestibleJob = {
-  url: string
-  title: string
-  company: string
-  description?: string | null
-  salaryRange?: string | null
-  salaryMin?: number | null
-  salaryMax?: number | null
-  currency?: string | null
-  location?: string | null
-  countryCode?: string | null
-  countryConfidence?: string | null
-  tags?: string[]
-  eligibleCountries?: string[]
-  sourceId?: string | null
-  sourceType?: JobSourceType
-  sourceKey?: string | null
-  sourceJobId?: string | null
-  applyAdapter?: ApplyAdapter
-  visaSponsorshipStatus?: VisaSponsorshipStatus
-  workMode?: WorkMode
-  employmentType?: EmploymentType
-  closingAt?: Date | null
-}
+  url: string;
+  title: string;
+  company: string;
+  description?: string | null;
+  salaryRange?: string | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  currency?: string | null;
+  location?: string | null;
+  countryCode?: string | null;
+  countryConfidence?: string | null;
+  tags?: string[];
+  eligibleCountries?: string[];
+  sourceId?: string | null;
+  sourceType?: JobSourceType;
+  sourceKey?: string | null;
+  sourceJobId?: string | null;
+  applyAdapter?: ApplyAdapter;
+  visaSponsorshipStatus?: VisaSponsorshipStatus;
+  workMode?: WorkMode;
+  employmentType?: EmploymentType;
+  closingAt?: Date | null;
+};
 
 export function buildJobDedupeKey(
-  job: Pick<IngestibleJob, "url" | "sourceJobId" | "company" | "title" | "sourceKey" | "sourceType">
+  job: Pick<
+    IngestibleJob,
+    "url" | "sourceJobId" | "company" | "title" | "sourceKey" | "sourceType"
+  >
 ) {
-  const sourcePrefix = (job.sourceKey ?? job.sourceType ?? "unknown").toLowerCase()
+  const sourcePrefix = (
+    job.sourceKey ??
+    job.sourceType ??
+    "unknown"
+  ).toLowerCase();
 
   if (job.sourceJobId) {
-    return `${sourcePrefix}:source:${job.sourceJobId}`.toLowerCase()
+    return `${sourcePrefix}:source:${job.sourceJobId}`.toLowerCase();
   }
 
   try {
-    const parsed = new URL(job.url)
+    const parsed = new URL(job.url);
     return `${sourcePrefix}:${parsed.hostname}${parsed.pathname}`
       .replace(/\/+$/, "")
-      .toLowerCase()
+      .toLowerCase();
   } catch {
-    return `${sourcePrefix}:${job.company}:${job.title}:${job.url}`.toLowerCase()
+    return `${sourcePrefix}:${job.company}:${job.title}:${job.url}`.toLowerCase();
   }
 }
 
 export async function ingestJobs(args: {
-  sourceId?: string | null
-  payload: IngestibleJob[]
+  sourceId?: string | null;
+  payload: IngestibleJob[];
 }) {
   const [run] = await db
     .insert(jobIngestionRuns)
     .values({
       sourceId: args.sourceId ?? null,
       status: "running",
-      startedAt: new Date(),
+      startedAt: new Date()
     })
-    .returning()
+    .returning();
 
-  let jobsInserted = 0
-  let jobsUpdated = 0
-  let jobsSkipped = 0
+  let jobsInserted = 0;
+  let jobsUpdated = 0;
+  let jobsSkipped = 0;
 
   try {
     for (const payload of args.payload) {
-      if (!payload.url?.trim() || !payload.title?.trim() || !payload.company?.trim()) {
-        jobsSkipped += 1
-        continue
+      if (
+        !payload.url?.trim() ||
+        !payload.title?.trim() ||
+        !payload.company?.trim()
+      ) {
+        jobsSkipped += 1;
+        continue;
       }
 
       const { countryCode, countryConfidence } = resolveCountryMetadata({
         countryCode: payload.countryCode,
-        location: payload.location,
-      })
-      const dedupeKey = buildJobDedupeKey(payload)
+        location: payload.location
+      });
+      const dedupeKey = buildJobDedupeKey(payload);
       const [existing] = await db
         .select()
         .from(jobs)
         .where(eq(jobs.dedupeKey, dedupeKey))
-        .limit(1)
+        .limit(1);
 
       const eligibleCountries = normalizeCountryCodes(
         payload.eligibleCountries?.length
@@ -99,7 +110,7 @@ export async function ingestJobs(args: {
           : countryCode
             ? [countryCode]
             : []
-      )
+      );
 
       const values = {
         title: payload.title.trim(),
@@ -128,15 +139,15 @@ export async function ingestJobs(args: {
         employmentType: payload.employmentType ?? "unknown",
         closingAt: payload.closingAt ?? null,
         ingestedAt: new Date(),
-        updatedAt: new Date(),
-      } satisfies typeof jobs.$inferInsert
+        updatedAt: new Date()
+      } satisfies typeof jobs.$inferInsert;
 
       if (existing) {
-        await db.update(jobs).set(values).where(eq(jobs.id, existing.id))
-        jobsUpdated += 1
+        await db.update(jobs).set(values).where(eq(jobs.id, existing.id));
+        jobsUpdated += 1;
       } else {
-        await db.insert(jobs).values(values)
-        jobsInserted += 1
+        await db.insert(jobs).values(values);
+        jobsInserted += 1;
       }
     }
 
@@ -148,12 +159,12 @@ export async function ingestJobs(args: {
         jobsInserted,
         jobsUpdated,
         jobsSkipped,
-        finishedAt: new Date(),
+        finishedAt: new Date()
       })
       .where(eq(jobIngestionRuns.id, run.id))
-      .returning()
+      .returning();
 
-    return updatedRun
+    return updatedRun;
   } catch (error) {
     const [failedRun] = await db
       .update(jobIngestionRuns)
@@ -164,11 +175,11 @@ export async function ingestJobs(args: {
         jobsUpdated,
         jobsSkipped,
         error: error instanceof Error ? error.message : "Ingestion failed",
-        finishedAt: new Date(),
+        finishedAt: new Date()
       })
       .where(eq(jobIngestionRuns.id, run.id))
-      .returning()
+      .returning();
 
-    throw failedRun
+    throw failedRun;
   }
 }

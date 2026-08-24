@@ -1,28 +1,30 @@
-import { createClient } from "@/lib/supabase/server"
-import { db } from "@/lib/db"
-import { profiles } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
-import { Sidebar } from "@/components/layout/sidebar"
-import { Header } from "@/components/layout/header"
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { profiles } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { Sidebar } from "@/components/layout/sidebar";
+import { Header } from "@/components/layout/header";
 
 // Note: actual route protection is handled by middleware.ts
 // This layout renders for both authenticated and anonymous users.
 export default async function AppLayout({
-  children,
+  children
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
 
-  let profile = null
+  let profile = null;
   if (user) {
     const [p] = await db
       .select()
       .from(profiles)
       .where(eq(profiles.id, user.id))
-      .limit(1)
-    profile = p ?? null
+      .limit(1);
+    profile = p ?? null;
   }
 
   return (
@@ -35,5 +37,5 @@ export default async function AppLayout({
         </main>
       </div>
     </div>
-  )
+  );
 }

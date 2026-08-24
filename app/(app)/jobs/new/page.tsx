@@ -1,32 +1,35 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function NewJobPage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [showDetails, setShowDetails] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const form = new FormData(e.currentTarget)
-    const tagsRaw = form.get("tags") as string
+    const form = new FormData(e.currentTarget);
+    const tagsRaw = form.get("tags") as string;
     const tags = tagsRaw
-      ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean)
-      : []
+      ? tagsRaw
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [];
 
-    const iAmApplying = form.get("iAmApplying") === "on"
+    const iAmApplying = form.get("iAmApplying") === "on";
 
     const body = {
       url: form.get("url"),
@@ -35,45 +38,45 @@ export default function NewJobPage() {
       description: form.get("description") || undefined,
       salaryRange: form.get("salaryRange") || undefined,
       location: form.get("location") || undefined,
-      tags,
-    }
+      tags
+    };
 
     const res = await fetch("/api/jobs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    })
+      body: JSON.stringify(body)
+    });
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setError(data.error ?? "Failed to post job")
-      setLoading(false)
-      return
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Failed to post job");
+      setLoading(false);
+      return;
     }
 
-    const job = await res.json()
+    const job = await res.json();
 
     if (iAmApplying) {
       // Create application and redirect to it
       const appRes = await fetch("/api/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId: job.id, status: "applied" }),
-      })
+        body: JSON.stringify({ jobId: job.id, status: "applied" })
+      });
       if (appRes.ok) {
-        const app = await appRes.json()
-        router.push(`/applications/${app.id}`)
-        return
+        const app = await appRes.json();
+        router.push(`/applications/${app.id}`);
+        return;
       }
     }
 
-    router.push(`/jobs/${job.id}`)
+    router.push(`/jobs/${job.id}`);
   }
 
   return (
-    <div className="max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Post a Job</h1>
-      <p className="text-sm text-muted-foreground mb-6">
+    <div className="mx-auto max-w-xl">
+      <h1 className="mb-2 text-2xl font-bold">Post a Job</h1>
+      <p className="mb-6 text-sm text-muted-foreground">
         Just a link is enough - add details whenever you have them.
       </p>
 
@@ -99,39 +102,63 @@ export default function NewJobPage() {
             <button
               type="button"
               onClick={() => setShowDetails((v) => !v)}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              {showDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showDetails ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
               {showDetails ? "Hide details" : "Add details (optional)"}
             </button>
 
             {showDetails && (
               <div className="space-y-4 pt-1">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="title">Job Title</Label>
-                    <Input id="title" name="title" placeholder="Software Engineer" />
+                    <Input
+                      id="title"
+                      name="title"
+                      placeholder="Software Engineer"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="company">Company</Label>
-                    <Input id="company" name="company" placeholder="Acme Corp" />
+                    <Input
+                      id="company"
+                      name="company"
+                      placeholder="Acme Corp"
+                    />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
-                    <Input id="location" name="location" placeholder="Remote / London" />
+                    <Input
+                      id="location"
+                      name="location"
+                      placeholder="Remote / London"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="salaryRange">Salary Range</Label>
-                    <Input id="salaryRange" name="salaryRange" placeholder="£60k – £80k" />
+                    <Input
+                      id="salaryRange"
+                      name="salaryRange"
+                      placeholder="£60k – £80k"
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="tags">Tags</Label>
-                  <Input id="tags" name="tags" placeholder="React, TypeScript, Remote (comma-separated)" />
+                  <Input
+                    id="tags"
+                    name="tags"
+                    placeholder="React, TypeScript, Remote (comma-separated)"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -152,17 +179,24 @@ export default function NewJobPage() {
                 type="checkbox"
                 id="iAmApplying"
                 name="iAmApplying"
-                className="h-4 w-4 rounded border-input accent-primary cursor-pointer"
+                className="h-4 w-4 cursor-pointer rounded border-input accent-primary"
               />
-              <label htmlFor="iAmApplying" className="text-sm cursor-pointer select-none">
+              <label
+                htmlFor="iAmApplying"
+                className="cursor-pointer text-sm select-none"
+              >
                 I&apos;m applying to this job
               </label>
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <div className="flex gap-3 justify-end pt-2">
-              <Button type="button" variant="outline" onClick={() => router.back()}>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
@@ -173,5 +207,5 @@ export default function NewJobPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

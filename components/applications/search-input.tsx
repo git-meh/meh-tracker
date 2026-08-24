@@ -6,7 +6,7 @@ import { useCallback } from "react";
 import {
   InputGroup,
   InputGroupInput,
-  InputGroupAddon,
+  InputGroupAddon
 } from "@/components/ui/input-group";
 import { TextSearch } from "lucide-react";
 
@@ -25,7 +25,7 @@ export function SearchInput({ totalResults }: { totalResults: number }) {
       }
       router.replace(`${pathname}?${params.toString()}`);
     },
-    [searchParams, router, pathname],
+    [searchParams, router, pathname]
   );
 
   return (

@@ -1,47 +1,49 @@
-import Link from "next/link"
-import { and, desc, eq, sql } from "drizzle-orm"
-import { createClient } from "@/lib/supabase/server"
-import { db } from "@/lib/db"
+import Link from "next/link";
+import { and, desc, eq, sql } from "drizzle-orm";
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
 import {
   applications,
   applicationDrafts,
   candidateProfiles,
   generatedArtifacts,
   jobMatches,
-  jobs,
-} from "@/lib/db/schema"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { RefreshMatchesButton } from "@/components/matches/refresh-matches-button"
-import { GenerateDraftButton } from "@/components/matches/generate-draft-button"
+  jobs
+} from "@/lib/db/schema";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RefreshMatchesButton } from "@/components/matches/refresh-matches-button";
+import { GenerateDraftButton } from "@/components/matches/generate-draft-button";
 import {
   JOB_BOARD_LABELS,
   JOB_SOURCE_TYPE_LABELS,
   VISA_SPONSORSHIP_LABELS,
-  WORK_MODE_LABELS,
-} from "@/lib/visa-platform/constants"
+  WORK_MODE_LABELS
+} from "@/lib/visa-platform/constants";
 
 export default async function MatchesPage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return null
+    data: { user }
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
   // Check if the user has a profile so we can show an onboarding nudge
   const [profile] = await db
     .select({
       skills: candidateProfiles.skills,
       targetRoles: candidateProfiles.targetRoles,
-      preferredBoards: candidateProfiles.preferredBoards,
+      preferredBoards: candidateProfiles.preferredBoards
     })
     .from(candidateProfiles)
     .where(eq(candidateProfiles.userId, user.id))
-    .limit(1)
+    .limit(1);
 
-  const hasProfile = Boolean(profile?.skills?.length || profile?.targetRoles?.length)
-  const preferredBoards = profile?.preferredBoards ?? []
+  const hasProfile = Boolean(
+    profile?.skills?.length || profile?.targetRoles?.length
+  );
+  const preferredBoards = profile?.preferredBoards ?? [];
 
   const matches = await db
     .select({
@@ -62,7 +64,7 @@ export default async function MatchesPage() {
       sourceKey: jobs.sourceKey,
       visaSponsorshipStatus: jobs.visaSponsorshipStatus,
       workMode: jobs.workMode,
-      createdAt: jobs.createdAt,
+      createdAt: jobs.createdAt
     })
     .from(jobMatches)
     .innerJoin(jobs, eq(jobMatches.jobId, jobs.id))
@@ -92,11 +94,11 @@ export default async function MatchesPage() {
     .orderBy(
       sql`case when ${jobs.visaSponsorshipStatus} = 'eligible' then 0 when ${jobs.visaSponsorshipStatus} = 'possible' then 1 else 2 end`,
       desc(jobMatches.score)
-    )
+    );
 
   const draftIds = matches
     .map((match) => match.draftId)
-    .filter((value): value is string => Boolean(value))
+    .filter((value): value is string => Boolean(value));
 
   const artifacts = draftIds.length
     ? await db
@@ -104,15 +106,15 @@ export default async function MatchesPage() {
         .from(generatedArtifacts)
         .where(eq(generatedArtifacts.userId, user.id))
         .orderBy(desc(generatedArtifacts.createdAt))
-    : []
+    : [];
 
-  const artifactsByDraft = new Map<string, typeof artifacts>()
+  const artifactsByDraft = new Map<string, typeof artifacts>();
   artifacts.forEach((artifact) => {
-    if (!artifact.draftId || !draftIds.includes(artifact.draftId)) return
-    const bucket = artifactsByDraft.get(artifact.draftId) ?? []
-    bucket.push(artifact)
-    artifactsByDraft.set(artifact.draftId, bucket)
-  })
+    if (!artifact.draftId || !draftIds.includes(artifact.draftId)) return;
+    const bucket = artifactsByDraft.get(artifact.draftId) ?? [];
+    bucket.push(artifact);
+    artifactsByDraft.set(artifact.draftId, bucket);
+  });
 
   return (
     <div className="space-y-6">
@@ -124,8 +126,11 @@ export default async function MatchesPage() {
           </p>
           {!hasProfile && (
             <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
-              Your workspace profile is empty — add your skills and target roles first so matching is meaningful.{" "}
-              <a href="/workspace" className="underline">Open Workspace →</a>
+              Your workspace profile is empty — add your skills and target roles
+              first so matching is meaningful.{" "}
+              <a href="/workspace" className="underline">
+                Open Workspace →
+              </a>
             </p>
           )}
         </div>
@@ -137,7 +142,8 @@ export default async function MatchesPage() {
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <p className="text-lg font-semibold">No matches yet</p>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              Complete your candidate workspace, then refresh matches to generate a ranked review queue.
+              Complete your candidate workspace, then refresh matches to
+              generate a ranked review queue.
             </p>
             <div className="mt-4 flex gap-2">
               <Button asChild variant="outline">
@@ -151,8 +157,8 @@ export default async function MatchesPage() {
         <div className="grid gap-4 xl:grid-cols-2">
           {matches.map((match) => {
             const draftArtifacts = match.draftId
-              ? artifactsByDraft.get(match.draftId) ?? []
-              : []
+              ? (artifactsByDraft.get(match.draftId) ?? [])
+              : [];
 
             return (
               <Card key={match.matchId}>
@@ -165,7 +171,16 @@ export default async function MatchesPage() {
                         {match.location ? ` · ${match.location}` : ""}
                       </p>
                     </div>
-                    <Badge variant={match.score >= 75 ? "success" : match.score >= 50 ? "warning" : "secondary"} className="whitespace-nowrap shrink-0">
+                    <Badge
+                      variant={
+                        match.score >= 75
+                          ? "success"
+                          : match.score >= 50
+                            ? "warning"
+                            : "secondary"
+                      }
+                      className="shrink-0 whitespace-nowrap"
+                    >
                       Match {match.score}
                     </Badge>
                   </div>
@@ -185,12 +200,16 @@ export default async function MatchesPage() {
                       </Badge>
                     ) : null}
                     {match.draftStatus ? (
-                      <Badge variant="secondary">Draft: {match.draftStatus}</Badge>
+                      <Badge variant="secondary">
+                        Draft: {match.draftStatus}
+                      </Badge>
                     ) : null}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">{match.rationale}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {match.rationale}
+                  </p>
 
                   {match.fitSignals.length > 0 ? (
                     <div className="space-y-1">
@@ -216,11 +235,13 @@ export default async function MatchesPage() {
 
                   {draftArtifacts.length > 0 ? (
                     <div className="rounded-lg border bg-muted/20 p-3">
-                      <p className="text-sm font-medium">Latest draft artifacts</p>
+                      <p className="text-sm font-medium">
+                        Latest draft artifacts
+                      </p>
                       <div className="mt-2 space-y-2">
                         {draftArtifacts.slice(0, 3).map((artifact) => (
                           <div key={artifact.id}>
-                            <p className="text-xs font-medium uppercase text-muted-foreground">
+                            <p className="text-xs font-medium text-muted-foreground uppercase">
                               {artifact.type.replace(/_/g, " ")}
                             </p>
                             <p className="line-clamp-3 text-sm text-muted-foreground">
@@ -258,10 +279,10 @@ export default async function MatchesPage() {
                   </div>
                 </CardContent>
               </Card>
-            )
+            );
           })}
         </div>
       )}
     </div>
-  )
+  );
 }

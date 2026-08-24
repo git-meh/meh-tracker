@@ -5,10 +5,10 @@
  * Detail pages at /job/{id}/{slug}.
  */
 
-import { fileURLToPath } from "url"
-import { scrapeBoard, type BoardConfig } from "../lib/generic-board.js"
-import { pushJobs } from "../lib/pusher.js"
-import { log } from "../lib/log.js"
+import { fileURLToPath } from "url";
+import { scrapeBoard, type BoardConfig } from "../lib/generic-board.js";
+import { pushJobs } from "../lib/pusher.js";
+import { log } from "../lib/log.js";
 
 const config: BoardConfig = {
   key: "cwjobs",
@@ -17,28 +17,25 @@ const config: BoardConfig = {
   isDetailUrl: (url) =>
     /cwjobs\.co\.uk\/job\//i.test(url) ||
     /cwjobs\.co\.uk\/[\w-]+-job-\d+/i.test(url),
-  searchUrlTemplate:
-    "https://www.cwjobs.co.uk/jobs/{keyword}-jobs",
+  searchUrlTemplate: "https://www.cwjobs.co.uk/jobs/{keyword}-jobs",
   extractLinks: (html) => {
-    const matches = [
-      ...html.matchAll(/href="(\/job\/[^"?#]+)"/gi),
-    ]
-    return [...new Set(matches.map((m) => "https://www.cwjobs.co.uk" + m[1]))]
+    const matches = [...html.matchAll(/href="(\/job\/[^"?#]+)"/gi)];
+    return [...new Set(matches.map((m) => "https://www.cwjobs.co.uk" + m[1]))];
   },
   defaultTags: ["CWJobs", "Tech"],
-  sourceType: "approved_feed",
-}
+  sourceType: "approved_feed"
+};
 
-export async function scrapeCwjobs(
-  keywords?: string[],
-  maxJobs = 30
-) {
-  log.info("cwjobs_start", { keywords: keywords?.length ?? 0, mode: keywords ? "keyword" : "location" })
-  return scrapeBoard(config, keywords, maxJobs)
+export async function scrapeCwjobs(keywords?: string[], maxJobs = 30) {
+  log.info("cwjobs_start", {
+    keywords: keywords?.length ?? 0,
+    mode: keywords ? "keyword" : "location"
+  });
+  return scrapeBoard(config, keywords, maxJobs);
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   scrapeCwjobs()
     .then((jobs) => pushJobs(jobs, { label: "cwjobs" }))
-    .catch(console.error)
+    .catch(console.error);
 }

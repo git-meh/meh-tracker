@@ -1,33 +1,31 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import type { CandidateProfile } from "@/lib/db/schema"
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import type { CandidateProfile } from "@/lib/db/schema";
 import {
   COUNTRY_OPTIONS,
-  normalizeCountryCode,
-} from "@/lib/visa-platform/countries"
+  normalizeCountryCode
+} from "@/lib/visa-platform/countries";
 
 function splitList(value: string) {
   return value
     .split(",")
     .map((item) => item.trim())
-    .filter(Boolean)
+    .filter(Boolean);
 }
 
 interface CandidateProfileFormProps {
-  profile: CandidateProfile | null
+  profile: CandidateProfile | null;
 }
 
-export function CandidateProfileForm({
-  profile,
-}: CandidateProfileFormProps) {
-  const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+export function CandidateProfileForm({ profile }: CandidateProfileFormProps) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   async function handleSubmit(formData: FormData) {
     const payload = {
@@ -45,29 +43,30 @@ export function CandidateProfileForm({
       salaryFloor: formData.get("salaryFloor")
         ? Number(formData.get("salaryFloor"))
         : null,
-      preferredCurrency:
-        (formData.get("preferredCurrency") as string) || "GBP",
+      preferredCurrency: (formData.get("preferredCurrency") as string) || "GBP",
       prefersRemote: formData.get("prefersRemote") === "on",
       summary: (formData.get("summary") as string) || null,
-      skills: splitList((formData.get("skills") as string) || ""),
-    }
+      skills: splitList((formData.get("skills") as string) || "")
+    };
 
     startTransition(async () => {
-      setError(null)
+      setError(null);
       const response = await fetch("/api/candidate-profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
+        body: JSON.stringify(payload)
+      });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "Save failed" }))
-        setError(data.error?.formErrors?.[0] ?? data.error ?? "Save failed")
-        return
+        const data = await response
+          .json()
+          .catch(() => ({ error: "Save failed" }));
+        setError(data.error?.formErrors?.[0] ?? data.error ?? "Save failed");
+        return;
       }
 
-      router.refresh()
-    })
+      router.refresh();
+    });
   }
 
   return (
@@ -233,5 +232,5 @@ export function CandidateProfileForm({
         {isPending ? "Saving..." : "Save Candidate Profile"}
       </Button>
     </form>
-  )
+  );
 }

@@ -1,35 +1,35 @@
-import { NextResponse } from "next/server"
-import { and, eq, inArray, notInArray, sql } from "drizzle-orm"
-import { createClient } from "@/lib/supabase/server"
-import { db } from "@/lib/db"
-import { candidateProfiles, jobMatches, jobs } from "@/lib/db/schema"
-import { buildMatchResult } from "@/lib/visa-platform/matching"
-import { logger } from "@/lib/logger"
+import { NextResponse } from "next/server";
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { candidateProfiles, jobMatches, jobs } from "@/lib/db/schema";
+import { buildMatchResult } from "@/lib/visa-platform/matching";
+import { logger } from "@/lib/logger";
 
 // Minimum score to be stored as a match
-const SCORE_THRESHOLD = 5
+const SCORE_THRESHOLD = 5;
 
 // Batch size for bulk DB upserts — avoids a single massive query
-const UPSERT_BATCH_SIZE = 500
+const UPSERT_BATCH_SIZE = 500;
 
 export async function POST() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { user }
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const start = Date.now()
+  const start = Date.now();
 
   // ── Load candidate profile ──────────────────────────────────────────────────
   const [profile] = await db
     .select()
     .from(candidateProfiles)
     .where(eq(candidateProfiles.userId, user.id))
-    .limit(1)
+    .limit(1);
 
   logger.info("matches_refresh_started", {
     userId: user.id,
@@ -48,51 +48,55 @@ export async function POST() {
           preferredCurrency: profile.preferredCurrency,
           currentCountry: profile.currentCountry,
           yearsExperience: profile.yearsExperience,
-          preferredBoards: profile.preferredBoards,
+          preferredBoards: profile.preferredBoards
         }
-      : "NO PROFILE — fill in workspace to get real matches",
-  })
+      : "NO PROFILE — fill in workspace to get real matches"
+  });
 
   if (!profile) {
     logger.warn("matches_refresh_no_profile", {
       userId: user.id,
-      action: "Scoring all jobs with null profile — most will score 0",
-    })
+      action: "Scoring all jobs with null profile — most will score 0"
+    });
   }
 
   // ── Load ALL jobs ───────────────────────────────────────────────────────────
-  const preferredBoards = profile?.preferredBoards ?? []
-  const availabilityFilter = inArray(jobs.availability, ["open", "unknown"])
+  const preferredBoards = profile?.preferredBoards ?? [];
+  const availabilityFilter = inArray(jobs.availability, ["open", "unknown"]);
   const boardFilter =
     preferredBoards.length > 0
       ? sql`${jobs.sourceKey} = any (ARRAY[${sql.join(
           preferredBoards.map((b) => sql`${b}`),
           sql`, `
         )}]::text[])`
-      : undefined
+      : undefined;
 
   const allJobs = await db
     .select()
     .from(jobs)
-    .where(boardFilter ? sql`${availabilityFilter} AND (${boardFilter})` : availabilityFilter)
+    .where(
+      boardFilter
+        ? sql`${availabilityFilter} AND (${boardFilter})`
+        : availabilityFilter
+    );
 
   logger.info("matches_refresh_jobs_loaded", {
     userId: user.id,
     totalJobsInDb: allJobs.length,
     boardFilter: preferredBoards.length > 0 ? preferredBoards : "all boards",
-    note: "Scoring ALL jobs — no cap",
-  })
+    note: "Scoring ALL jobs — no cap"
+  });
 
   // ── Score every job in memory ───────────────────────────────────────────────
   const qualifying: Array<{
-    jobId: string
-    score: number
-    rationale: string
-    fitSignals: string[]
-    concerns: string[]
-    jobTitle: string
-    company: string
-  }> = []
+    jobId: string;
+    score: number;
+    rationale: string;
+    fitSignals: string[];
+    concerns: string[];
+    jobTitle: string;
+    company: string;
+  }> = [];
 
   const scoreDistribution: Record<string, number> = {
     "0-4 (skipped)": 0,
@@ -100,20 +104,20 @@ export async function POST() {
     "20-39": 0,
     "40-59": 0,
     "60-79": 0,
-    "80-100": 0,
-  }
+    "80-100": 0
+  };
 
   for (const job of allJobs) {
-    const result = buildMatchResult(profile ?? null, job)
+    const result = buildMatchResult(profile ?? null, job);
 
-    if (result.score < 10) scoreDistribution["0-4 (skipped)"]++
-    else if (result.score < 20) scoreDistribution["5-19"]++
-    else if (result.score < 40) scoreDistribution["20-39"]++
-    else if (result.score < 60) scoreDistribution["40-59"]++
-    else if (result.score < 80) scoreDistribution["60-79"]++
-    else scoreDistribution["80-100"]++
+    if (result.score < 10) scoreDistribution["0-4 (skipped)"]++;
+    else if (result.score < 20) scoreDistribution["5-19"]++;
+    else if (result.score < 40) scoreDistribution["20-39"]++;
+    else if (result.score < 60) scoreDistribution["40-59"]++;
+    else if (result.score < 80) scoreDistribution["60-79"]++;
+    else scoreDistribution["80-100"]++;
 
-    if (result.score < SCORE_THRESHOLD) continue
+    if (result.score < SCORE_THRESHOLD) continue;
 
     qualifying.push({
       jobId: job.id,
@@ -122,8 +126,8 @@ export async function POST() {
       fitSignals: result.fitSignals,
       concerns: result.concerns,
       jobTitle: job.title,
-      company: job.company,
-    })
+      company: job.company
+    });
   }
 
   // Log every job that qualified with its score and signals
@@ -137,17 +141,17 @@ export async function POST() {
         company: q.company,
         score: q.score,
         fitSignals: q.fitSignals,
-        concerns: q.concerns,
-      })),
-  })
+        concerns: q.concerns
+      }))
+  });
 
   // ── Bulk upsert qualifying matches ─────────────────────────────────────────
-  const now = new Date()
-  const qualifyingJobIds = qualifying.map((q) => q.jobId)
+  const now = new Date();
+  const qualifyingJobIds = qualifying.map((q) => q.jobId);
 
   // Process in batches to avoid query size limits
   for (let i = 0; i < qualifying.length; i += UPSERT_BATCH_SIZE) {
-    const batch = qualifying.slice(i, i + UPSERT_BATCH_SIZE)
+    const batch = qualifying.slice(i, i + UPSERT_BATCH_SIZE);
     await db
       .insert(jobMatches)
       .values(
@@ -158,7 +162,7 @@ export async function POST() {
           rationale: q.rationale,
           fitSignals: q.fitSignals,
           concerns: q.concerns,
-          refreshedAt: now,
+          refreshedAt: now
         }))
       )
       .onConflictDoUpdate({
@@ -168,13 +172,13 @@ export async function POST() {
           rationale: sql`excluded.rationale`,
           fitSignals: sql`excluded.fit_signals`,
           concerns: sql`excluded.concerns`,
-          refreshedAt: sql`excluded.refreshed_at`,
-        },
-      })
+          refreshedAt: sql`excluded.refreshed_at`
+        }
+      });
   }
 
   // ── Delete stale matches (jobs that no longer qualify) ─────────────────────
-  let deletedStale = 0
+  let deletedStale = 0;
   if (qualifyingJobIds.length > 0) {
     const deleteResult = await db
       .delete(jobMatches)
@@ -184,15 +188,15 @@ export async function POST() {
           notInArray(jobMatches.jobId, qualifyingJobIds)
         )
       )
-      .returning({ id: jobMatches.id })
-    deletedStale = deleteResult.length
+      .returning({ id: jobMatches.id });
+    deletedStale = deleteResult.length;
   } else {
     // No qualifying jobs — clear everything for this user
     const deleteResult = await db
       .delete(jobMatches)
       .where(eq(jobMatches.userId, user.id))
-      .returning({ id: jobMatches.id })
-    deletedStale = deleteResult.length
+      .returning({ id: jobMatches.id });
+    deletedStale = deleteResult.length;
   }
 
   logger.info("matches_refresh_done", {
@@ -201,12 +205,12 @@ export async function POST() {
     matchesStored: qualifying.length,
     staleMatchesDeleted: deletedStale,
     scoreDistribution,
-    durationMs: Date.now() - start,
-  })
+    durationMs: Date.now() - start
+  });
 
   return NextResponse.json({
     refreshed: qualifying.length,
     totalScored: allJobs.length,
-    staleDeleted: deletedStale,
-  })
+    staleDeleted: deletedStale
+  });
 }

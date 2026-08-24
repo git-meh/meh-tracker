@@ -1,37 +1,49 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Loader2, Trash2 } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Loader2, Trash2 } from "lucide-react";
 
-export function DeleteApplicationButton({ applicationId }: { applicationId: string }) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [confirming, setConfirming] = useState(false)
+export function DeleteApplicationButton({
+  applicationId
+}: {
+  applicationId: string;
+}) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   async function handleDelete() {
-    setLoading(true)
-    const res = await fetch(`/api/applications/${applicationId}`, { method: "DELETE" })
+    setLoading(true);
+    const res = await fetch(`/api/applications/${applicationId}`, {
+      method: "DELETE"
+    });
     if (res.ok) {
-      router.push("/applications")
+      router.push("/applications");
     } else {
-      setLoading(false)
-      setConfirming(false)
+      setLoading(false);
+      setConfirming(false);
     }
   }
 
   if (confirming) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Remove this application?</span>
+        <span className="text-sm text-muted-foreground">
+          Remove this application?
+        </span>
         <Button
           variant="destructive"
           size="sm"
           disabled={loading}
           onClick={handleDelete}
         >
-          {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Yes, remove"}
+          {loading ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            "Yes, remove"
+          )}
         </Button>
         <Button
           variant="ghost"
@@ -42,7 +54,7 @@ export function DeleteApplicationButton({ applicationId }: { applicationId: stri
           Cancel
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -55,5 +67,5 @@ export function DeleteApplicationButton({ applicationId }: { applicationId: stri
       <Trash2 className="h-3.5 w-3.5" />
       Remove
     </Button>
-  )
+  );
 }

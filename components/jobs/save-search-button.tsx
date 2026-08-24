@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
-import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,30 +10,27 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import type { SavedSearchFilters } from "@/lib/db/schema"
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import type { SavedSearchFilters } from "@/lib/db/schema";
 
 interface SaveSearchButtonProps {
-  query: string
-  filters: SavedSearchFilters
+  query: string;
+  filters: SavedSearchFilters;
 }
 
-export function SaveSearchButton({
-  query,
-  filters,
-}: SaveSearchButtonProps) {
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [name, setName] = useState("")
-  const [emailDaily, setEmailDaily] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+export function SaveSearchButton({ query, filters }: SaveSearchButtonProps) {
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [emailDaily, setEmailDaily] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   function saveSearch() {
     startTransition(async () => {
-      setError(null)
+      setError(null);
       const response = await fetch("/api/saved-searches", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,21 +38,23 @@ export function SaveSearchButton({
           name,
           query: query || null,
           filters,
-          emailDaily,
-        }),
-      })
+          emailDaily
+        })
+      });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "Save failed" }))
-        setError(data.error?.formErrors?.[0] ?? data.error ?? "Save failed")
-        return
+        const data = await response
+          .json()
+          .catch(() => ({ error: "Save failed" }));
+        setError(data.error?.formErrors?.[0] ?? data.error ?? "Save failed");
+        return;
       }
 
-      setIsOpen(false)
-      setName("")
-      setEmailDaily(true)
-      router.refresh()
-    })
+      setIsOpen(false);
+      setName("");
+      setEmailDaily(true);
+      router.refresh();
+    });
   }
 
   return (
@@ -69,7 +68,8 @@ export function SaveSearchButton({
         <DialogHeader>
           <DialogTitle>Save Search</DialogTitle>
           <DialogDescription>
-            Save the current filters and optionally include it in the daily digest.
+            Save the current filters and optionally include it in the daily
+            digest.
           </DialogDescription>
         </DialogHeader>
 
@@ -99,7 +99,11 @@ export function SaveSearchButton({
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setIsOpen(false)}
+          >
             Cancel
           </Button>
           <Button
@@ -112,5 +116,5 @@ export function SaveSearchButton({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

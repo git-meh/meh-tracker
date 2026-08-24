@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/cron/scrape
@@ -13,18 +13,20 @@ import { NextResponse } from "next/server"
  */
 
 export async function GET(request: Request): Promise<NextResponse> {
-  const cronSecret = process.env.CRON_SECRET?.trim()
-  const authHeader = request.headers.get("authorization") ?? ""
-  const secretParam = new URL(request.url).searchParams.get("secret") ?? ""
-  const providedSecret = authHeader.replace(/^Bearer\s+/i, "").trim() || secretParam
+  const cronSecret = process.env.CRON_SECRET?.trim();
+  const authHeader = request.headers.get("authorization") ?? "";
+  const secretParam = new URL(request.url).searchParams.get("secret") ?? "";
+  const providedSecret =
+    authHeader.replace(/^Bearer\s+/i, "").trim() || secretParam;
 
   if (cronSecret && providedSecret !== cronSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   return NextResponse.json({
     ok: true,
-    message: "Scraper runs are handled by GitHub Actions. Use the workflow_dispatch trigger or check the Actions tab.",
-    docs: "See .github/workflows/scrapers.yml for schedule and adapter groups.",
-  })
+    message:
+      "Scraper runs are handled by GitHub Actions. Use the workflow_dispatch trigger or check the Actions tab.",
+    docs: "See .github/workflows/scrapers.yml for schedule and adapter groups."
+  });
 }

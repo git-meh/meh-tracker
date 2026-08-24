@@ -1,78 +1,79 @@
-import { desc, eq } from "drizzle-orm"
-import { createClient } from "@/lib/supabase/server"
-import { db } from "@/lib/db"
+import { desc, eq } from "drizzle-orm";
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
 import {
   automationPreferences,
   candidateProfiles,
   notificationEvents,
   resumes,
   resumeVersions,
-  savedSearches,
-} from "@/lib/db/schema"
-import { ResumeManager } from "@/components/resumes/resume-manager"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CandidateProfileForm } from "@/components/workspace/candidate-profile-form"
-import { AutomationPreferencesForm } from "@/components/workspace/automation-preferences-form"
-import { SavedSearchesList } from "@/components/workspace/saved-searches-list"
-import { NotificationFeed } from "@/components/workspace/notification-feed"
-import { JobBoardPreferences } from "@/components/workspace/job-board-preferences"
+  savedSearches
+} from "@/lib/db/schema";
+import { ResumeManager } from "@/components/resumes/resume-manager";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CandidateProfileForm } from "@/components/workspace/candidate-profile-form";
+import { AutomationPreferencesForm } from "@/components/workspace/automation-preferences-form";
+import { SavedSearchesList } from "@/components/workspace/saved-searches-list";
+import { NotificationFeed } from "@/components/workspace/notification-feed";
+import { JobBoardPreferences } from "@/components/workspace/job-board-preferences";
 
 export default async function WorkspacePage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return null
+    data: { user }
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
   const [profile] = await db
     .select()
     .from(candidateProfiles)
     .where(eq(candidateProfiles.userId, user.id))
-    .limit(1)
+    .limit(1);
 
   const [preferences] = await db
     .select()
     .from(automationPreferences)
     .where(eq(automationPreferences.userId, user.id))
-    .limit(1)
+    .limit(1);
 
   const userResumes = await db
     .select()
     .from(resumes)
-    .where(eq(resumes.userId, user.id))
+    .where(eq(resumes.userId, user.id));
 
   const versions = await db
     .select()
     .from(resumeVersions)
     .where(eq(resumeVersions.userId, user.id))
-    .orderBy(desc(resumeVersions.createdAt))
+    .orderBy(desc(resumeVersions.createdAt));
 
   const searches = await db
     .select()
     .from(savedSearches)
     .where(eq(savedSearches.userId, user.id))
-    .orderBy(desc(savedSearches.createdAt))
+    .orderBy(desc(savedSearches.createdAt));
 
   const events = await db
     .select()
     .from(notificationEvents)
     .where(eq(notificationEvents.userId, user.id))
     .orderBy(desc(notificationEvents.createdAt))
-    .limit(10)
+    .limit(10);
 
-  const versionMap = new Map<string, typeof versions>()
+  const versionMap = new Map<string, typeof versions>();
   versions.forEach((version) => {
-    const existing = versionMap.get(version.resumeId) ?? []
-    existing.push(version)
-    versionMap.set(version.resumeId, existing)
-  })
+    const existing = versionMap.get(version.resumeId) ?? [];
+    existing.push(version);
+    versionMap.set(version.resumeId, existing);
+  });
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Candidate Workspace</h1>
         <p className="text-sm text-muted-foreground">
-          Keep your visa profile, CV versions, saved searches, and automation settings in one place.
+          Keep your visa profile, CV versions, saved searches, and automation
+          settings in one place.
         </p>
       </div>
 
@@ -94,8 +95,8 @@ export default async function WorkspacePage() {
           {userResumes.length > 0 ? (
             <div className="space-y-2">
               {userResumes.map((resume) => {
-                const resumeVersionList = versionMap.get(resume.id) ?? []
-                const latestVersion = resumeVersionList[0]
+                const resumeVersionList = versionMap.get(resume.id) ?? [];
+                const latestVersion = resumeVersionList[0];
 
                 return (
                   <div
@@ -111,7 +112,7 @@ export default async function WorkspacePage() {
                         : ""}
                     </p>
                   </div>
-                )
+                );
               })}
             </div>
           ) : null}
@@ -124,8 +125,8 @@ export default async function WorkspacePage() {
         </CardHeader>
         <CardContent>
           <p className="mb-3 text-sm text-muted-foreground">
-            Choose which job boards and sectors appear in your Recommended Jobs feed.
-            Leave everything unchecked to see jobs from all sources.
+            Choose which job boards and sectors appear in your Recommended Jobs
+            feed. Leave everything unchecked to see jobs from all sources.
           </p>
           <JobBoardPreferences currentBoards={profile?.preferredBoards ?? []} />
         </CardContent>
@@ -133,13 +134,19 @@ export default async function WorkspacePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Automation & Notifications</CardTitle>
+          <CardTitle className="text-base">
+            Automation & Notifications
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <AutomationPreferencesForm
             preferences={preferences ?? null}
-            executorConfigured={Boolean(process.env.AUTOMATION_EXECUTOR_WEBHOOK_URL)}
-            notificationWebhookConfigured={Boolean(process.env.NOTIFICATION_WEBHOOK_URL)}
+            executorConfigured={Boolean(
+              process.env.AUTOMATION_EXECUTOR_WEBHOOK_URL
+            )}
+            notificationWebhookConfigured={Boolean(
+              process.env.NOTIFICATION_WEBHOOK_URL
+            )}
           />
         </CardContent>
       </Card>
@@ -156,7 +163,9 @@ export default async function WorkspacePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Recent Notification Events</CardTitle>
+            <CardTitle className="text-base">
+              Recent Notification Events
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <NotificationFeed events={events} />
@@ -164,5 +173,5 @@ export default async function WorkspacePage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

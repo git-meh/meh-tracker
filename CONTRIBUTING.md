@@ -19,7 +19,7 @@ Thanks for your interest! Here's how to get up and running.
 2. **Install dependencies**
 
    ```bash
-   npm install
+   bun ci
    ```
 
 3. **Set up environment variables**
@@ -34,7 +34,7 @@ Thanks for your interest! Here's how to get up and running.
 
    In your Supabase project, open the SQL Editor and run the contents of:
 
-   ```
+   ```bash
    supabase/migrations/0001_setup.sql
    ```
 
@@ -48,14 +48,14 @@ Thanks for your interest! Here's how to get up and running.
 6. **Run the dev server**
 
    ```bash
-   npm run dev
+   bun run dev
    ```
 
    Open [http://localhost:3000](http://localhost:3000).
 
 ## Project Structure
 
-```
+```text
 app/
   (auth)/        Login, signup, invite pages
   (app)/         Main app - sidebar layout
@@ -72,7 +72,7 @@ supabase/
 ## Making Changes
 
 - Keep PRs focused - one feature or fix per PR
-- Run `npx tsc --noEmit` and `npm run lint` before opening a PR
+- Run `bun run tsc --noEmit` and `bun run lint` before opening a PR
 - For new pages, follow the existing RSC (React Server Component) pattern
 - API routes live in `app/api/` and use Zod for input validation
 
