@@ -16,15 +16,10 @@ export default async function SettingsPage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, user.id))
-    .limit(1);
-  const myInvites = await db
-    .select()
-    .from(invites)
-    .where(eq(invites.createdBy, user.id));
+  const [[profile], myInvites] = await Promise.all([
+    db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1),
+    db.select().from(invites).where(eq(invites.createdBy, user.id))
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

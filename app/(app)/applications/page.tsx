@@ -45,36 +45,39 @@ export default async function ApplicationsPage({
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const userApplications = await db
-    .select({
-      id: applications.id,
-      status: applications.status,
-      isPrivate: applications.isPrivate,
-      createdAt: applications.createdAt,
-      updatedAt: applications.updatedAt,
-      appliedAt: applications.appliedAt,
-      jobTitle: jobs.title,
-      jobCompany: jobs.company,
-      jobId: jobs.id,
-      jobAvailability: jobs.availability
-    })
-    .from(applications)
-    .leftJoin(jobs, eq(applications.jobId, jobs.id))
-    .where(
-      and(
-        eq(applications.userId, user.id),
-        q
-          ? or(ilike(jobs.title, `%${q}%`), ilike(jobs.company, `%${q}%`))
-          : undefined
+  const [userApplications, totalApplicationRows] = await Promise.all([
+    db
+      .select({
+        id: applications.id,
+        status: applications.status,
+        isPrivate: applications.isPrivate,
+        createdAt: applications.createdAt,
+        updatedAt: applications.updatedAt,
+        appliedAt: applications.appliedAt,
+        jobTitle: jobs.title,
+        jobCompany: jobs.company,
+        jobId: jobs.id,
+        jobAvailability: jobs.availability
+      })
+      .from(applications)
+      .leftJoin(jobs, eq(applications.jobId, jobs.id))
+      .where(
+        and(
+          eq(applications.userId, user.id),
+          q
+            ? or(ilike(jobs.title, `%${q}%`), ilike(jobs.company, `%${q}%`))
+            : undefined
+        )
       )
-    )
-    .orderBy(desc(applications.updatedAt));
+      .orderBy(desc(applications.updatedAt)),
 
-  const totalApplications = await db
-    .select({ count: count() })
-    .from(applications)
-    .where(eq(applications.userId, user.id))
-    .then((res) => res[0].count);
+    db
+      .select({ count: count() })
+      .from(applications)
+      .where(eq(applications.userId, user.id))
+  ]);
+
+  const totalApplications = totalApplicationRows[0]?.count ?? 0;
 
   return (
     <div className="space-y-6">

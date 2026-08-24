@@ -24,41 +24,40 @@ export default async function WorkspacePage() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const [profile] = await db
-    .select()
-    .from(candidateProfiles)
-    .where(eq(candidateProfiles.userId, user.id))
-    .limit(1);
+  const [[profile], [preferences], userResumes, versions, searches, events] =
+    await Promise.all([
+      db
+        .select()
+        .from(candidateProfiles)
+        .where(eq(candidateProfiles.userId, user.id))
+        .limit(1),
 
-  const [preferences] = await db
-    .select()
-    .from(automationPreferences)
-    .where(eq(automationPreferences.userId, user.id))
-    .limit(1);
+      db
+        .select()
+        .from(automationPreferences)
+        .where(eq(automationPreferences.userId, user.id))
+        .limit(1),
 
-  const userResumes = await db
-    .select()
-    .from(resumes)
-    .where(eq(resumes.userId, user.id));
+      db.select().from(resumes).where(eq(resumes.userId, user.id)),
 
-  const versions = await db
-    .select()
-    .from(resumeVersions)
-    .where(eq(resumeVersions.userId, user.id))
-    .orderBy(desc(resumeVersions.createdAt));
+      db
+        .select()
+        .from(resumeVersions)
+        .where(eq(resumeVersions.userId, user.id))
+        .orderBy(desc(resumeVersions.createdAt)),
+      db
+        .select()
+        .from(savedSearches)
+        .where(eq(savedSearches.userId, user.id))
+        .orderBy(desc(savedSearches.createdAt)),
 
-  const searches = await db
-    .select()
-    .from(savedSearches)
-    .where(eq(savedSearches.userId, user.id))
-    .orderBy(desc(savedSearches.createdAt));
-
-  const events = await db
-    .select()
-    .from(notificationEvents)
-    .where(eq(notificationEvents.userId, user.id))
-    .orderBy(desc(notificationEvents.createdAt))
-    .limit(10);
+      db
+        .select()
+        .from(notificationEvents)
+        .where(eq(notificationEvents.userId, user.id))
+        .orderBy(desc(notificationEvents.createdAt))
+        .limit(10)
+    ]);
 
   const versionMap = new Map<string, typeof versions>();
   versions.forEach((version) => {
