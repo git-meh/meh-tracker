@@ -240,7 +240,7 @@ export default async function JobsPage({
             />
           )}
           {user && (
-            <Button asChild>
+            <Button asChild size="sm">
               <Link href="/jobs/new">Post a Job</Link>
             </Button>
           )}
