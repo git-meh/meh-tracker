@@ -16,6 +16,14 @@ import { AutomationPreferencesForm } from "@/components/workspace/automation-pre
 import { SavedSearchesList } from "@/components/workspace/saved-searches-list";
 import { NotificationFeed } from "@/components/workspace/notification-feed";
 import { JobBoardPreferences } from "@/components/workspace/job-board-preferences";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Candidate Workspace",
+  description:
+    "Manage your candidate profile, CV versions, saved searches, and automation preferences.",
+  robots: { index: false, follow: false }
+};
 
 export default async function WorkspacePage() {
   const supabase = await createClient();

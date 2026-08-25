@@ -21,6 +21,14 @@ import {
   VISA_SPONSORSHIP_LABELS,
   WORK_MODE_LABELS
 } from "@/lib/visa-platform/constants";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Job Matches",
+  description:
+    "Review personalised job matches and prepare tailored application drafts.",
+  robots: { index: false, follow: false }
+};
 
 export default async function MatchesPage() {
   const supabase = await createClient();

@@ -10,6 +10,13 @@ import { formatDistanceToNow } from "date-fns";
 import { Lock } from "lucide-react";
 import type { ApplicationStatus } from "@/lib/db/schema";
 import { SearchInput } from "@/components/applications/search-input";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Applications",
+  description: "Search, review, and manage your tracked job applications.",
+  robots: { index: false, follow: false }
+};
 
 const STATUS_COLORS: Record<ApplicationStatus, string> = {
   saved: "secondary",

@@ -18,6 +18,13 @@ import {
   toSavedSearchFilters
 } from "@/lib/visa-platform/discovery";
 import type { SQL } from "drizzle-orm";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Jobs",
+  description:
+    "Discover job opportunities, filter by role and location, and track promising applications with Meh Tracker."
+};
 
 const PAGE_SIZE = 24;
 

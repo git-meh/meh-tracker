@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
+import { Logo } from "@/components/ui/logo";
 
 const publicNavItems = [{ href: "/jobs", label: "Job Board", icon: Briefcase }];
 
@@ -43,8 +44,10 @@ export function Sidebar({ user }: SidebarProps) {
           href="/jobs"
           className="flex items-center gap-2 text-lg font-bold"
         >
-          <span className="text-2xl">😑</span>
-          <span>meh-tracker</span>
+          <span className="text-2xl">
+            <Logo className="size-7" />
+          </span>
+          <span className="font-heading">Meh Tracker</span>
         </Link>
       </div>
 

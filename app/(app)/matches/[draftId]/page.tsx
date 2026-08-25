@@ -20,6 +20,14 @@ import {
   VISA_SPONSORSHIP_LABELS,
   WORK_MODE_LABELS
 } from "@/lib/visa-platform/constants";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Review Application Draft",
+  description:
+    "Review and edit a tailored application package before approval.",
+  robots: { index: false, follow: false }
+};
 
 export default async function DraftReviewPage({
   params
