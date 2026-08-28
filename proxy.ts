@@ -5,7 +5,9 @@ const PROTECTED_PATHS = [
   "/dashboard",
   "/applications",
   "/group",
+  "/matches",
   "/settings",
+  "/workspace",
   "/jobs/new"
 ];
 
