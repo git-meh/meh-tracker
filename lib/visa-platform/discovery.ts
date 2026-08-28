@@ -35,7 +35,11 @@ const rawJobDiscoverySchema = z.object({
   onlyMatched: z
     .union([z.literal("true"), z.literal("false"), z.boolean()])
     .transform((value) => value === true || value === "true")
+    .optional(),
+  sort: z
+    .enum(["recommended", "newest", "oldest"])
     .optional()
+    .default("recommended")
 });
 
 export type JobDiscoveryFilters = {
@@ -48,6 +52,7 @@ export type JobDiscoveryFilters = {
   sourceType?: JobSourceType;
   minSalary?: number;
   onlyMatched?: boolean;
+  sort: "recommended" | "newest" | "oldest";
 };
 
 export function parseJobDiscoveryFilters(
@@ -63,13 +68,14 @@ export function parseJobDiscoveryFilters(
   const parsed = rawJobDiscoverySchema.safeParse(normalised);
 
   if (!parsed.success) {
-    return { q: "" };
+    return { q: "", sort: "recommended" };
   }
 
   const country = normalizeCountryFilter(parsed.data.country);
 
   return {
     q: parsed.data.q,
+    sort: parsed.data.sort,
     availability: parsed.data.availability,
     sponsorship: parsed.data.sponsorship,
     country,
@@ -173,8 +179,7 @@ export function filterJobs<T extends FilterableJob>(
 
     if (
       typeof filters.minSalary === "number" &&
-      typeof job.salaryMin === "number" &&
-      job.salaryMin < filters.minSalary
+      (typeof job.salaryMin !== "number" || job.salaryMin < filters.minSalary)
     ) {
       return false;
     }

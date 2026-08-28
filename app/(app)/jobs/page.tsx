@@ -40,7 +40,11 @@ export default async function JobsPage({
   };
 
   const filters = parseJobDiscoveryFilters(rawParams);
-  const page = Math.max(1, parseInt(getString("page") || "1", 10));
+  const requestedPage = Number.parseInt(getString("page") || "1", 10);
+
+  const page =
+    Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+
   const offset = (page - 1) * PAGE_SIZE;
 
   const supabase = await createClient();
@@ -75,14 +79,27 @@ export default async function JobsPage({
   `;
 
   const conditions: SQL[] = [];
-  const ordering = user
+  const recommendedOrdering = user
     ? [
         asc(sponsorshipRank),
         desc(sql<number>`coalesce(${userMatchScore}, -1)`),
         asc(countryRank),
-        desc(jobs.createdAt)
+        desc(jobs.createdAt),
+        desc(jobs.id)
       ]
-    : [asc(sponsorshipRank), asc(countryRank), desc(jobs.createdAt)];
+    : [
+        asc(sponsorshipRank),
+        asc(countryRank),
+        desc(jobs.createdAt),
+        desc(jobs.id)
+      ];
+
+  const ordering =
+    filters.sort === "newest"
+      ? [desc(jobs.createdAt), desc(jobs.id)]
+      : filters.sort === "oldest"
+        ? [asc(jobs.createdAt), asc(jobs.id)]
+        : recommendedOrdering;
 
   if (filters.q) {
     const words = filters.q.trim().split(/\s+/).filter(Boolean);
@@ -223,8 +240,23 @@ export default async function JobsPage({
     if (filters.minSalary) params.set("minSalary", String(filters.minSalary));
     if (filters.onlyMatched) params.set("onlyMatched", "true");
     if (p > 1) params.set("page", String(p));
+    if (filters.sort !== "recommended") {
+      params.set("sort", filters.sort);
+    }
     return `/jobs?${params.toString()}`;
   }
+
+  const hasActiveFilters = Boolean(
+    filters.q ||
+    filters.availability ||
+    filters.sponsorship ||
+    filters.country ||
+    filters.workMode ||
+    filters.employmentType ||
+    filters.sourceType ||
+    filters.minSalary !== undefined ||
+    filters.onlyMatched
+  );
 
   return (
     <div className="space-y-6">
@@ -233,9 +265,7 @@ export default async function JobsPage({
           <h1 className="text-2xl font-bold">Job Discovery</h1>
           <p className="text-sm text-muted-foreground">
             {total.toLocaleString()} role{total === 1 ? "" : "s"}
-            {Object.values(filters).some(Boolean)
-              ? " matching filters"
-              : " available"}
+            {hasActiveFilters ? " matching filters" : " available"}
             {totalPages > 1 ? ` · page ${page} of ${totalPages}` : ""}
           </p>
         </div>

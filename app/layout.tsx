@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Bricolage_Grotesque } from "next/font/google";
+import { DM_Sans, Bricolage_Grotesque, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -7,6 +7,10 @@ const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-bricolage"
+});
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono"
 });
 
 export const metadata: Metadata = {
@@ -54,7 +58,8 @@ export default function RootLayout({
         "antialiased",
         "font-sans",
         dmSans.variable,
-        bricolageGrotesque.variable
+        bricolageGrotesque.variable,
+        geistMono.variable
       )}
     >
       <body className="min-h-full">{children}</body>
