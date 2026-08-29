@@ -22,6 +22,14 @@ import { format } from "date-fns";
 import { ExternalLink, FileText } from "lucide-react";
 import type { ApplicationStatus } from "@/lib/db/schema";
 import { JOB_SOURCE_TYPE_LABELS } from "@/lib/visa-platform/constants";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Application Details",
+  description:
+    "Review application status, notes, documents, and submission history.",
+  robots: { index: false, follow: false }
+};
 
 const STATUS_LABELS: Record<ApplicationStatus, string> = {
   saved: "Saved",

@@ -1,12 +1,12 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "default",
+  "style": "radix-rhea",
   "rsc": true,
   "tsx": true,
   "tailwind": {
     "config": "",
     "css": "app/globals.css",
-    "baseColor": "slate",
+    "baseColor": "mist",
     "cssVariables": true,
     "prefix": ""
   },
@@ -18,6 +18,9 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
+  "rtl": false,
+  "menuColor": "default-translucent",
+  "menuAccent": "subtle",
   "registries": {
     "@fonttrio": "https://www.fonttrio.xyz/r/{name}.json"
   }

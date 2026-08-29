@@ -8,6 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Settings",
+  description:
+    "Manage your profile, visibility, invitations, and account tools.",
+  robots: { index: false, follow: false }
+};
 
 export default async function SettingsPage() {
   const supabase = await createClient();

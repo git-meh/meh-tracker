@@ -3,6 +3,13 @@ import { db } from "@/lib/db";
 import { resumes } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { ResumeManager } from "@/components/resumes/resume-manager";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "CVs",
+  description: "Upload and manage the CVs used for your job applications.",
+  robots: { index: false, follow: false }
+};
 
 export default async function ResumesPage() {
   const supabase = await createClient();

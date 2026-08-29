@@ -52,11 +52,7 @@ function ApplicationCardSkeleton() {
 
 export default function ApplicationsLoading() {
   return (
-    <div
-      role="status"
-      aria-label="Loading applications"
-      className="space-y-7"
-    >
+    <div role="status" aria-label="Loading applications" className="space-y-7">
       <span className="sr-only">Loading applications...</span>
 
       <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">

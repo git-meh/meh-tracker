@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,25 +17,28 @@ import {
 } from "@/components/ui/card";
 import { Logo } from "@/components/ui/logo";
 
-export function LoginForm() {
+export function SignUpForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") ?? "/dashboard";
   const supabase = createClient();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.SubmitEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        data: { name },
+        emailRedirectTo: `${window.location.origin}/auth/callback`
+      }
     });
 
     if (error) {
@@ -44,16 +47,14 @@ export function LoginForm() {
       return;
     }
 
-    router.push(redirectTo);
+    router.push("/dashboard");
     router.refresh();
   }
 
-  async function handleGithubLogin() {
+  async function handleGithubSignup() {
     await supabase.auth.signInWithOAuth({
       provider: "github",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`
-      }
+      options: { redirectTo: `${window.location.origin}/auth/callback` }
     });
   }
 
@@ -67,13 +68,23 @@ export function LoginForm() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+            <CardTitle className="text-2xl font-bold">Create account</CardTitle>
             <CardDescription>
-              Welcome back. Enter your credentials to continue.
+              Start tracking your job applications.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full name</Label>
+                <Input
+                  id="name"
+                  placeholder="Jane Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -90,6 +101,8 @@ export function LoginForm() {
                 <Input
                   id="password"
                   type="password"
+                  placeholder="At least 8 characters"
+                  minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -97,7 +110,7 @@ export function LoginForm() {
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Signing in..." : "Sign in"}
+                {loading ? "Creating account..." : "Create account"}
               </Button>
             </form>
 
@@ -115,7 +128,7 @@ export function LoginForm() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={handleGithubLogin}
+              onClick={handleGithubSignup}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path
@@ -127,25 +140,15 @@ export function LoginForm() {
             </Button>
           </CardContent>
           <CardFooter className="flex justify-center text-sm text-muted-foreground">
-            No account?&nbsp;
+            Already have an account?&nbsp;
             <Link
-              href="/signup"
+              href="/login"
               className="font-medium text-primary hover:underline"
             >
-              Sign up
+              Sign in
             </Link>
           </CardFooter>
         </Card>
-
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Just browsing?&nbsp;
-          <Link
-            href="/jobs"
-            className="font-medium text-primary hover:underline"
-          >
-            View job board
-          </Link>
-        </p>
       </div>
     </div>
   );

@@ -59,7 +59,7 @@ export function JobCard({
           <div className="min-w-0 flex-1">
             <Link
               href={`/jobs/${job.id}`}
-              className="line-clamp-1 text-base font-semibold hover:underline"
+              className="line-clamp-1 font-heading text-base font-semibold hover:underline"
             >
               {job.title}
             </Link>
@@ -100,7 +100,7 @@ export function JobCard({
           </div>
         )}
 
-        <div className="mb-3 flex flex-wrap gap-1">
+        <div className="mb-2 flex flex-wrap gap-1">
           <Badge variant="outline" className="text-xs">
             {VISA_SPONSORSHIP_LABELS[job.visaSponsorshipStatus]}
           </Badge>

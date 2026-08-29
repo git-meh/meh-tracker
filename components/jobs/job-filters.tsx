@@ -5,6 +5,17 @@ import { useCallback, useEffect, useRef, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { COUNTRY_OPTIONS } from "@/lib/visa-platform/countries";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Button } from "../ui/button";
+import { FunnelX } from "lucide-react";
 
 type Props = {
   categories: string[];
@@ -28,6 +39,7 @@ export function JobFilters({ categories }: Props) {
   const sourceType = searchParams.get("sourceType") ?? "";
   const minSalary = searchParams.get("minSalary") ?? "";
   const onlyMatched = searchParams.get("onlyMatched") === "true";
+  const sort = searchParams.get("sort") ?? "recommended";
 
   // Sync text inputs from URL only when the input isn't focused (e.g. "Clear all")
   useEffect(() => {
@@ -71,7 +83,8 @@ export function JobFilters({ categories }: Props) {
     countryIsExplicit ||
     sourceType ||
     minSalary ||
-    onlyMatched;
+    onlyMatched ||
+    sort !== "recommended";
 
   return (
     <div
@@ -93,88 +106,185 @@ export function JobFilters({ categories }: Props) {
           }}
         />
 
-        <select
-          className="h-10 min-w-45 rounded-md border border-input bg-background px-3 text-sm"
-          value={category}
-          onChange={(e) => {
-            const cat = e.target.value;
-            // Category replaces the keyword search
-            push({ category: cat, q: cat });
+        {/* Category Filter */}
+        <Select
+          value={category || "all"}
+          onValueChange={(value) => {
+            const selectedCategory = value === "all" ? "" : value;
+
+            push({
+              category: selectedCategory,
+              q: selectedCategory
+            });
           }}
         >
-          <option value="">All job categories</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="min-w-45">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent position="item-aligned">
+            <SelectGroup>
+              <SelectLabel>All job categories</SelectLabel>
+              <SelectItem value="all">All categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sort}
+          onValueChange={(value) => {
+            push({
+              // Keep the default URL clean.
+              sort: value === "recommended" ? "" : value
+            });
+          }}
+        >
+          <SelectTrigger className="min-w-40">
+            <SelectValue />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Sort by date</SelectLabel>
+              <SelectItem value="recommended">Recommended</SelectItem>
+              <SelectItem value="newest">Newest first</SelectItem>
+              <SelectItem value="oldest">Oldest first</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Row 2: Attribute filters */}
-      <div className="flex flex-wrap gap-3">
-        <select
-          className="h-10 min-w-35 flex-1 rounded-md border border-input bg-background px-3 text-sm"
-          value={sponsorship}
-          onChange={(e) => push({ sponsorship: e.target.value })}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Sponsorship Type Filter */}
+        <Select
+          value={sponsorship || "any"}
+          onValueChange={(value) => {
+            push({
+              sponsorship: value === "any" ? "" : value
+            });
+          }}
         >
-          <option value="">Any sponsorship</option>
-          <option value="eligible">Visa sponsor confirmed</option>
-          <option value="possible">Check sponsorship</option>
-          <option value="not_available">No sponsorship</option>
-          <option value="unknown">Sponsorship unknown</option>
-        </select>
+          <SelectTrigger className="min-w-35 flex-1">
+            <SelectValue placeholder="Select a sponsorship type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Sponsorship</SelectLabel>
+              <SelectItem value="any">Any sponsorship</SelectItem>
+              <SelectItem value="eligible">Visa sponsor confirmed</SelectItem>
+              <SelectItem value="possible">Check sponsorship</SelectItem>
+              <SelectItem value="not_available">No sponsorship</SelectItem>
+              <SelectItem value="unknown">Sponsorship unknown</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
 
-        <select
-          className="h-10 min-w-30 flex-1 rounded-md border border-input bg-background px-3 text-sm"
-          value={workMode}
-          onChange={(e) => push({ workMode: e.target.value })}
+        {/* Work Mode Filter */}
+        <Select
+          value={workMode || "any"}
+          onValueChange={(value) => {
+            push({
+              workMode: value === "any" ? "" : value
+            });
+          }}
         >
-          <option value="">Any work mode</option>
-          <option value="remote">Remote</option>
-          <option value="hybrid">Hybrid</option>
-          <option value="onsite">Onsite</option>
-        </select>
+          <SelectTrigger className="min-w-35 flex-1">
+            <SelectValue placeholder="Select a work mode" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Work Mode</SelectLabel>
+              <SelectItem value="any">Any work mode</SelectItem>
+              <SelectItem value="remote">Remote</SelectItem>
+              <SelectItem value="hybrid">Hybrid</SelectItem>
+              <SelectItem value="onsite">Onsite</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
 
-        <select
-          className="h-10 min-w-30 flex-1 rounded-md border border-input bg-background px-3 text-sm"
-          value={employmentType}
-          onChange={(e) => push({ employmentType: e.target.value })}
+        {/* Employment Type Filter */}
+        <Select
+          value={employmentType || "any"}
+          onValueChange={(value) => {
+            push({
+              employmentType: value === "any" ? "" : value
+            });
+          }}
         >
-          <option value="">Any type</option>
-          <option value="full_time">Full time</option>
-          <option value="contract">Contract</option>
-          <option value="part_time">Part time</option>
-          <option value="internship">Internship</option>
-          <option value="temporary">Temporary</option>
-          <option value="apprenticeship">Apprenticeship</option>
-        </select>
+          <SelectTrigger className="min-w-35 flex-1">
+            <SelectValue placeholder="Select an employment type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Employment Type</SelectLabel>
+              <SelectItem value="any">Any type</SelectItem>
+              <SelectItem value="full_time">Full time</SelectItem>
+              <SelectItem value="contract">Contract</SelectItem>
+              <SelectItem value="part_time">Part time</SelectItem>
+              <SelectItem value="internship">Internship</SelectItem>
+              <SelectItem value="temporary">Temporary</SelectItem>
+              <SelectItem value="apprenticeship">Apprenticeship</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
 
-        <select
-          className="h-10 min-w-32 flex-1 rounded-md border border-input bg-background px-3 text-sm"
+        {/* Country Filter */}
+        <Select
           value={country}
-          onChange={(e) => push({ country: e.target.value })}
+          onValueChange={(value) => {
+            push({
+              country: value === "all" ? "" : value
+            });
+          }}
         >
-          <option value="all">All countries</option>
-          {COUNTRY_OPTIONS.map((option) => (
-            <option key={option.code} value={option.code}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="min-w-35 flex-1">
+            <SelectValue placeholder="Select a country" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Countries</SelectLabel>
+              <SelectItem value="all">All countries</SelectItem>
+              {COUNTRY_OPTIONS.map((option) => (
+                <SelectItem key={option.code} value={option.code}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
 
-        <select
-          className="h-10 min-w-32 flex-1 rounded-md border border-input bg-background px-3 text-sm"
-          value={sourceType}
-          onChange={(e) => push({ sourceType: e.target.value })}
+        {/* Job Source Filter */}
+        <Select
+          value={sourceType || "any"}
+          onValueChange={(value) => {
+            push({
+              sourceType: value === "any" ? "" : value
+            });
+          }}
         >
-          <option value="">Any source</option>
-          <option value="ats">ATS (Greenhouse / Lever)</option>
-          <option value="approved_feed">Job board (Reed / DWP)</option>
-          <option value="employer_site">Employer site</option>
-          <option value="manual">Manually posted</option>
-        </select>
+          <SelectTrigger className="min-w-35 flex-1">
+            <SelectValue placeholder="Select a source" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Job source</SelectLabel>
+              <SelectItem value="any">Any source</SelectItem>
+              <SelectItem value="ats">ATS (Greenhouse / Lever)</SelectItem>
+              <SelectItem value="approved_feed">
+                Job board (Reed / DWP)
+              </SelectItem>
+              <SelectItem value="employer_site">Employer site</SelectItem>
+              <SelectItem value="manual">Manually posted</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
 
+        {/* Min Salary Filter */}
         <Input
           ref={salaryRef}
           type="number"
@@ -191,8 +301,9 @@ export function JobFilters({ categories }: Props) {
           }}
         />
 
-        <label className="flex h-10 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm select-none">
+        <label className="flex h-8 cursor-pointer items-center gap-2 rounded-full border px-3 text-sm select-none">
           <input
+            className="accent-teal-900"
             type="checkbox"
             checked={onlyMatched}
             onChange={(e) =>
@@ -202,14 +313,11 @@ export function JobFilters({ categories }: Props) {
           Matched only
         </label>
 
-        {hasFilters && (
-          <Link
-            href="/jobs"
-            className="flex h-10 items-center px-3 text-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-          >
-            Clear all
+        <Button variant="link" size="sm" disabled={!hasFilters}>
+          <Link href="/jobs" className="flex items-center gap-1">
+            <FunnelX /> Clear filters
           </Link>
-        )}
+        </Button>
       </div>
     </div>
   );

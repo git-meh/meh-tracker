@@ -12,6 +12,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import type { ApplicationStatus } from "@/lib/db/schema";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description:
+    "Review your job application pipeline, recommended matches, and application drafts.",
+  robots: { index: false, follow: false }
+};
 
 const STATUS_COLUMNS: {
   status: ApplicationStatus;

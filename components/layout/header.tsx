@@ -61,7 +61,7 @@ export function Header({ profile, user }: HeaderProps) {
               </Avatar>
             </Link>
             <Button
-              variant="ghost"
+              variant="destructive"
               size="icon"
               onClick={handleSignOut}
               title="Sign out"

@@ -106,6 +106,22 @@ export async function GET(request: Request) {
     })),
     filters
   ).sort((left, right) => {
+    if (filters.sort === "newest") {
+      const dateDifference =
+        new Date(right.createdAt).getTime() -
+        new Date(left.createdAt).getTime();
+
+      return dateDifference || right.id.localeCompare(left.id);
+    }
+
+    if (filters.sort === "oldest") {
+      const dateDifference =
+        new Date(left.createdAt).getTime() -
+        new Date(right.createdAt).getTime();
+
+      return dateDifference || left.id.localeCompare(right.id);
+    }
+
     const sponsorshipDiff =
       sponsorshipRank[left.visaSponsorshipStatus] -
       sponsorshipRank[right.visaSponsorshipStatus];
@@ -124,9 +140,10 @@ export async function GET(request: Request) {
       return leftCountryRank - rightCountryRank;
     }
 
-    return (
-      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-    );
+    const dateDifference =
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+
+    return dateDifference || right.id.localeCompare(left.id);
   });
 
   return NextResponse.json(filteredJobs);

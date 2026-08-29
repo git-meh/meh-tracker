@@ -31,14 +31,14 @@ import {
   VISA_SPONSORSHIP_LABELS,
   WORK_MODE_LABELS
 } from "@/lib/visa-platform/constants";
+import type { Metadata } from "next";
+import { cache } from "react";
 
-export default async function JobDetailPage({
-  params
-}: {
+type JobDetailPageProps = {
   params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+};
 
+const getJob = cache(async (id: string) => {
   const [job] = await db
     .select({
       id: jobs.id,
@@ -69,6 +69,34 @@ export default async function JobDetailPage({
     .leftJoin(jobSources, eq(jobSources.id, jobs.sourceId))
     .where(eq(jobs.id, id))
     .limit(1);
+
+  return job ?? null;
+});
+
+export async function generateMetadata({
+  params
+}: JobDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const job = await getJob(id);
+
+  if (!job) {
+    return {
+      title: "Job Not Found",
+      robots: { index: false, follow: false }
+    };
+  }
+
+  const location = job.location ? ` in ${job.location}` : "";
+
+  return {
+    title: `${job.title} at ${job.company}`,
+    description: `Explore the ${job.title} opportunity at ${job.company}${location} and track your application with Meh Tracker.`
+  };
+}
+
+export default async function JobDetailPage({ params }: JobDetailPageProps) {
+  const { id } = await params;
+  const job = await getJob(id);
 
   if (!job) notFound();
 
@@ -237,8 +265,14 @@ export default async function JobDetailPage({
                     transformTags: {
                       a: sanitizeHtml.simpleTransform("a", {
                         target: "_blank",
-                        rel: "noopener noreferrer"
-                      })
+                        rel: "nofollow noopener noreferrer"
+                      }),
+                      h1: "h2",
+                      h2: "h2",
+                      h3: "h3",
+                      h4: "h3",
+                      h5: "h3",
+                      h6: "h3"
                     }
                   })
                 }}

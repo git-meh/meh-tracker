@@ -12,6 +12,13 @@ import { AvailabilityBadge } from "@/components/jobs/availability-badge";
 import { formatDistanceToNow } from "date-fns";
 import { GroupFeedRealtime } from "@/components/group/group-feed-realtime";
 import type { ApplicationStatus } from "@/lib/db/schema";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Group Feed",
+  description: "See recent job-search activity shared by your group.",
+  robots: { index: false, follow: false }
+};
 
 const STATUS_LABELS: Record<ApplicationStatus, string> = {
   saved: "saved",
