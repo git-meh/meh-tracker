@@ -2,8 +2,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
 import { invites } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
+import { z } from "zod";
+
+const deleteInviteSchema = z.object({
+  id: z.string().uuid()
+});
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -64,4 +69,38 @@ export async function POST(request: Request) {
 
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invite.code}`;
   return NextResponse.json({ ...invite, url: inviteUrl }, { status: 201 });
+}
+
+export async function DELETE(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const parsed = deleteInviteSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "A valid invite ID is required" },
+      {
+        status: 400
+      }
+    );
+  }
+
+  const [deletedInvite] = await db
+    .delete(invites)
+    .where(and(eq(invites.id, parsed.data.id), eq(invites.createdBy, user.id)))
+    .returning({ id: invites.id });
+
+  if (!deletedInvite) {
+    return NextResponse.json({ error: "Invite not found" }, { status: 404 });
+  }
+  
+  return NextResponse.json({ id: deletedInvite.id });
 }
