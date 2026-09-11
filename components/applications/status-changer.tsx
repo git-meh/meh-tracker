@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
@@ -52,15 +54,18 @@ export function StatusChanger({
 
   return (
     <Select value={value} onValueChange={handleChange} disabled={loading}>
-      <SelectTrigger className="w-48">
-        <SelectValue />
+      <SelectTrigger className="max-w-48 flex-1">
+        <SelectValue placeholder="Theme" />
       </SelectTrigger>
       <SelectContent>
-        {STATUSES.map(({ value, label }) => (
-          <SelectItem key={value} value={value}>
-            {label}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          <SelectLabel>Status</SelectLabel>
+          {STATUSES.map(({ value, label }) => (
+            <SelectItem key={value} value={value}>
+              {label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
   );
