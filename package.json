@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "bun test",
     "db:migrate": "node scripts/apply-migrations.mjs",
     "jobs:ingest": "node scripts/send-job-batch.mjs",
     "format": "prettier --write ."
@@ -52,6 +53,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/bun": "^1.4.2",
     "@types/node": "^26.4.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",

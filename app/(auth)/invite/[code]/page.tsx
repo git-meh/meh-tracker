@@ -14,33 +14,102 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
+import { isInviteFailureReason, type InviteFailureReason } from "@/lib/invites";
+
+type InviteValidation =
+  | { status: "loading" }
+  | { status: "valid"; inviterFirstName: string | null }
+  | {
+      status: "invalid";
+      reason: InviteFailureReason | "unavailable";
+      message: string;
+    };
+
+const invalidInviteTitles: Record<InviteFailureReason | "unavailable", string> =
+  {
+    invalid: "Invalid invite",
+    expired: "Invite expired",
+    used: "Invite already used",
+    unavailable: "Unable to validate invite"
+  };
 
 export default function InvitePage() {
   const router = useRouter();
   const { code } = useParams<{ code: string }>();
   const supabase = createClient();
 
-  const [valid, setValid] = useState<boolean | null>(null);
+  const [validation, setValidation] = useState<InviteValidation>({
+    status: "loading"
+  });
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function validateCode() {
-      const res = await fetch(`/api/invites?code=${code}`);
-      setValid(res.ok);
+      try {
+        const res = await fetch(
+          `/api/invites?code=${encodeURIComponent(code)}`,
+          { signal: controller.signal }
+        );
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data?.valid) {
+          const reason = isInviteFailureReason(data?.reason)
+            ? data.reason
+            : "invalid";
+          setValidation({
+            status: "invalid",
+            reason,
+            message:
+              typeof data?.message === "string"
+                ? data.message
+                : "This invite link is invalid."
+          });
+          return;
+        }
+
+        setValidation({
+          status: "valid",
+          inviterFirstName:
+            typeof data.inviterFirstName === "string"
+              ? data.inviterFirstName
+              : null
+        });
+      } catch (validationError) {
+        if (
+          validationError instanceof Error &&
+          validationError.name === "AbortError"
+        )
+          return;
+
+        setValidation({
+          status: "invalid",
+          reason: "unavailable",
+          message: "We couldn't validate this invite. Please try again."
+        });
+      }
     }
+
     validateCode();
+
+    return () => controller.abort();
   }, [code]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (validation.status !== "valid") return;
+
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -55,11 +124,17 @@ export default function InvitePage() {
       return;
     }
 
+    if (!data.session) {
+      setAwaitingConfirmation(true);
+      setLoading(false);
+      return;
+    }
+
     router.push("/dashboard");
     router.refresh();
   }
 
-  if (valid === null) {
+  if (validation.status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground">Validating invite...</p>
@@ -67,15 +142,13 @@ export default function InvitePage() {
     );
   }
 
-  if (!valid) {
+  if (validation.status === "invalid") {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <Card className="w-full max-w-sm text-center">
           <CardHeader>
-            <CardTitle>Invalid invite</CardTitle>
-            <CardDescription>
-              This invite link is invalid or has already been used.
-            </CardDescription>
+            <CardTitle>{invalidInviteTitles[validation.reason]}</CardTitle>
+            <CardDescription>{validation.message}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline" className="w-full">
@@ -87,6 +160,29 @@ export default function InvitePage() {
     );
   }
 
+  if (awaitingConfirmation) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+        <Card className="w-full max-w-sm text-center">
+          <CardHeader>
+            <CardTitle>Check your email</CardTitle>
+            <CardDescription>
+              We sent a confirmation link to {email}. Confirm your address, then
+              sign in to continue.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/login">Go to login</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const inviterName = validation.inviterFirstName ?? "a friend";
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <div className="w-full max-w-sm">
@@ -94,7 +190,7 @@ export default function InvitePage() {
           <span className="text-4xl">😑</span>
           <h1 className="mt-2 text-2xl font-bold">meh-tracker</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            You&apos;ve been invited!
+            You&apos;ve been invited by {inviterName}!
           </p>
         </div>
 
