@@ -59,7 +59,7 @@ export function DeleteApplicationButton({
 
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       size="sm"
       className="gap-1.5 text-muted-foreground hover:text-destructive"
       onClick={() => setConfirming(true)}

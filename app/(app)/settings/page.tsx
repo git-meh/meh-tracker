@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
 import { profiles, invites } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { InviteManager } from "@/components/settings/invite-manager";
 import { VisibilitySettings } from "@/components/settings/visibility-settings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Settings",
+title: "Settings",
   description:
     "Manage your profile, visibility, invitations, and account tools.",
   robots: { index: false, follow: false }
@@ -26,7 +26,11 @@ export default async function SettingsPage() {
 
   const [[profile], myInvites] = await Promise.all([
     db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1),
-    db.select().from(invites).where(eq(invites.createdBy, user.id))
+    db
+      .select()
+      .from(invites)
+      .where(eq(invites.createdBy, user.id))
+      .orderBy(desc(invites.createdAt))
   ]);
 
   return (
