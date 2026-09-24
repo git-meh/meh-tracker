@@ -15,6 +15,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { isInviteFailureReason, type InviteFailureReason } from "@/lib/invites";
+import { Logo } from "@/components/ui/logo";
 
 type InviteValidation =
   | { status: "loading" }
@@ -187,8 +188,8 @@ export default function InvitePage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <span className="text-4xl">😑</span>
-          <h1 className="mt-2 text-2xl font-bold">meh-tracker</h1>
+          <Logo className="mx-auto size-8" />
+          <h1 className="mt-2 text-2xl font-extrabold">Meh Tracker</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             You&apos;ve been invited by {inviterName}!
           </p>
